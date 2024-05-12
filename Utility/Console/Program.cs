@@ -16,7 +16,7 @@ namespace VirtualRadar.Utility.CLIConsole
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             int exitCode = 0;
             Options options = null;
@@ -33,20 +33,25 @@ namespace VirtualRadar.Utility.CLIConsole
                         .AddVirtualRadarGroup()
                         .AddSingleton<Options>(options)
                         .AddSingleton<HeaderService, HeaderService>()
-                        .AddTransient<CommandRunner_ShowVersion, CommandRunner_ShowVersion>()
+                        .AddSingleton<StreamDumperService, StreamDumperService>()
+
+                        .AddTransient<CommandRunner_ConnectTcpListener, CommandRunner_ConnectTcpListener>()
+                        .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
                     ;
                 });
 
                 using(var host = builder.Build()) {
                     using(var scope = host.Services.CreateScope()) {
                         CommandRunner commandRunner = null;
+                        var services = scope.ServiceProvider;
                         switch(options.Command) {
-                            case Command.ShowVersion:   commandRunner = scope.ServiceProvider.GetRequiredService<CommandRunner_ShowVersion>(); break;
-                            case Command.None:          OptionsParser.Usage("Missing command"); break;
-                            default:                    throw new NotImplementedException();
+                            case Command.ConnectTcpListener:    commandRunner = services.GetRequiredService<CommandRunner_ConnectTcpListener>(); break;
+                            case Command.ShowVersion:           commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
+                            case Command.None:                  OptionsParser.Usage("Missing command"); break;
+                            default:                            throw new NotImplementedException();
                         }
 
-                        exitCode = commandRunner.Run()
+                        exitCode = await commandRunner.Run()
                             ? 0
                             : 1;
                     }

@@ -21,6 +21,18 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "/?":
                         Usage();
                         break;
+                    case "-address":
+                        result.Address = UseNextArg(arg, nextArg, ref i);
+                        break;
+                    case "connecttcp":
+                        result.Command = ParseCommand(result, Command.ConnectTcpListener);
+                        break;
+                    case "-port":
+                        result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
+                        break;
+                    case "-show":
+                        result.Show = true;
+                        break;
                     case "version":
                         result.Command = ParseCommand(result, Command.ShowVersion);
                         break;
@@ -98,7 +110,13 @@ namespace VirtualRadar.Utility.CLIConsole
 
                              // 123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789
             Console.WriteLine($"Console command [options]");
-            Console.WriteLine($"  version               Show version information");
+            Console.WriteLine($"  version            Show version information");
+            Console.WriteLine($"  connectTCP         Connect to TCP address");
+            Console.WriteLine();
+            Console.WriteLine($"CONNECT OPTIONS");
+            Console.WriteLine($"  -address <address> Address to connect to [{defaults.Address}]");
+            Console.WriteLine($"  -port    <port>    Port to connect to [{defaults.Port}]");
+            Console.WriteLine($"  -show              Show feed content [{defaults.Show}]");
 
             if (!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();

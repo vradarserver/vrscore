@@ -15,12 +15,12 @@ namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_ShowVersion(HeaderService _Header, IOptions<ApplicationSettings> _ApplicationSettings) : CommandRunner
     {
-        public override bool Run()
+        public override async Task<bool> Run()
         {
             var application = _ApplicationSettings.Value;
 
-            _Header.OutputTitle("Show Version");
-            _Header.OutputOptions(
+            await _Header.OutputTitle("Show Version");
+            await _Header.OutputOptions(
                 ("Application Name",    application.ApplicationName),
                 ("Version",             application.Version.ToString()),
                 ("Alpha Revision",      application.AlphaRevision.ToString()),

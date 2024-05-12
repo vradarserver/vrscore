@@ -34,23 +34,23 @@ namespace VirtualRadar.Utility.CLIConsole
         /// Outputs the <see cref="CopyrightNotice"/> to the console.
         /// </summary>
         /// <exception cref="NotImplementedException"></exception>
-        public void OutputCopyright() => Console.WriteLine(CopyrightNotice);
+        public async Task OutputCopyright() => await Console.Out.WriteLineAsync(CopyrightNotice);
 
         /// <summary>
         /// Outputs the title and an underline.
         /// </summary>
         /// <param name="title"></param>
-        public void OutputTitle(string title)
+        public async Task OutputTitle(string title)
         {
-            Console.WriteLine(title);
-            Console.WriteLine(new String('=', title.Length));
+            await Console.Out.WriteLineAsync(title);
+            await Console.Out.WriteLineAsync(new String('=', title.Length));
         }
 
         /// <summary>
         /// Outputs each name/value pair on separate lines, with the values lines up underneath each other.
         /// </summary>
         /// <param name="nameValuePairs"></param>
-        public void OutputOptions(params (string Name, string Value)[] nameValuePairs)
+        public async Task OutputOptions(params (string Name, string Value)[] nameValuePairs)
         {
             var longestName = nameValuePairs.DefaultIfEmpty().Max(r => r.Name?.Length ?? 0);
             var lineBuffer = new StringBuilder();
@@ -67,7 +67,7 @@ namespace VirtualRadar.Utility.CLIConsole
                     lineBuffer.Append(nameValuePair.Value);
                 }
 
-                Console.WriteLine(lineBuffer.ToString());
+                await Console.Out.WriteLineAsync(lineBuffer.ToString());
             }
         }
     }

@@ -10,14 +10,40 @@
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class Options
+    class StreamDumperService
     {
-        public Command Command { get; set; }
+        public async Task DumpStreamAsHex(Stream stream, CancellationToken cancellationToken)
+        {
+            var buffer = new byte[16];
+            var bufferOffset = 0;
+            var totalRead = 0L;
 
-        public string Address { get; set; } = "127.0.0.1";
+            while(!cancellationToken.IsCancellationRequested) {
+                var read = await stream.ReadAsync(buffer, bufferOffset, buffer.Length - bufferOffset);
+                if(read > 0) {
+                    if(bufferOffset == 0) {
+                        await Console.Out.WriteAsync(totalRead.ToString("X8"));
+                        await Console.Out.WriteAsync(' ');
+                    }
+                    for(var idx = bufferOffset;idx < read + bufferOffset;++idx) {
+                        await Console.Out.WriteAsync(' ');
+                        await Console.Out.WriteAsync(buffer[idx].ToString("X2"));
+                    }
 
-        public int Port { get; set; } = 30003;
+                    totalRead += read;
+                    bufferOffset += read;
 
-        public bool Show { get; set; }
+                    if(bufferOffset == buffer.Length) {
+                        await Console.Out.WriteAsync("   ");
+                        for(var idx = 0;idx < buffer.Length;++idx) {
+                            var ch = buffer[idx];
+                            await Console.Out.WriteAsync(ch >= 32 && ch <= 127 ? (char)ch : '.');
+                        }
+                        await Console.Out.WriteLineAsync();
+                        bufferOffset = 0;
+                    }
+                }
+            }
+        }
     }
 }
