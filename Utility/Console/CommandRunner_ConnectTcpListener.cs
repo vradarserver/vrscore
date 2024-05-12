@@ -33,7 +33,8 @@ namespace VirtualRadar.Utility.CLIConsole
             await _Header.OutputOptions(
                 ("Address",         _Options.Address),
                 ("Port",            _Options.Port.ToString()),
-                ("Show Content",    _Options.Show.ToString())
+                ("Show Content",    _Options.Show.ToString()),
+                ("Save FileName",   _Options.SaveFileName)
             );
 
             if(!IPAddress.TryParse(_Options.Address, out var ipAddress)) {
@@ -48,12 +49,13 @@ namespace VirtualRadar.Utility.CLIConsole
                 var stream = await connector.OpenAsync(CancellationToken.None);
                 await WriteLine($"Connection state is now {connector.ConnectionState}");
 
-                if(_Options.Show) {
-                    await Console.Out.WriteLineAsync("Press any key to stop");
+                if(_Options.Show || !String.IsNullOrEmpty(_Options.SaveFileName)) {
+                    await WriteLine($"Copying TCP stream to {_Options.SaveFileName}");
+                    await WriteLine("Press any key to stop");
                     var cts = new CancellationTokenSource();
                     var keyWatcherTask = CancelIfAnyKeyPressed(cts);
                     try {
-                        await _StreamDumper.DumpStreamAsHex(stream, cts.Token);
+                        await _StreamDumper.DumpStream(stream, _Options.Show, _Options.SaveFileName, cts.Token);
                     } catch(OperationCanceledException) {
                         await WriteLine();
                         await WriteLine("Dump cancelled");

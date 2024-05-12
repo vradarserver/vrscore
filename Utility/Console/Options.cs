@@ -19,5 +19,7 @@ namespace VirtualRadar.Utility.CLIConsole
         public int Port { get; set; } = 30003;
 
         public bool Show { get; set; }
+
+        public string SaveFileName { get; set; }
     }
 }
