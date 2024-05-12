@@ -1,0 +1,35 @@
+<Project>
+    <!-- 
+    Note that $(SolutionDir) needs supplying when building from the command line, and that the
+    command-line compiler will strip off the trailing slash whereas Visual Studio will add it.
+    However Visual Studio seems OK with a double-slash, so to deal with both compilers always
+    put a slash after references to $(SolutionDir).
+    -->
+
+    <PropertyGroup>
+        <Version>1.0.0.0-alpha-0001</Version>
+
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <Deterministic>false</Deterministic>
+
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
+        <Product>VirtualRadarServer</Product>
+        <Copyright>Copyright © 2024 onwards, Andrew Whewell</Copyright>
+        <Authors>Andrew Whewell</Authors>
+
+        <ErrorReport>none</ErrorReport>
+        <CodeAnalysisRuleSet>$(SolutionDir)/CommonRules.ruleset</CodeAnalysisRuleSet>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DebugType>full</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <DebugType>full</DebugType>
+    </PropertyGroup>
+
+</Project>
