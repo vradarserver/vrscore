@@ -16,3 +16,4 @@ Add the library's services by calling `AddVirtualRadarGroup`.
 | `VirtualRadar.Connection`    | Abstraction of objects that can pull feeds from sources. |
 | `VirtualRadar.Extensions`    | Extensions to .NET CLR classes. |
 | `VirtualRadar.Format`        | Common string formatting. |
+| `VirtualRadar.Message`       | The internal format of a message from an aircraft. |
