@@ -42,7 +42,12 @@ namespace VirtualRadar.Utility.CLIConsole
             }
 
             await WriteLine($"Creating TCP connector to {ipAddress}:{_Options.Port}");
-            var connector = new TcpConnector(ipAddress, _Options.Port, canRead: true, canWrite: false);
+            var connector = new TcpConnector(new() {
+                Address = ipAddress,
+                Port = _Options.Port,
+                CanRead = true,
+                CanWrite = false
+            });
 
             try {
                 await WriteLine($"Opening stream (connector is currently {connector.ConnectionState})");

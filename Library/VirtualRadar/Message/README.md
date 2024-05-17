@@ -5,4 +5,4 @@ message sent by an aircraft.
 
 The program accepts messages in different feed formats. All of these
 different feeds are eventually converted into our internal message format,
-this namespace describes that internal format.
+which is described by `TransponderMessage`.

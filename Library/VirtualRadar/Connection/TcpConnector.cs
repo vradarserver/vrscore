@@ -22,17 +22,12 @@ namespace VirtualRadar.Connection
         private NetworkStream _Stream;      // The network stream opened on top of the socket, if this is null then the connection is closed.
 
         /// <summary>
-        /// Gets the address that we're connecting to.
+        /// Gets the options that the connector's using.
         /// </summary>
-        public IPAddress Address { get; }
-
-        /// <summary>
-        /// Gets the port that we're connecting to.
-        /// </summary>
-        public int Port { get; }
+        public TcpConnectorOptions Options { get; }
 
         /// <inheritdoc/>
-        public string Description => $"tcp://{Address}:{Port}";
+        public string Description => $"tcp://{Options.Address}:{Options.Port}";
 
         private ConnectionState _ConnectionState;
         /// <inheritdoc/>
@@ -48,10 +43,10 @@ namespace VirtualRadar.Connection
         }
 
         /// <inheritdoc/>
-        public bool CanRead { get; }
+        public bool CanRead => Options.CanRead;
 
         /// <inheritdoc/>
-        public bool CanWrite { get; }
+        public bool CanWrite => Options.CanWrite;
 
         /// <inheritdoc/>
         public event EventHandler ConnectionStateChanged;
@@ -68,19 +63,12 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="address"></param>
-        /// <param name="port"></param>
-        /// <param name="canRead"></param>
-        /// <param name="canWrite"></param>
-        public TcpConnector(IPAddress address, int port, bool canRead, bool canWrite)
+        public TcpConnector(TcpConnectorOptions options)
         {
-            if(!canRead && !canWrite) {
+            if(!options.CanRead && !options.CanWrite) {
                 throw new InvalidOperationException("A connector cannot forbid both reading and writing");
             }
-            Address = address;
-            Port = port;
-            CanRead = canRead;
-            CanWrite = canWrite;
+            Options = options;
         }
 
         /// <inheritdoc/>
@@ -129,12 +117,12 @@ namespace VirtualRadar.Connection
             ConnectionState = ConnectionState.Opening;
             try {
                 _Socket = new Socket(
-                    Address.AddressFamily,
+                    Options.Address.AddressFamily,
                     SocketType.Stream,
                     ProtocolType.Tcp
                 );
 
-                var ipEndPoint = new IPEndPoint(Address, Port);
+                var ipEndPoint = new IPEndPoint(Options.Address, Options.Port);
                 await _Socket.ConnectAsync(ipEndPoint, cancellationToken);
 
                 if(!cancellationToken.IsCancellationRequested) {
