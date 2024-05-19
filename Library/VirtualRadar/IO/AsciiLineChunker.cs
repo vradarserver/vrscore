@@ -11,8 +11,8 @@
 namespace VirtualRadar.IO
 {
     /// <summary>
-    /// A chunker that splits a stream into lines of text. It accepts either CR/LF
-    /// or LF line endings. CR on its own is considered white space.
+    /// A chunker that splits a stream into lines of text. It assumes that the
+    /// text is encoded as ASCII. It accepts either CR/LF or LF line endings.
     /// </summary>
     public class AsciiLineChunker : StreamChunker
     {

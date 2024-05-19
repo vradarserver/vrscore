@@ -297,5 +297,20 @@ namespace Tests.VirtualRadar.IO
 
             Assert.AreEqual(2, _CountChunksSeen);
         }
+
+        [TestMethod]
+        public async Task Read_Ignores_Large_Blocks_Of_Leading_Garbage()
+        {
+            var streamContent = new byte[(1024 * 1024) + 2];
+            Array.Fill(streamContent, (byte)0x80);
+            streamContent[^2] = 0x00;
+            streamContent[^1] = 0xff;
+            _Stream.Configure(streamContent, packetSize: 16);
+            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(1, _CountChunksSeen);
+        }
     }
 }
