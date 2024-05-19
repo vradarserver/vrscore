@@ -56,9 +56,29 @@ namespace VirtualRadar.IO
         /// Raises <see cref="ChunkRead"/>.
         /// </summary>
         /// <param name="args"></param>
-        protected virtual void OnChunkQueued(ReadOnlyMemory<byte> args)
+        protected virtual void OnChunkRead(ReadOnlyMemory<byte> args)
         {
             ChunkRead?.Invoke(this, args);
+        }
+
+        /// <summary>
+        /// Raised when a block is read from the stream - i.e. this can be used to monitor
+        /// a pass-through of all bytes on the stream. The block is passed as a block of
+        /// memory. IT WILL BE RELEASED OR REUSED AS SOON AS THE EVENT HANDLER RETURNS. If
+        /// you need to use the block after the event handler returns then you must copy it
+        /// and use the copy.
+        /// </summary>
+        public event EventHandler<ReadOnlyMemory<byte>> BlockRead;
+
+        /// <summary>
+        /// Raises <see cref="BlockRead"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnBlockRead(ReadOnlyMemory<byte> buffer, int bufferLength)
+        {
+            if(BlockRead != null) {
+                BlockRead?.Invoke(this, buffer[..bufferLength]);
+            }
         }
 
         /// <summary>
@@ -70,14 +90,16 @@ namespace VirtualRadar.IO
         /// <returns></returns>
         public async Task ReadChunksFromStream(Stream stream, CancellationToken cancellationToken)
         {
-            using var parseBuffer = MemoryPool<byte>.Shared.Rent(_MaximumChunkSize);
-            using var readBuffer = MemoryPool<byte>.Shared.Rent(4096);
+            using var parseBuffer = _IsolatedPool.Rent(_MaximumChunkSize);
+            using var readBuffer = _IsolatedPool.Rent(Math.Min(2048, _MaximumChunkSize));
 
             var parseBufferLength = 0;
 
             while(!cancellationToken.IsCancellationRequested) {
                 var usableLength = await stream.ReadAsync(readBuffer.Memory, cancellationToken);
                 if(usableLength > 0) {
+                    OnBlockRead(readBuffer.Memory, usableLength);
+
                     var newBlockStart = parseBufferLength;
 
                     readBuffer
@@ -126,7 +148,7 @@ namespace VirtualRadar.IO
                         parseable
                             .Slice(startOffset, chunkLength)
                             .CopyTo(chunk.Memory.Span);
-                        OnChunkQueued(chunk.Memory[..chunkLength]);
+                        OnChunkRead(chunk.Memory[..chunkLength]);
                     }
                 }
 

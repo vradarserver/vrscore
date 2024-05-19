@@ -152,6 +152,21 @@ namespace Tests.VirtualRadar.IO
         }
 
         [TestMethod]
+        public async Task Read_Can_Expose_Unfiltered_Content()
+        {
+            var streamContent = new byte[] { 0xa0, 0xa1, 0xa2, 0x00, 0xff, 0xee };
+            _Stream.Configure(streamContent, sendOnePacket: true);
+            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
+
+            byte[] block = [];
+            _TestChunker.BlockRead += (_,a) => block = a.ToArray();
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.IsTrue(block.SequenceEqual(streamContent));
+        }
+
+        [TestMethod]
         public async Task Read_Increments_Count_Of_Chunks()
         {
             _Stream.Configure([ 0x00, 0xff, ], sendOnePacket: true);
