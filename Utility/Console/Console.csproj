@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>
 

@@ -11,6 +11,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VirtualRadar.Configuration;
+using VirtualRadar.Feed.BaseStation;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
@@ -30,7 +31,10 @@ namespace VirtualRadar.Utility.CLIConsole
                         .Configure<ApplicationSettings>(opt => {
                             opt.AlphaRevision = 1;
                         })
+
                         .AddVirtualRadarGroup()
+                        .AddBaseStationFeedGroup()
+
                         .AddSingleton<Options>(options)
                         .AddSingleton<HeaderService, HeaderService>()
                         .AddSingleton<StreamDumperService, StreamDumperService>()

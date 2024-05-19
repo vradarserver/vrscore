@@ -11,7 +11,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace VirtualRadar.Message
+namespace VirtualRadar.Feed.BaseStation
 {
     /// <summary>
     /// The content of a parsed BaseStation message.
