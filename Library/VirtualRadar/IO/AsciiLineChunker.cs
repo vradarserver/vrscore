@@ -13,26 +13,40 @@ namespace VirtualRadar.IO
     /// <summary>
     /// A chunker that splits a stream into lines of text. It assumes that the
     /// text is encoded as ASCII. It accepts either CR/LF or LF line endings.
+    /// The chunk does not include the line ending.
     /// </summary>
     public class AsciiLineChunker : StreamChunker
     {
         /// <inheritdoc/>
         protected override (int, int) FindStartAndEndOffset(Span<byte> buffer, int newBlockStartOffset)
         {
-            var startOffset = 0;
+            var startOffset = -1;
             var endOffset = -1;
 
-            var startEndSearch = Math.Max(0, newBlockStartOffset - 2);
-
-            for(var idx = startEndSearch;idx < buffer.Length;++idx) {
+            for(var idx = 0;idx < buffer.Length;++idx) {
                 var window = buffer[idx..];
-                var ch = window[0];
-                if(ch == '\n') {
-                    endOffset = idx;
+                if(window[idx] != '\r' && window[idx] != '\n') {
+                    startOffset = idx;
                     break;
-                } else if(ch == '\r' && window.Length > 1 && window[1] == '\n') {
-                    endOffset = idx + 1;
-                    break;
+                }
+            }
+
+            if(startOffset > -1) {
+                var startEndSearch = Math.Max(
+                    0,
+                    Math.Max(startOffset, newBlockStartOffset - 2)
+                );
+
+                for(var idx = startEndSearch;idx < buffer.Length;++idx) {
+                    var window = buffer[idx..];
+                    var ch = window[0];
+                    if(ch == '\n') {
+                        endOffset = idx - 1;
+                        break;
+                    } else if(ch == '\r' && window.Length > 1 && window[1] == '\n') {
+                        endOffset = idx - 1;
+                        break;
+                    }
                 }
             }
 

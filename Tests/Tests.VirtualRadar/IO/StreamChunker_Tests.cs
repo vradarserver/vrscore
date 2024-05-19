@@ -152,6 +152,17 @@ namespace Tests.VirtualRadar.IO
         }
 
         [TestMethod]
+        public async Task Read_Increments_Count_Of_Chunks()
+        {
+            _Stream.Configure([ 0x00, 0xff, ], sendOnePacket: true);
+            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(1L, _TestChunker.CountChunksExtracted);
+        }
+
+        [TestMethod]
         public async Task Read_Discards_Bytes_Before_Start_Marker()
         {
             _Stream.Configure([ 0x01, 0x00, 0xff, ], sendOnePacket: true);

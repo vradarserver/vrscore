@@ -122,6 +122,7 @@ namespace VirtualRadar.IO
                 var chunkLength = (endOffset - startOffset) + 1;
                 if(chunkLength <= _MaximumChunkSize) {
                     using(var chunk = _IsolatedPool.Rent(chunkLength)) {
+                        ++CountChunksExtracted;
                         parseable
                             .Slice(startOffset, chunkLength)
                             .CopyTo(chunk.Memory.Span);
