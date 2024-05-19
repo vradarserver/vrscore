@@ -249,5 +249,53 @@ namespace Tests.VirtualRadar.IO
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
+
+        [TestMethod]
+        public async Task Read_Abandons_Chunks_That_Are_Too_Long()
+        {
+            _Stream.Configure([ 0x00, 0x01, 0x02, 0xff, ], sendOnePacket: true);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(0, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public async Task Read_Can_Read_Two_Chunks_Built_From_Many_Packets_While_Ignoring_OverLength_Chunk()
+        {
+            _Stream.Configure([
+                0x00, 0x01, 0xff,
+                0x00, 0x01, 0x02, 0xff,
+                0x00, 0x02, 0xff,
+            ], packetSize: 1);
+            _ChunkExtractedCallback = chunk => AssertChunk(_CountChunksSeen == 1
+                ? [ 0x00, 0x01, 0xff ]
+                : [ 0x00, 0x02, 0xff ],
+                chunk
+            );
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(2, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public async Task Read_Can_Read_Two_Chunks_Built_From_Many_Packets_While_Ignoring_OverLength_And_Unfinished_Chunk()
+        {
+            _Stream.Configure([
+                0x00, 0x01, 0xff,
+                0x00, 0x01, 0x02, 0x03,
+                0x00, 0x02, 0xff,
+            ], packetSize: 1);
+            _ChunkExtractedCallback = chunk => AssertChunk(_CountChunksSeen == 1
+                ? [ 0x00, 0x01, 0xff ]
+                : [ 0x00, 0x02, 0xff ],
+                chunk
+            );
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(2, _CountChunksSeen);
+        }
     }
 }

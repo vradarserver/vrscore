@@ -101,7 +101,14 @@ namespace VirtualRadar.IO
                     parseable,
                     newBlockStartOffset
                 );
-                if(startOffset == -1 || endOffset == -1) {
+                if(startOffset != -1 && endOffset == -1) {
+                    var incompleteChunkSize = parseable.Length - startOffset;
+                    if(incompleteChunkSize >= _MaximumChunkSize) {
+                        parseable = [];
+                        break;
+                    }
+                }
+                if(startOffset == -1 || endOffset == -1 || startOffset > endOffset) {
                     break;
                 }
 
