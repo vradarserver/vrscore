@@ -70,42 +70,54 @@ namespace VirtualRadar.IO
         /// <returns></returns>
         public async Task ReadChunksFromStream(Stream stream, CancellationToken cancellationToken)
         {
-            using(var readBuffer = MemoryPool<byte>.Shared.Rent(10)) {
-                while(!cancellationToken.IsCancellationRequested) {
-                    var usableLength = await stream.ReadAsync(readBuffer.Memory, cancellationToken);
-                    if(usableLength > 0) {
-                        ExtractChunksFromReadBuffer(
-                            readBuffer.Memory.Span[..usableLength]
-                        );
-                    }
+            using var parseBuffer = MemoryPool<byte>.Shared.Rent(MaximumChunkSize);
+            using var readBuffer = MemoryPool<byte>.Shared.Rent(4096);
+
+            var parseBufferLength = 0;
+
+            while(!cancellationToken.IsCancellationRequested) {
+                var usableLength = await stream.ReadAsync(readBuffer.Memory, cancellationToken);
+                if(usableLength > 0) {
+                    readBuffer
+                        .Memory.Span[..usableLength]
+                        .CopyTo(parseBuffer.Memory.Span[parseBufferLength..]);
+
+                    parseBufferLength = ExtractChunks(
+                        parseBuffer.Memory.Span[..(parseBufferLength + usableLength)]
+                    );
                 }
             }
         }
 
-        private void ExtractChunksFromReadBuffer(Span<byte> readBuffer)
+        private int ExtractChunks(Span<byte> readBuffer)
         {
             var parseable = readBuffer;
 
             do {
-                var startOutcome = FindStartOfChunk(parseable);
-                if(startOutcome.StartOffset == -1) {
-                    parseable = [];
+                var startOffset = FindStartOfChunk(parseable);
+                if(startOffset == -1) {
+                    break;
                 } else {
-                    var endOutcome = FindEndOfChunk(parseable[startOutcome.StartOffset..]);
+                    var endOffset = FindEndOfChunk(parseable[startOffset..]);
+                    if(endOffset == -1) {
+                        break;
+                    }
 
-                    var chunkLength = endOutcome.EndOffset + 1;
+                    var chunkLength = endOffset + 1;
                     using(var chunk = _IsolatedPool.Rent(chunkLength)) {
                         parseable
-                            .Slice(startOutcome.StartOffset, chunkLength)
+                            .Slice(startOffset, chunkLength)
                             .CopyTo(chunk.Memory.Span);
                         OnChunkQueued(chunk.Memory[..chunkLength]);
                     }
 
                     if(chunkLength <= parseable.Length) {
-                        parseable = parseable[(startOutcome.StartOffset + chunkLength)..];
+                        parseable = parseable[(startOffset + chunkLength)..];
                     }
                 }
             } while(parseable.Length > 0);
+
+            return parseable.Length;
         }
 
         /// <summary>
@@ -119,29 +131,26 @@ namespace VirtualRadar.IO
         }
 
         /// <summary>
-        /// Returns a tuple indicating either the start offset of the chunk in the buffer or the number
-        /// of bytes at the start of the buffer that are known to be garbage.
+        /// Returns the offset of the start of the sequence within the buffer passed across.
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        private (int StartOffset, int DiscardLength) FindStartOfChunk(Span<byte> buffer)
+        private int FindStartOfChunk(Span<byte> buffer)
         {
             var startOffset = -1;
-            var discardLength = 0;
 
             var window = buffer;
 
             for(var offset = 0;offset < buffer.Length;++offset) {
-                startOffset = FindStartOffsetInWindow(window);
-                if(startOffset == -1) {
-                    ++discardLength;
-                } else {
+                startOffset = StartOffsetFromWindowStart(window);
+                if(startOffset != -1) {
+                    startOffset += offset;
                     break;
                 }
                 window = window[1..];
             }
 
-            return (startOffset, discardLength);
+            return startOffset;
         }
 
         /// <summary>
@@ -149,35 +158,29 @@ namespace VirtualRadar.IO
         /// </summary>
         /// <param name="window"></param>
         /// <returns></returns>
-        protected abstract int FindStartOffsetInWindow(Span<byte> window);
+        protected abstract int StartOffsetFromWindowStart(Span<byte> window);
 
         /// <summary>
-        /// Returns a tuple indicating the offset of the last byte of the chunk or an indication that
-        /// the chunk has exceeded the maximum length without the end being seen, and so should be
-        /// discarded and a new search started.
+        /// Returns the offset of the end of the chunk within the window passed across.
         /// </summary>
         /// <param name="buffer"></param>
         /// <returns></returns>
-        private (int EndOffset, int DiscardLength) FindEndOfChunk(Span<byte> buffer)
+        private int FindEndOfChunk(Span<byte> buffer)
         {
             var endOffset = -1;
-            var discardLength = 0;
 
             var window = buffer;
 
             for(var offset = 0;offset < buffer.Length;++offset) {
-                endOffset = FindEndOffsetInWindow(window);
+                endOffset = EndOffsetFromWindowStart(window);
                 if(endOffset != -1) {
+                    endOffset += offset;
                     break;
                 }
                 window = window[1..];
             }
 
-            if(endOffset == -1 && buffer.Length >= MaximumChunkSize) {
-                discardLength = MaximumChunkSize;
-            }
-
-            return (endOffset, discardLength);
+            return endOffset;
         }
 
         /// <summary>
@@ -185,6 +188,6 @@ namespace VirtualRadar.IO
         /// </summary>
         /// <param name="window"></param>
         /// <returns></returns>
-        protected abstract int FindEndOffsetInWindow(Span<byte> window);
+        protected abstract int EndOffsetFromWindowStart(Span<byte> window);
     }
 }

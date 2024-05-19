@@ -7,16 +7,15 @@
     {
         protected byte[] _BackingStore;
 
-        protected int _LargestBlobReturned;
+        protected int _PacketSize;
         /// <summary>
         /// Gets the largest blob that a single call to Read will return.
         /// </summary>
-        public int LargestBlobReturned
+        public int PacketSize
         {
-            get => _LargestBlobReturned;
-            set => _LargestBlobReturned = Math.Max(1, value);
+            get => _PacketSize;
+            set => _PacketSize = Math.Max(1, value);
         }
-
 
         /// <inheritdoc/>
         public override bool CanRead => true;
@@ -73,14 +72,14 @@
         /// Creates a new object.
         /// </summary>
         /// <param name="content"></param>
-        /// <param name="largestBlobReturned"></param>
+        /// <param name="packetSize"></param>
         public MockReadOnlyStream(
             byte[] content,
-            int largestBlobReturned
+            int packetSize
         )
         {
             _BackingStore = content;
-            LargestBlobReturned = largestBlobReturned;
+            PacketSize = packetSize;
         }
 
         /// <summary>
@@ -88,10 +87,12 @@
         /// </summary>
         /// <param name="backingStore"></param>
         /// <param name="position"></param>
+        /// <param name="packetSize"></param>
+        /// <param name="sendOnePacket"></param>
         public void Configure(
             byte[] backingStore = null,
             long position = -1,
-            int largestBlobReturned = -1,
+            int packetSize = -1,
             bool sendOnePacket = false
         )
         {
@@ -101,11 +102,11 @@
                 _BackingStore.Length
             );
             if(sendOnePacket) {
-                LargestBlobReturned = _BackingStore.Length;
+                PacketSize = _BackingStore.Length;
             } else {
-                LargestBlobReturned = Math.Max(
+                PacketSize = Math.Max(
                     1, Math.Min(
-                        largestBlobReturned == -1 ? LargestBlobReturned : largestBlobReturned,
+                        packetSize == -1 ? PacketSize : packetSize,
                         _BackingStore.Length
                     )
                 );
@@ -122,26 +123,26 @@
         {
             ArgumentNullException.ThrowIfNull(buffer);
 
-            var result = Math.Min(
-                _LargestBlobReturned,
+            var returnedPacketSize = Math.Min(
+                _PacketSize,
                 Math.Max(
                     0,
                     Math.Min(count, _BackingStore.Length - Position)
                 )
             );
 
-            if(result == 0) {
+            if(returnedPacketSize == 0) {
                 OnStreamFinished(EventArgs.Empty);
             } else {
                 Array.Copy(
-                    _BackingStore, Position,
-                    buffer, offset,
-                    result
+                    _BackingStore,  Position,
+                    buffer,         offset,
+                    returnedPacketSize
                 );
-                Position += result;
+                Position += returnedPacketSize;
             }
 
-            return (int)result;
+            return (int)returnedPacketSize;
         }
 
         /// <inheritdoc/>

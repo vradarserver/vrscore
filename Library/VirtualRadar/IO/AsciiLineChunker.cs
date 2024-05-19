@@ -16,26 +16,14 @@ namespace VirtualRadar.IO
     /// </summary>
     public class AsciiLineChunker : StreamChunker
     {
-        private bool _SeenAtLeastOneEndOfLine;
-
         /// <inheritdoc/>
-        protected override void ResetStateForNewStream()
+        protected override int StartOffsetFromWindowStart(Span<byte> window)
         {
-            _SeenAtLeastOneEndOfLine = false;
+            return 0;
         }
 
         /// <inheritdoc/>
-        protected override int FindStartOffsetInWindow(Span<byte> window)
-        {
-            var result = _SeenAtLeastOneEndOfLine
-                ? 0
-                : FindOffsetAfterLineEnd(window);
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        protected override int FindEndOffsetInWindow(Span<byte> window)
+        protected override int EndOffsetFromWindowStart(Span<byte> window)
         {
             return FindOffsetAfterLineEnd(window);
         }

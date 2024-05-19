@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Text;
 using Tests.Mocks;
 using VirtualRadar.IO;
 
@@ -22,23 +23,20 @@ namespace Tests.VirtualRadar.IO
 
             private readonly byte[][] _EndMarkers;
 
-            private readonly bool _ReadAhead;
-
             public override int MaximumChunkSize { get; }
 
             public TestChunker(byte[][] startMarkers, byte[][] endMarkers, int maximumChunkSize, bool readAhead)
             {
                 _StartMarkers = startMarkers;
                 _EndMarkers = endMarkers;
-                _ReadAhead = readAhead;
                 MaximumChunkSize = maximumChunkSize;
             }
 
-            protected override int FindEndOffsetInWindow(Span<byte> window) => FindMarkerInWindow(_EndMarkers, window);
+            protected override int StartOffsetFromWindowStart(Span<byte> window) => FindMarkerOffset(_StartMarkers, window, endOffset: false);
 
-            protected override int FindStartOffsetInWindow(Span<byte> window) => FindMarkerInWindow(_StartMarkers, window);
+            protected override int EndOffsetFromWindowStart(Span<byte> window) => FindMarkerOffset(_EndMarkers, window, endOffset: true);
 
-            private int FindMarkerInWindow(byte[][] markers, Span<byte> window)
+            private int FindMarkerOffset(byte[][] markers, Span<byte> window, bool endOffset)
             {
                 var result = -1;
 
@@ -46,19 +44,11 @@ namespace Tests.VirtualRadar.IO
                     var marker = markers[markerIdx];
                     if(marker.Length == 0) {
                         result = 0;
-                    } else {
-                        var matchedToIdx = 0;
-                        for(var windowIdx = 0;windowIdx < window.Length;++windowIdx) {
-                            matchedToIdx = window[windowIdx] == marker[matchedToIdx]
-                                ? matchedToIdx + 1
+                    } else if(window.Length >= marker.Length) {
+                        if(marker.AsSpan().SequenceEqual(window[..marker.Length])) {
+                            result = endOffset
+                                ? marker.Length - 1
                                 : 0;
-                            if(matchedToIdx == 0 && !_ReadAhead) {
-                                break;
-                            }
-                            if(matchedToIdx == marker.Length) {
-                                result = windowIdx - (matchedToIdx - 1);
-                                break;
-                            }
                         }
                     }
                 }
@@ -90,7 +80,7 @@ namespace Tests.VirtualRadar.IO
         private TestChunker CreateTestChunker(
             byte[][] startMarkers = null,
             byte[][] endMarkers = null,
-            int maxChunkSize = 10,
+            int maxChunkSize = 3,
             bool readAhead = true,
             bool setFields = true,
             Action<ReadOnlyMemory<byte>> callback = null
@@ -116,12 +106,30 @@ namespace Tests.VirtualRadar.IO
             return result;
         }
 
+        private string FormatChunk(ReadOnlySpan<byte> chunk, int showFirst = 10, int showLast = 2)
+        {
+            var result = new StringBuilder();
+
+            var array = chunk.ToArray();
+            var firstLump = showFirst;
+            if(array.Length == showFirst + showLast) {
+                firstLump += showLast;
+            }
+            result.Append(String.Join(", ", array.Take(firstLump).Select(b => b.ToString("X2"))));
+
+            if(array.Length > firstLump) {
+                result.Append($" ... +{array.Length - (showFirst + showLast)} ... ");
+                result.Append(String.Join(", ", array[^showLast..].Select(b => b.ToString("X2"))));
+            }
+
+            return result.ToString();
+        }
+
         private void AssertChunk(ReadOnlySpan<byte> expected, ReadOnlyMemory<byte> actual, string message = null)
         {
             var areEqual = expected.SequenceEqual(actual.Span);
             if(!areEqual && message == null) {
-                message = $"Expected to see [{String.Join(", ", expected.ToArray().Select(r => r.ToString("X2")))}] " +
-                          $"actual was [{String.Join(", ", actual.ToArray().Select(r => r.ToString("X2")))}]";
+                message = $"Expected to see [{FormatChunk(expected)}] actual was [{FormatChunk(actual.Span)}]";
             }
             Assert.IsTrue(areEqual, message);
         }
@@ -175,6 +183,65 @@ namespace Tests.VirtualRadar.IO
             await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
 
             Assert.AreEqual(2, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public async Task Read_Can_Read_Chunk_Built_From_Many_Packets()
+        {
+            _Stream.Configure([ 0x00, 0xff, ], packetSize: 1);
+            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(1, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public async Task Read_Can_Read_Two_Chunks_Built_From_Many_Packets()
+        {
+            _Stream.Configure([
+                0x00, 0x01, 0xff,
+                0x00, 0x02, 0xff,
+            ], packetSize: 1);
+            _ChunkExtractedCallback = chunk => AssertChunk(_CountChunksSeen == 1
+                ? [ 0x00, 0x01, 0xff ]
+                : [ 0x00, 0x02, 0xff ],
+                chunk
+            );
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(2, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public async Task Read_Can_Read_Very_Large_Chunk()
+        {
+            var chunk = new byte[1024 * 1024];
+            new Random().NextBytes(chunk);
+            for(var idx = 0;idx < chunk.Length;++idx) {
+                switch(chunk[idx]) {
+                    case 0x00:
+                    case 0xff:
+                        chunk[idx] = 0x80;
+                        break;
+                }
+            }
+            chunk[0] = 0x00;
+            chunk[^1] = 0xff;
+
+            var streamContent = new byte[chunk.Length + 2];
+            chunk.AsSpan().CopyTo(
+                streamContent.AsSpan(1, chunk.Length)
+            );
+
+            CreateTestChunker(maxChunkSize: chunk.Length);
+            _Stream.Configure(chunk, packetSize: 1024);
+            _ChunkExtractedCallback = args => AssertChunk(chunk, args);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(1, _CountChunksSeen);
         }
     }
 }
