@@ -20,8 +20,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{1EEBE7DE-CF82-4D01-982F-55D3881A0387}"
+	ProjectSection(SolutionItems) = preProject
+		Library\Directory.Build.props = Library\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utility", "Utility", "{CA1928E3-1A3E-48E8-9403-97FF78486188}"
+	ProjectSection(SolutionItems) = preProject
+		Utility\Directory.Build.props = Utility\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar", "Library\VirtualRadar\VirtualRadar.csproj", "{3BAB6354-848C-4CDA-9FD2-073046BF14F5}"
 EndProject
@@ -29,6 +35,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevOps", "DevOps", "{2FD130
 	ProjectSection(SolutionItems) = preProject
 		DevOps\README.md = DevOps\README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8F14DB5F-3496-4354-8E05-A9054C0DD89B}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Directory.Build.props = Tests\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests\Tests.csproj", "{51A51F73-164D-41A5-8460-B7FAFEAF7310}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.VirtualRadar", "Tests\Tests.VirtualRadar\Tests.VirtualRadar.csproj", "{F903A8E5-C3F6-438B-B5D9-4359B8ACEC13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +59,14 @@ Global
 		{3BAB6354-848C-4CDA-9FD2-073046BF14F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BAB6354-848C-4CDA-9FD2-073046BF14F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BAB6354-848C-4CDA-9FD2-073046BF14F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51A51F73-164D-41A5-8460-B7FAFEAF7310}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51A51F73-164D-41A5-8460-B7FAFEAF7310}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51A51F73-164D-41A5-8460-B7FAFEAF7310}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51A51F73-164D-41A5-8460-B7FAFEAF7310}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F903A8E5-C3F6-438B-B5D9-4359B8ACEC13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F903A8E5-C3F6-438B-B5D9-4359B8ACEC13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F903A8E5-C3F6-438B-B5D9-4359B8ACEC13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F903A8E5-C3F6-438B-B5D9-4359B8ACEC13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +74,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A39F9349-E8CF-47DC-A7CB-67E8C000460D} = {CA1928E3-1A3E-48E8-9403-97FF78486188}
 		{3BAB6354-848C-4CDA-9FD2-073046BF14F5} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
+		{51A51F73-164D-41A5-8460-B7FAFEAF7310} = {8F14DB5F-3496-4354-8E05-A9054C0DD89B}
+		{F903A8E5-C3F6-438B-B5D9-4359B8ACEC13} = {8F14DB5F-3496-4354-8E05-A9054C0DD89B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D195B5EE-B00F-47BE-9FA3-F8175F6563DD}
