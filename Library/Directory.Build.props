@@ -1,0 +1,9 @@
+<Project>
+    <Import Project="..\Directory.Build.props" />
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
+    </PropertyGroup>
+
+</Project>

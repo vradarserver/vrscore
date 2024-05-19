@@ -14,8 +14,6 @@
         <Nullable>disable</Nullable>
         <Deterministic>false</Deterministic>
 
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
         <Product>VirtualRadarServer</Product>
         <Copyright>Copyright © 2024 onwards, Andrew Whewell</Copyright>
         <Authors>Andrew Whewell</Authors>
