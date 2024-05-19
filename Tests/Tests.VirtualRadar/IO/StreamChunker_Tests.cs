@@ -19,41 +19,47 @@ namespace Tests.VirtualRadar.IO
     {
         class TestChunker : StreamChunker
         {
-            private readonly byte[][] _StartMarkers;
+            private readonly byte[] _StartMarker;
 
-            private readonly byte[][] _EndMarkers;
+            private readonly byte[] _EndMarker;
 
-            public override int MaximumChunkSize { get; }
+            protected override int _MaximumChunkSize { get; }
 
-            public TestChunker(byte[][] startMarkers, byte[][] endMarkers, int maximumChunkSize, bool readAhead)
+            public TestChunker(byte[] startMarker, byte[] endMarker, int maximumChunkSize, bool readAhead)
             {
-                _StartMarkers = startMarkers;
-                _EndMarkers = endMarkers;
-                MaximumChunkSize = maximumChunkSize;
+                _StartMarker = startMarker;
+                _EndMarker = endMarker;
+                _MaximumChunkSize = maximumChunkSize;
             }
 
-            protected override int StartOffsetFromWindowStart(Span<byte> window) => FindMarkerOffset(_StartMarkers, window, endOffset: false);
-
-            protected override int EndOffsetFromWindowStart(Span<byte> window) => FindMarkerOffset(_EndMarkers, window, endOffset: true);
-
-            private int FindMarkerOffset(byte[][] markers, Span<byte> window, bool endOffset)
+            protected override (int, int) FindStartAndEndOffset(Span<byte> buffer, int newBlockStartOffset)
             {
-                var result = -1;
+                var startOffset = -1;
+                var endOffset = -1;
 
-                for(var markerIdx = 0;markerIdx < markers.Length;++markerIdx) {
-                    var marker = markers[markerIdx];
-                    if(marker.Length == 0) {
-                        result = 0;
-                    } else if(window.Length >= marker.Length) {
-                        if(marker.AsSpan().SequenceEqual(window[..marker.Length])) {
-                            result = endOffset
-                                ? marker.Length - 1
-                                : 0;
+                for(var idx = 0;idx < buffer.Length;++idx) {
+                    var window = buffer[idx..];
+                    if(window.Length >= _StartMarker.Length && window[.._StartMarker.Length].SequenceEqual(_StartMarker)) {
+                        startOffset = idx;
+                        break;
+                    }
+                }
+
+                if(startOffset != -1) {
+                    var startSearchOffset = Math.Max(
+                        0,
+                        newBlockStartOffset - Math.Max(_StartMarker.Length, _EndMarker.Length)
+                    );
+                    for(var idx = startSearchOffset;idx < buffer.Length;++idx) {
+                        var window = buffer[idx..];
+                        if(window.Length >= _EndMarker.Length && window[.._EndMarker.Length].SequenceEqual(_EndMarker)) {
+                            endOffset = idx;
+                            break;
                         }
                     }
                 }
 
-                return result;
+                return (startOffset, endOffset);
             }
         }
 
@@ -78,8 +84,8 @@ namespace Tests.VirtualRadar.IO
         }
 
         private TestChunker CreateTestChunker(
-            byte[][] startMarkers = null,
-            byte[][] endMarkers = null,
+            byte[] startMarkers = null,
+            byte[] endMarkers = null,
             int maxChunkSize = 3,
             bool readAhead = true,
             bool setFields = true,
@@ -87,8 +93,8 @@ namespace Tests.VirtualRadar.IO
         )
         {
             var result = new TestChunker(
-                startMarkers ?? [ [ 0x00, ], ],
-                endMarkers   ?? [ [ 0xff, ], ],
+                startMarkers ?? [ 0x00, ],
+                endMarkers   ?? [ 0xff, ],
                 maximumChunkSize:   maxChunkSize,
                 readAhead:          readAhead
             );

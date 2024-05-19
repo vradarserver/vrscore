@@ -17,36 +17,26 @@ namespace VirtualRadar.IO
     public class AsciiLineChunker : StreamChunker
     {
         /// <inheritdoc/>
-        protected override int StartOffsetFromWindowStart(Span<byte> window)
+        protected override (int, int) FindStartAndEndOffset(Span<byte> buffer, int newBlockStartOffset)
         {
-            return 0;
-        }
+            var startOffset = 0;
+            var endOffset = -1;
 
-        /// <inheritdoc/>
-        protected override int EndOffsetFromWindowStart(Span<byte> window)
-        {
-            return FindOffsetAfterLineEnd(window);
-        }
+            var startEndSearch = Math.Max(0, newBlockStartOffset - 2);
 
-        /// <summary>
-        /// Returns the offset of the byte following the line end in the buffer.
-        /// </summary>
-        /// <param name="window"></param>
-        /// <returns></returns>
-        private static int FindOffsetAfterLineEnd(Span<byte> window)
-        {
-            var result = -1;
-
-            if(window.Length > 1) {
+            for(var idx = startEndSearch;idx < buffer.Length;++idx) {
+                var window = buffer[idx..];
                 var ch = window[0];
                 if(ch == '\n') {
-                    result = 1;
-                } else if(ch == '\r' && window.Length > 2 && window[1] == '\n') {
-                    result = 2;
+                    endOffset = idx;
+                    break;
+                } else if(ch == '\r' && window.Length > 1 && window[1] == '\n') {
+                    endOffset = idx + 1;
+                    break;
                 }
             }
 
-            return result;
+            return (startOffset, endOffset);
         }
     }
 }

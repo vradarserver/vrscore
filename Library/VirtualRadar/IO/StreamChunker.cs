@@ -36,7 +36,7 @@ namespace VirtualRadar.IO
         /// as a chunk before this limit is reached then the chunk is abandoned and the
         /// chunker begins looking for the start of the next chunk.
         /// </summary>
-        public virtual int MaximumChunkSize { get; } = 100;
+        protected virtual int _MaximumChunkSize { get; } = 100;
 
         /// <summary>
         /// The number of chunks seen by the chunker over its current run of <see cref="ReadChunksFromStream"/>.
@@ -70,7 +70,7 @@ namespace VirtualRadar.IO
         /// <returns></returns>
         public async Task ReadChunksFromStream(Stream stream, CancellationToken cancellationToken)
         {
-            using var parseBuffer = MemoryPool<byte>.Shared.Rent(MaximumChunkSize);
+            using var parseBuffer = MemoryPool<byte>.Shared.Rent(_MaximumChunkSize);
             using var readBuffer = MemoryPool<byte>.Shared.Rent(4096);
 
             var parseBufferLength = 0;
@@ -78,42 +78,44 @@ namespace VirtualRadar.IO
             while(!cancellationToken.IsCancellationRequested) {
                 var usableLength = await stream.ReadAsync(readBuffer.Memory, cancellationToken);
                 if(usableLength > 0) {
+                    var newBlockStart = parseBufferLength;
+
                     readBuffer
                         .Memory.Span[..usableLength]
                         .CopyTo(parseBuffer.Memory.Span[parseBufferLength..]);
 
                     parseBufferLength = ExtractChunks(
-                        parseBuffer.Memory.Span[..(parseBufferLength + usableLength)]
+                        parseBuffer.Memory.Span[..(parseBufferLength + usableLength)],
+                        newBlockStart
                     );
                 }
             }
         }
 
-        private int ExtractChunks(Span<byte> readBuffer)
+        private int ExtractChunks(Span<byte> readBuffer, int newBlockStartOffset)
         {
             var parseable = readBuffer;
 
             do {
-                var startOffset = FindStartOfChunk(parseable);
-                if(startOffset == -1) {
+                (var startOffset, var endOffset) = FindStartAndEndOffset(
+                    parseable,
+                    newBlockStartOffset
+                );
+                if(startOffset == -1 || endOffset == -1) {
                     break;
-                } else {
-                    var endOffset = FindEndOfChunk(parseable[startOffset..]);
-                    if(endOffset == -1) {
-                        break;
-                    }
+                }
 
-                    var chunkLength = endOffset + 1;
-                    using(var chunk = _IsolatedPool.Rent(chunkLength)) {
-                        parseable
-                            .Slice(startOffset, chunkLength)
-                            .CopyTo(chunk.Memory.Span);
-                        OnChunkQueued(chunk.Memory[..chunkLength]);
-                    }
+                var chunkLength = (endOffset - startOffset) + 1;
+                using(var chunk = _IsolatedPool.Rent(chunkLength)) {
+                    parseable
+                        .Slice(startOffset, chunkLength)
+                        .CopyTo(chunk.Memory.Span);
+                    OnChunkQueued(chunk.Memory[..chunkLength]);
+                }
 
-                    if(chunkLength <= parseable.Length) {
-                        parseable = parseable[(startOffset + chunkLength)..];
-                    }
+                if(chunkLength <= parseable.Length) {
+                    parseable = parseable[(endOffset + 1)..];
+                    newBlockStartOffset = 0;
                 }
             } while(parseable.Length > 0);
 
@@ -121,73 +123,24 @@ namespace VirtualRadar.IO
         }
 
         /// <summary>
-        /// Called at the start of <see cref="ReadChunksFromStream"/> to give derivees the
-        /// opportunity to reset state for the start of a fresh stream. This is called after
-        /// the base has reset its own state. The base does not need to be called.
+        /// When overridden by the derivee this returns a tuple indicating the start and end offsets
+        /// (inclusive) of the chunk within the buffer.
         /// </summary>
-        protected virtual void ResetStateForNewStream()
-        {
-            // Do not put code here, it would rely on the derivee calling it.
-        }
-
-        /// <summary>
-        /// Returns the offset of the start of the sequence within the buffer passed across.
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        private int FindStartOfChunk(Span<byte> buffer)
-        {
-            var startOffset = -1;
-
-            var window = buffer;
-
-            for(var offset = 0;offset < buffer.Length;++offset) {
-                startOffset = StartOffsetFromWindowStart(window);
-                if(startOffset != -1) {
-                    startOffset += offset;
-                    break;
-                }
-                window = window[1..];
-            }
-
-            return startOffset;
-        }
-
-        /// <summary>
-        /// Returns the offset of the start of the chunk within the window passed across.
-        /// </summary>
-        /// <param name="window"></param>
-        /// <returns></returns>
-        protected abstract int StartOffsetFromWindowStart(Span<byte> window);
-
-        /// <summary>
-        /// Returns the offset of the end of the chunk within the window passed across.
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        private int FindEndOfChunk(Span<byte> buffer)
-        {
-            var endOffset = -1;
-
-            var window = buffer;
-
-            for(var offset = 0;offset < buffer.Length;++offset) {
-                endOffset = EndOffsetFromWindowStart(window);
-                if(endOffset != -1) {
-                    endOffset += offset;
-                    break;
-                }
-                window = window[1..];
-            }
-
-            return endOffset;
-        }
-
-        /// <summary>
-        /// Returns the offset of the end of the chunk within the window passed across.
-        /// </summary>
-        /// <param name="window"></param>
-        /// <returns></returns>
-        protected abstract int EndOffsetFromWindowStart(Span<byte> window);
+        /// <param name="buffer">
+        /// The buffer to search within. Do not use this buffer after the function has returned.
+        /// </param>
+        /// <param name="newBlockStartOffset">
+        /// The offset of the new bytes in the buffer. If this is non-zero then the derivee has seen some of
+        /// this content before, the new content begins at this offset.
+        /// </param>
+        /// <returns>
+        /// Start and end offsets of the first chunk in the buffer. They will be the same value for a single
+        /// byte chunk. If there is more than one chunk in the buffer then only the first chunk is to be
+        /// recognised. Pass -1 for offsets that cannot be found.
+        /// </returns>
+        protected abstract (int StartOffset, int EndOffset) FindStartAndEndOffset(
+            Span<byte> buffer,
+            int newBlockStartOffset
+        );
     }
 }
