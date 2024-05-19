@@ -106,11 +106,13 @@ namespace VirtualRadar.IO
                 }
 
                 var chunkLength = (endOffset - startOffset) + 1;
-                using(var chunk = _IsolatedPool.Rent(chunkLength)) {
-                    parseable
-                        .Slice(startOffset, chunkLength)
-                        .CopyTo(chunk.Memory.Span);
-                    OnChunkQueued(chunk.Memory[..chunkLength]);
+                if(chunkLength <= _MaximumChunkSize) {
+                    using(var chunk = _IsolatedPool.Rent(chunkLength)) {
+                        parseable
+                            .Slice(startOffset, chunkLength)
+                            .CopyTo(chunk.Memory.Span);
+                        OnChunkQueued(chunk.Memory[..chunkLength]);
+                    }
                 }
 
                 if(chunkLength <= parseable.Length) {
