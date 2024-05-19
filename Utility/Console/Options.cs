@@ -21,5 +21,7 @@ namespace VirtualRadar.Utility.CLIConsole
         public bool Show { get; set; }
 
         public string SaveFileName { get; set; }
+
+        public ListEntity ListEntity { get; set; }
     }
 }

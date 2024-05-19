@@ -27,6 +27,15 @@ namespace VirtualRadar.Feed
         }
 
         /// <inheritdoc/>
+        public IReadOnlyList<FeedFormatConfig> GetAllConfigs()
+        {
+            var feedFormats = _FeedFormats;
+            return feedFormats
+                .Values
+                .ToArray();
+        }
+
+        /// <inheritdoc/>
         public void RegisterConfig(FeedFormatConfig config)
         {
             lock(_WriteSyncLock) {

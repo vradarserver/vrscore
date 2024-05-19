@@ -40,6 +40,7 @@ namespace VirtualRadar.Utility.CLIConsole
                         .AddSingleton<StreamDumperService, StreamDumperService>()
 
                         .AddTransient<CommandRunner_ConnectTcpListener, CommandRunner_ConnectTcpListener>()
+                        .AddTransient<CommandRunner_List,               CommandRunner_List>()
                         .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
                     ;
                 });
@@ -50,6 +51,7 @@ namespace VirtualRadar.Utility.CLIConsole
                         var services = scope.ServiceProvider;
                         switch(options.Command) {
                             case Command.ConnectTcpListener:    commandRunner = services.GetRequiredService<CommandRunner_ConnectTcpListener>(); break;
+                            case Command.List:                  commandRunner = services.GetRequiredService<CommandRunner_List>(); break;
                             case Command.ShowVersion:           commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
                             case Command.None:                  OptionsParser.Usage("Missing command"); break;
                             default:                            throw new NotImplementedException();

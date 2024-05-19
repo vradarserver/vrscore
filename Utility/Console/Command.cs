@@ -14,8 +14,10 @@ namespace VirtualRadar.Utility.CLIConsole
     {
         None,
 
-        ShowVersion,
-
         ConnectTcpListener,
+
+        List,
+
+        ShowVersion,
     }
 }

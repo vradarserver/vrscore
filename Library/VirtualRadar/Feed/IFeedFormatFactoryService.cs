@@ -30,5 +30,11 @@ namespace VirtualRadar.Feed
         /// <param name="configId"></param>
         /// <returns></returns>
         FeedFormatConfig GetConfig(string configId);
+
+        /// <summary>
+        /// Retrieves all registered configs.
+        /// </summary>
+        /// <returns></returns>
+        IReadOnlyList<FeedFormatConfig> GetAllConfigs();
     }
 }

@@ -3,6 +3,7 @@
     /// <summary>
     /// Boots Virtual Radar Server.
     /// </summary>
+    [Lifetime(Lifetime.Singleton)]
     public class BootService
     {
         private readonly IBootable[] _Bootables;
@@ -18,6 +19,14 @@
         /// different bits of the VRS runtime.
         /// </summary>
         public void Start()
+        {
+            Initialise();
+        }
+
+        /// <summary>
+        /// Initialises the environment but does nothing else.
+        /// </summary>
+        public void Initialise()
         {
             OnBootStep(BootStep.Initialise);
         }

@@ -31,6 +31,10 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "connecttcp":
                         result.Command = ParseCommand(result, Command.ConnectTcpListener);
                         break;
+                    case "list":
+                        result.Command = ParseCommand(result, Command.List);
+                        result.ListEntity = ParseEnum<ListEntity>(UseNextArg(arg, nextArg, ref i));
+                        break;
                     case "-port":
                         result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
                         break;
@@ -118,6 +122,7 @@ namespace VirtualRadar.Utility.CLIConsole
                              // 123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789
             Console.WriteLine($"Console command [options]");
             Console.WriteLine($"  version             Show version information");
+            Console.WriteLine($"  list <entity>       List stuff: {String.Join(", ", Enum.GetNames<ListEntity>())}");
             Console.WriteLine($"  connectTCP          Connect to TCP address");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
