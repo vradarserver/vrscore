@@ -27,7 +27,7 @@
         {
             var other = (StampedTimedValue<T>)obj;
             other.LastChanged = LastChanged;
-            return other;
+            return base.CopyTo(obj);
         }
     }
 }

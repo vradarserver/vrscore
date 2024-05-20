@@ -61,21 +61,37 @@ namespace VirtualRadar.Utility.Terminal
                         aircraftList.CopyFromMessage(message);
                     };
 
-                    _ = chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
-
-                    var mainWindow = scope.ServiceProvider.GetRequiredService<MainWindow>();
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
-                    mainWindow.SwapViewInCurrentScope(aircraftListWindow);
-
                     aircraftListWindow.AircraftList = aircraftList;
 
-                    Application.Init();
-                    Application.Run(mainWindow);
-                    Application.Shutdown();
-
-                    cancellationTokenSource.Cancel();
+                    var keyWatcherTask = CancelIfAnyKeyPressed(cancellationTokenSource);
+                    try {
+                        await chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
+                    } catch(OperationCanceledException) {
+                        await Console.Out.WriteLineAsync("Cancelled");
+                    } finally {
+                        await keyWatcherTask;
+                    }
                 }
             }
+        }
+
+        protected async Task CancelIfAnyKeyPressed(CancellationTokenSource cancellationTokenSource)
+        {
+            await Task.Run(() => {
+                while(!Console.KeyAvailable) {
+                    if(cancellationTokenSource.IsCancellationRequested) {
+                        break;
+                    }
+                    Thread.Sleep(1);
+                }
+                if(Console.KeyAvailable) {
+                    Console.ReadKey(intercept: true);
+                    if(!cancellationTokenSource.IsCancellationRequested) {
+                        cancellationTokenSource.Cancel();
+                    }
+                }
+            }, cancellationTokenSource.Token);
         }
     }
 }

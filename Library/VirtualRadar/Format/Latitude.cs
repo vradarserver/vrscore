@@ -6,6 +6,6 @@ namespace VirtualRadar.Format
     {
         public static string IsoRounded(double? latitude) => Rounded(latitude, CultureInfo.CurrentCulture);
 
-        public static string Rounded(double? latitude, IFormatProvider formatProvider) => String.Format(formatProvider, "{0:000000}", latitude);
+        public static string Rounded(double? latitude, IFormatProvider formatProvider) => String.Format(formatProvider, "{0:0.000000}", latitude);
     }
 }
