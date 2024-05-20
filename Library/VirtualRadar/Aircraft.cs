@@ -168,10 +168,10 @@ namespace VirtualRadar
                     changed = VerticalRateType          .Set(               message.VerticalRateType, stamp)            || changed;
                     changed = VerticalRateFeetPerMinute .SetIfNotDefault(   message.VerticalRateFeetPerMinute, stamp)   || changed;
 
-                    if(changed) {
+                    //if(changed) {
                         SetStamp(stamp);
                         CountMessagesReceived.Set(CountMessagesReceived + 1, stamp);
-                    }
+                    //}
                 }
             }
 

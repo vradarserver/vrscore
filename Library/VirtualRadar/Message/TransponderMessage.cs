@@ -90,7 +90,7 @@ namespace VirtualRadar.Message
         /// <summary>
         /// The aircraft's location in WGS84 coordinates.
         /// </summary>
-        public Location? Location { get; set; }
+        public Location Location { get; set; }
 
         /// <summary>
         /// The aircraft's base 8 squawk code as a base 10 number.

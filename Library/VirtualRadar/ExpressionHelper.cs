@@ -8,48 +8,26 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using VirtualRadar.Message;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace VirtualRadar
 {
-    /// <inheritdoc/>
-    class AircraftList : IAircraftList
+    public static class ExpressionHelper
     {
-        private readonly object _SyncLock = new();
-
-        private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = new();
-
-        /// <inheritdoc/>
-        public bool CopyFromMessage(TransponderMessage message)
+        public static PropertyInfo ExtractPropertyInfo(Expression propertyExpression)
         {
-            var changed = false;
+            var lambdaExpression = (LambdaExpression)propertyExpression;
 
-            if(message != null) {
-                lock(_SyncLock) {
-                    if(!_AircraftByIcao24.TryGetValue(message.Icao24, out var aircraft)) {
-                        changed = true;
-                        aircraft = new(message.Icao24);
-                        _AircraftByIcao24[message.Icao24] = aircraft;
-                    }
+            var memberExpression = lambdaExpression.Body.NodeType == ExpressionType.Convert
+                ? ((UnaryExpression)lambdaExpression.Body).Operand as MemberExpression
+                : lambdaExpression.Body as MemberExpression;
 
-                    changed = aircraft.CopyFromMessage(message, StampCentral.GetStamp()) || changed;
-                }
-            }
-
-            return changed;
+            return memberExpression?.Member as PropertyInfo;
         }
 
-        /// <inheritdoc/>
-        public Aircraft[] ToArray()
-        {
-            lock(_SyncLock) {
-                var result = _AircraftByIcao24
-                    .Values
-                    .OfType<Aircraft>()
-                    .Select(aircraft => aircraft.ShallowCopy())
-                    .ToArray();
-                return result;
-            }
-        }
+        public static string ExtractNameOfProperty(Expression propertyExpression) => ExtractPropertyInfo(propertyExpression)?.Name;
+
+        public static Type ExtractTypeOfProperty(Expression propertyExpression) => ExtractPropertyInfo(propertyExpression)?.PropertyType;
     }
 }

@@ -10,6 +10,7 @@
 
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using Terminal.Gui;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 using VirtualRadar.Message;
@@ -41,6 +42,7 @@ namespace VirtualRadar.Utility.Terminal
                 var chunker = feedFormatConfig.CreateChunker();
                 var translator = (ITransponderMessageConverter)scope.ServiceProvider.GetRequiredService(feedFormatConfig.GetTransponderMessageConverterServiceType());
                 var aircraftList = scope.ServiceProvider.GetRequiredService<IAircraftList>();
+                var cancellationTokenSource = new CancellationTokenSource();
 
                 Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
                 if(!IPAddress.TryParse(_Options.Address, out var address)) {
@@ -52,23 +54,26 @@ namespace VirtualRadar.Utility.Terminal
                     CanRead =   true,
                 };
                 var connector = new TcpConnector(tcpConnectorOptions);
-                using(var networkStream = await connector.OpenAsync(CancellationToken.None)) {
-                    var state = 0;
+                using(var networkStream = await connector.OpenAsync(cancellationTokenSource.Token)) {
                     // In real life we'd want to copy the chunk into a queue rather than process it on the fly...
                     chunker.ChunkRead += (_,chunk) => {
                         var message = translator.ConvertTo(chunk);
                         aircraftList.CopyFromMessage(message);
-                        switch(state) {
-                            case 0: Console.Write('-'); break;
-                            case 1: Console.Write('\\'); break;
-                            case 2: Console.Write('|'); break;
-                            case 3: Console.Write('/'); break;
-                        }
-                        state = ++state % 4;
-                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
                     };
 
-                    await chunker.ReadChunksFromStream(networkStream, CancellationToken.None);
+                    _ = chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
+
+                    var mainWindow = scope.ServiceProvider.GetRequiredService<MainWindow>();
+                    var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
+                    mainWindow.SwapViewInCurrentScope(aircraftListWindow);
+
+                    aircraftListWindow.AircraftList = aircraftList;
+
+                    Application.Init();
+                    Application.Run(mainWindow);
+                    Application.Shutdown();
+
+                    cancellationTokenSource.Cancel();
                 }
             }
         }

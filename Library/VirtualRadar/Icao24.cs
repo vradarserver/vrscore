@@ -41,7 +41,7 @@ namespace VirtualRadar
 
         public Icao24(int value)
         {
-            _Value = 0;
+            _Value = value;
         }
 
         /// <summary>

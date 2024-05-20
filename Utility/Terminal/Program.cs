@@ -36,6 +36,8 @@ namespace VirtualRadar.Utility.Terminal
                         .AddBaseStationFeedGroup()
 
                         .AddSingleton<Options>(options)
+                        .AddSingleton<MainWindow, MainWindow>()
+                        .AddScoped<AircraftListWindow, AircraftListWindow>()
 
                         // This will do for now, I just want to see it working (or not)...
                         .AddScoped<TempRunner, TempRunner>()
