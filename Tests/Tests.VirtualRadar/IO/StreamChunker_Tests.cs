@@ -338,5 +338,38 @@ namespace Tests.VirtualRadar.IO
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
+
+        [TestMethod]
+        [DataRow(1)]
+        [DataRow(2)]
+        [DataRow(3)]
+        [DataRow(4)]
+        [DataRow(5)]
+        [DataRow(6)]
+        [DataRow(7)]
+        [DataRow(8)]
+        [DataRow(9)]
+        [DataRow(10)]
+        public async Task Read_Can_Cope_When_Start_Seen_At_Very_End_Of_First_Read(int packetSize)
+        {
+            // This test is a bit dodgy - we need to be sure that if we see the start of a packet
+            // at the very end of the first read then we will not end up overrunning the buffer that
+            // holds incomplete packets. It relies on insider knowledge of the chunker, and might
+            // not catch the same issue in the future.
+            //
+            // Actually this might be a better test that I thought... it's thrown up problems that I
+            // wasn't expecting and not reproduced the issue that I was hoping to fix :) Always good
+            // to stumble across that kind of thing.
+            _Stream.Configure([
+                0x00, 0x01, 0xff,   0x00, 0x02, 0xff,   0x00, 0x03, 0xff,
+                0x00, 0x04, 0xff,   0x00, 0x05, 0xff,   0x00, 0x06, 0xff,
+                0x00, 0x07, 0xff,   0x00, 0x08, 0xff,   0x00, 0x09, 0xff,
+            ], packetSize: packetSize);
+            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, (byte)_CountChunksSeen, 0xff ], chunk);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(9, _CountChunksSeen);
+        }
     }
 }

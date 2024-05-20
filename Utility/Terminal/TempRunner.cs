@@ -70,6 +70,7 @@ namespace VirtualRadar.Utility.Terminal
                     } catch(OperationCanceledException) {
                         await Console.Out.WriteLineAsync("Cancelled");
                     } finally {
+                        cancellationTokenSource.Cancel();
                         await keyWatcherTask;
                     }
                 }

@@ -117,6 +117,7 @@ namespace VirtualRadar.IO
         private int ExtractChunks(Span<byte> readBuffer, int newBlockStartOffset)
         {
             var parseable = readBuffer;
+            var moveParseableToStartOfReadBuffer = false;
 
             do {
                 (var startOffset, var endOffset) = FindStartAndEndOffset(
@@ -153,10 +154,15 @@ namespace VirtualRadar.IO
                 }
 
                 if(chunkLength <= parseable.Length) {
+                    moveParseableToStartOfReadBuffer = true;
                     parseable = parseable[(endOffset + 1)..];
                     newBlockStartOffset = 0;
                 }
             } while(parseable.Length > 0);
+
+            if(moveParseableToStartOfReadBuffer && parseable.Length > 0) {
+                parseable.CopyTo(readBuffer);
+            }
 
             return parseable.Length;
         }
