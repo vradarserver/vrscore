@@ -17,6 +17,8 @@ namespace VirtualRadar.IO
     /// </summary>
     public class AsciiLineChunker : StreamChunker
     {
+        protected override int _MaximumChunkSize => 1024;
+
         /// <inheritdoc/>
         protected override (int, int) FindStartAndEndOffset(Span<byte> buffer, int newBlockStartOffset)
         {
@@ -25,7 +27,7 @@ namespace VirtualRadar.IO
 
             for(var idx = 0;idx < buffer.Length;++idx) {
                 var window = buffer[idx..];
-                if(window[idx] != '\r' && window[idx] != '\n') {
+                if(window[0] != '\r' && window[0] != '\n') {
                     startOffset = idx;
                     break;
                 }

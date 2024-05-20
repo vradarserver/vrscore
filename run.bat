@@ -14,10 +14,12 @@ set RUNARGS=
     goto :NEXTARG
 :ENDARGS
 
-if "%PROG%"=="console" call "%BATDIR%build.bat" console -nobuild -run %RUNARGS%
+if "%PROG%"=="console"  call "%BATDIR%build.bat" console -nobuild -run %RUNARGS%
+if "%PROG%"=="terminal" call "%BATDIR%build.bat" terminal -nobuild -run %RUNARGS%
 
 goto :EOF
 
 :BADARGS
 echo Usage: run [program] (args to program)
 echo console        Command console
+echo terminal       Terminal

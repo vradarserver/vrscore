@@ -18,6 +18,7 @@ set RUNARGS=
     set BADARG=BAD
     if "%1"=="solution"      set BADARG=OK & set TARGET=SLN
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
+    if "%1"=="terminal"      set BADARG=OK & set TARGET=TERMINAL
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
     if "%1"=="-debug"        set BADARG=OK & set CONFIG=Debug
@@ -36,6 +37,7 @@ set RUNARGS=
     
 :ENDARGS
 if "%TARGET%"=="CONSOLE"    goto :CONSOLE
+if "%TARGET%"=="TERMINAL"   goto :TERMINAL
 if "%TARGET%"=="RESTORE"    goto :RESTORE
 if "%TARGET%"=="SLN"        goto :SLN
 
@@ -45,6 +47,7 @@ echo Usage: build command options
 echo restore      Restore all NuGet packages
 echo solution     Build the solution
 echo console      Build the console
+echo terminal     Build the terminal
 echo.
 echo -debug        Use Debug configuration (default)
 echo -nobuild      Skip the build phase
@@ -77,7 +80,7 @@ rem ## Pseudo targets
 
 rem ##################################################
 rem ## Build targets
-       
+
 :CONSOLE
     set "PROJ=%BATDIR%Utility\Console\Console.csproj"
     call :BUILD
@@ -90,4 +93,11 @@ rem ## Build targets
     call :BUILD
     if ERRORLEVEL 1 goto :EOF
     if "%RUN%"=="YES" echo "The run option doesn't make sense for the solution, ignoring it"
+    goto :EOF
+
+:TERMINAL
+    set "PROJ=%BATDIR%Utility\Terminal\Terminal.csproj"
+    call :BUILD
+    if ERRORLEVEL 1 goto :EOF
+    if "%RUN%"=="YES" "%BATDIR%Utility\Terminal\bin\%CONFIG%\net8.0\Terminal.exe" %RUNARGS%
     goto :EOF

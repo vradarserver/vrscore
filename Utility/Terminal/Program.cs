@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 using VirtualRadar.Configuration;
 using VirtualRadar.Feed.BaseStation;
 
-namespace VirtualRadar.Utility.CLIConsole
+namespace VirtualRadar.Utility.Terminal
 {
     class Program
     {
@@ -36,30 +36,19 @@ namespace VirtualRadar.Utility.CLIConsole
                         .AddBaseStationFeedGroup()
 
                         .AddSingleton<Options>(options)
-                        .AddSingleton<HeaderService, HeaderService>()
-                        .AddSingleton<StreamDumperService, StreamDumperService>()
 
-                        .AddTransient<CommandRunner_ConnectTcpListener, CommandRunner_ConnectTcpListener>()
-                        .AddTransient<CommandRunner_List,               CommandRunner_List>()
-                        .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
+                        // This will do for now, I just want to see it working (or not)...
+                        .AddScoped<TempRunner, TempRunner>()
                     ;
                 });
 
                 using(var host = builder.Build()) {
                     using(var scope = host.Services.CreateScope()) {
-                        CommandRunner commandRunner = null;
-                        var services = scope.ServiceProvider;
-                        switch(options.Command) {
-                            case Command.ConnectTcpListener:    commandRunner = services.GetRequiredService<CommandRunner_ConnectTcpListener>(); break;
-                            case Command.List:                  commandRunner = services.GetRequiredService<CommandRunner_List>(); break;
-                            case Command.ShowVersion:           commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
-                            case Command.None:                  OptionsParser.Usage("Missing command"); break;
-                            default:                            throw new NotImplementedException();
-                        }
+                        var bootService = scope.ServiceProvider.GetRequiredService<BootService>();
+                        bootService.Start();
 
-                        exitCode = await commandRunner.Run()
-                            ? 0
-                            : 1;
+                        var tempRunner = scope.ServiceProvider.GetRequiredService<TempRunner>();
+                        await tempRunner.Run();
                     }
                 }
             } catch(Exception ex) {
