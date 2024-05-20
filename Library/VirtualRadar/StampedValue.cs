@@ -46,7 +46,7 @@ namespace VirtualRadar
         /// <exception cref="InvalidOperationException"></exception>
         public bool Set(T newValue, long stamp)
         {
-            var changed = !Object.Equals(newValue, Value);
+            var changed = !EqualityComparer<T>.Default.Equals(newValue, Value);
             if(changed) {
                 SetChangedValue(newValue, stamp);
             }

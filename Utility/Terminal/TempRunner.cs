@@ -55,14 +55,15 @@ namespace VirtualRadar.Utility.Terminal
                 };
                 var connector = new TcpConnector(tcpConnectorOptions);
                 using(var networkStream = await connector.OpenAsync(cancellationTokenSource.Token)) {
+                    var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
+                    aircraftListWindow.AircraftList = aircraftList;
+
                     // In real life we'd want to copy the chunk into a queue rather than process it on the fly...
                     chunker.ChunkRead += (_,chunk) => {
                         var message = translator.ConvertTo(chunk);
                         aircraftList.CopyFromMessage(message);
+                        ++aircraftListWindow.CountChunksSeen;
                     };
-
-                    var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
-                    aircraftListWindow.AircraftList = aircraftList;
 
                     var keyWatcherTask = CancelIfAnyKeyPressed(cancellationTokenSource);
                     try {

@@ -153,7 +153,7 @@ namespace VirtualRadar
 
                     changed = AltitudeFeet              .SetIfNotDefault(   message.AltitudeFeet, stamp)                || changed;
                     changed = AltitudeType              .Set(               message.AltitudeType, stamp)                || changed;
-                    changed = Callsign                  .Set(               message.Callsign, stamp)                    || changed;
+                    changed = Callsign                  .SetIfNotDefault(   message.Callsign, stamp)                    || changed;
                     changed = GroundSpeedKnots          .SetIfNotDefault(   message.GroundSpeedKnots, stamp)            || changed;
                     changed = GroundSpeedType           .Set(               message.GroundSpeedType, stamp)             || changed;
                     changed = GroundTrackDegrees        .SetIfNotDefault(   message.GroundTrackDegrees, stamp)          || changed;
@@ -168,10 +168,10 @@ namespace VirtualRadar
                     changed = VerticalRateType          .Set(               message.VerticalRateType, stamp)            || changed;
                     changed = VerticalRateFeetPerMinute .SetIfNotDefault(   message.VerticalRateFeetPerMinute, stamp)   || changed;
 
-                    //if(changed) {
+                    if(changed) {
                         SetStamp(stamp);
                         CountMessagesReceived.Set(CountMessagesReceived + 1, stamp);
-                    //}
+                    }
                 }
             }
 

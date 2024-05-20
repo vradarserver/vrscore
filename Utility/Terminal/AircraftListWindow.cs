@@ -35,6 +35,8 @@ namespace VirtualRadar.Utility.Terminal
 
         public IAircraftList AircraftList { get; set; }
 
+        public long CountChunksSeen { get; set; }
+
         public AircraftListWindow()
         {
             Console.Clear();
@@ -105,14 +107,14 @@ namespace VirtualRadar.Utility.Terminal
                         .ToArray();
 
                     Console.SetCursorPosition(_CountTrackedPoint.Left, _CountTrackedPoint.Top);
-                    WriteAndClearToEOL(set.Length.ToString("N0"));
+                    WriteAndClearToEOL($"{set.Length:N0} from {CountChunksSeen:N0} chunks");
                     Console.WriteLine();
                     foreach(var aircraft in set) {
                         WriteTableLine([
                             $"{aircraft.Icao24,-6}",
                             $"{aircraft.Msgs,6}",
                             $"{aircraft.Callsign,-8}",
-                            $"{aircraft.Squawk,-6}",
+                            $" {aircraft.Squawk,-5}",
                             $"{aircraft.Latitude,12}",
                             $"{aircraft.Longitude,12}",
                         ]);
