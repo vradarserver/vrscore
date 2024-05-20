@@ -10,6 +10,7 @@
 
 using System.Globalization;
 using VirtualRadar.IO;
+using VirtualRadar.Message;
 
 namespace VirtualRadar.Feed
 {
@@ -43,10 +44,25 @@ namespace VirtualRadar.Feed
         public virtual string Name(CultureInfo uiCulture) => Id;
 
         /// <summary>
+        /// True if the feed carries representations of aircraft transponder
+        /// messages. The format should implement <see cref="ITransponderMessageConverter"/>
+        /// if this is true.
+        /// </summary>
+        public abstract bool IsTransponderFormat { get; }
+
+        /// <summary>
         /// Returns a new instance of a stream chunker that can extract message
         /// bytes out of a stream of bytes.
         /// </summary>
         /// <returns></returns>
         public abstract StreamChunker CreateChunker();
+
+        /// <summary>
+        /// Returns the type to request from dependency injection when <see cref="IsTransponderFormat"/>
+        /// is true and VRS needs an implementation of <see cref="ITransponderMessageConverter"/>
+        /// for the feed. Can throw an exception if <see cref="IsTransponderFormat"/> is false.
+        /// </summary>
+        /// <returns></returns>
+        public abstract Type GetTransponderMessageConverterServiceType();
     }
 }

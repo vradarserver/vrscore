@@ -10,40 +10,16 @@
 
 namespace VirtualRadar.Feed.BaseStation
 {
-    /// <inheritdoc/>
-    class Bootable : IBootable
+    /// <summary>
+    /// Configuration options to the BaseStation feed format. These apply to all BaseStation
+    /// feeds.
+    /// </summary>
+    public class BaseStationFeedFormatOptions
     {
-        // Injected services
-        private IFeedFormatFactoryService _FeedFormatFactory;
-        private FeedFormatConfig _FeedFormatConfig;
-
         /// <summary>
-        /// Creates a new object.
+        /// True if the parser should just ignore non-hex digits in the ICAO24 fields
+        /// of BaseStation format feeds.
         /// </summary>
-        /// <param name="feedFormatFactory"></param>
-        public Bootable(
-            IFeedFormatFactoryService feedFormatFactory,
-            FeedFormatConfig feedFormatConfig
-        )
-        {
-            _FeedFormatFactory = feedFormatFactory;
-            _FeedFormatConfig = feedFormatConfig;
-        }
-
-        /// <inheritdoc/>
-        public void OnBootStep(BootStep bootStep)
-        {
-            switch(bootStep) {
-                case BootStep.Initialise: Initialise(); break;
-            }
-        }
-
-        /// <summary>
-        /// Called during initialisation of VRS.
-        /// </summary>
-        private void Initialise()
-        {
-            _FeedFormatFactory.RegisterConfig(_FeedFormatConfig);
-        }
+        public bool Icao24CanHaveNonHexDigits { get; set; }
     }
 }

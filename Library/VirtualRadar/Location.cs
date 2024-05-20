@@ -15,7 +15,7 @@ namespace VirtualRadar
     /// <summary>
     /// A WGS84 coordinate.
     /// </summary>
-    public struct Location
+    public class Location
     {
         /// <summary>
         /// A location whose latitude and longitude is both zero. Typically used to indicate a missing
@@ -65,13 +65,32 @@ namespace VirtualRadar
         public override string ToString() => $"{Latitude:0.000000} / {Longitude:0.000000}";
 
         /// <inheritdoc/>
-        public override bool Equals([NotNullWhen(true)] object obj)
+        public override bool Equals(object obj)
         {
-            return obj is Location other
-                && this == other;
+            var result = Object.ReferenceEquals(this, obj);
+            if(!result && obj is Location other) {
+                result = this == other;
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
         public override int GetHashCode() => Latitude.GetHashCode();
+
+        /// <summary>
+        /// Returns a location from the parts passed across. If either latitude or
+        /// longitude are null then null is returned.
+        /// </summary>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
+        /// <param name="zeroZeroIsNull"></param>
+        /// <returns></returns>
+        public static Location FromLatLng(double? latitude, double? longitude, bool zeroZeroIsNull = false)
+        {
+            return (latitude == null || longitude == null || (latitude == 0.0 && longitude == 0.0 && zeroZeroIsNull))
+                ? null
+                : new(latitude.Value, longitude.Value);
+        }
     }
 }

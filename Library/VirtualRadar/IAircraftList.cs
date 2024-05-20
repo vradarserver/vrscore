@@ -8,42 +8,28 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Feed.BaseStation
+using VirtualRadar.Message;
+
+namespace VirtualRadar
 {
-    /// <inheritdoc/>
-    class Bootable : IBootable
+    /// <summary>
+    /// The interface for all objects that can maintain a list of aircraft. Usually scoped
+    /// to a receiver instance.
+    /// </summary>
+    [Lifetime(Lifetime.Scoped)]
+    public interface IAircraftList
     {
-        // Injected services
-        private IFeedFormatFactoryService _FeedFormatFactory;
-        private FeedFormatConfig _FeedFormatConfig;
+        /// <summary>
+        /// Copies the content of a single transponder message to the aircraft list.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <remarks>True if the aircraft changed state as a result of the message.</remarks>
+        bool CopyFromMessage(TransponderMessage message);
 
         /// <summary>
-        /// Creates a new object.
+        /// Returns a copy of the contents of the aircraft list.
         /// </summary>
-        /// <param name="feedFormatFactory"></param>
-        public Bootable(
-            IFeedFormatFactoryService feedFormatFactory,
-            FeedFormatConfig feedFormatConfig
-        )
-        {
-            _FeedFormatFactory = feedFormatFactory;
-            _FeedFormatConfig = feedFormatConfig;
-        }
-
-        /// <inheritdoc/>
-        public void OnBootStep(BootStep bootStep)
-        {
-            switch(bootStep) {
-                case BootStep.Initialise: Initialise(); break;
-            }
-        }
-
-        /// <summary>
-        /// Called during initialisation of VRS.
-        /// </summary>
-        private void Initialise()
-        {
-            _FeedFormatFactory.RegisterConfig(_FeedFormatConfig);
-        }
+        /// <returns></returns>
+        Aircraft[] ToArray();
     }
 }

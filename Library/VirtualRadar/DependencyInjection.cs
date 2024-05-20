@@ -17,6 +17,7 @@ namespace VirtualRadar
         public static IServiceCollection AddVirtualRadarGroup(this IServiceCollection services)
         {
             services.AddLifetime<BootService,                       BootService>();
+            services.AddLifetime<IAircraftList,                     AircraftList>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             return services;

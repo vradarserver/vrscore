@@ -20,7 +20,7 @@ namespace VirtualRadar.Message
         /// <summary>
         /// The ICAO24 of the aircraft that transmitted the message. Mandatory.
         /// </summary>
-        public int Icao24 { get; set; }
+        public Icao24 Icao24 { get; set; }
 
         /// <summary>
         /// The date and time that the message was received.

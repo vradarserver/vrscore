@@ -18,6 +18,11 @@ namespace VirtualRadar.Feed.BaseStation
         {
             services.AddLifetime<IBootable, Bootable>();
 
+            services.AddSingleton<FormatConfig, FormatConfig>();
+
+            services.AddScoped<BaseStationMessageParser,    BaseStationMessageParser>();
+            services.AddScoped<TransponderMessageConverter, TransponderMessageConverter>();
+
             return services;
         }
     }

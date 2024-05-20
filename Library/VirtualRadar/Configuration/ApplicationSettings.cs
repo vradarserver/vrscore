@@ -59,6 +59,11 @@ namespace VirtualRadar.Configuration
         public CultureInfo CultureInfo { get; set; }
 
         /// <summary>
+        /// Gets the local time zone for date conversions in the user interface.
+        /// </summary>
+        public TimeZoneInfo LocalTimeZone { get; set; }
+
+        /// <summary>
         /// Creates a new object.
         /// </summary>
         public ApplicationSettings() : this(Assembly.GetEntryAssembly())
@@ -75,6 +80,7 @@ namespace VirtualRadar.Configuration
             Version =         assembly?.GetName()?.Version ?? new Version();
             BuildDate =       assembly == null ? default : PEHeader.ExtractBuildDate(assembly);
             CultureInfo =     CultureInfo.CurrentCulture;
+            LocalTimeZone =   TimeZoneInfo.Local;
         }
     }
 }

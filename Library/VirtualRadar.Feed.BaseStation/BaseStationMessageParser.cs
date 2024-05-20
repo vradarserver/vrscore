@@ -10,12 +10,24 @@
 
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Options;
+using VirtualRadar.Configuration;
 
 namespace VirtualRadar.Feed.BaseStation
 {
     public class BaseStationMessageParser
     {
-        public BaseStationMessage FromFeed(ReadOnlyMemory<byte> bytes) => FromFeed(bytes, TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
+        private ApplicationSettings _ApplicationSettings;
+
+        public BaseStationMessageParser(IOptions<ApplicationSettings> applicationSettings)
+        {
+            _ApplicationSettings = applicationSettings.Value;
+        }
+
+        public BaseStationMessage FromFeed(ReadOnlyMemory<byte> bytes)
+        {
+            return FromFeed(bytes, _ApplicationSettings.LocalTimeZone.GetUtcOffset(DateTime.UtcNow));
+        }
 
         public BaseStationMessage FromFeed(ReadOnlyMemory<byte> bytes, TimeSpan localTimeOffset)
         {
@@ -29,7 +41,10 @@ namespace VirtualRadar.Feed.BaseStation
             return result;
         }
 
-        public BaseStationMessage Translate(string text) => Translate(text, TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow));
+        public BaseStationMessage Translate(string text)
+        {
+            return Translate(text, _ApplicationSettings.LocalTimeZone.GetUtcOffset(DateTime.UtcNow));
+        }
 
         public BaseStationMessage Translate(string text, TimeSpan localTimeOffset)
         {
@@ -74,17 +89,17 @@ namespace VirtualRadar.Feed.BaseStation
             return result;
         }
 
-        private int ParseInt(string chunk) => int.Parse(chunk, CultureInfo.InvariantCulture);
+        private static int ParseInt(string chunk) => int.Parse(chunk, CultureInfo.InvariantCulture);
 
-        private float ParseFloat(string chunk) => float.Parse(chunk, CultureInfo.InvariantCulture);
+        private static float ParseFloat(string chunk) => float.Parse(chunk, CultureInfo.InvariantCulture);
 
-        private double ParseDouble(string chunk) => double.Parse(chunk, CultureInfo.InvariantCulture);
+        private static double ParseDouble(string chunk) => double.Parse(chunk, CultureInfo.InvariantCulture);
 
-        private bool ParseBool(string chunk) => chunk != "0";
+        private static bool ParseBool(string chunk) => chunk != "0";
 
         // Note that locale settings can play havoc with delimiters sent from BaseStation. I've given up using DateTime.Parse and
         // I'm just plucking out the numbers by hand...
-        private DateTimeOffset ParseDate(string chunk, TimeSpan localTimeOffset)
+        private static DateTimeOffset ParseDate(string chunk, TimeSpan localTimeOffset)
         {
             if(chunk.Length != 10) {
                 throw new InvalidOperationException($"{chunk} doesn't look like a valid date");
@@ -97,7 +112,7 @@ namespace VirtualRadar.Feed.BaseStation
         }
 
         // See notes against ParseDate for explanation of parser
-        private DateTimeOffset ParseTime(DateTimeOffset date, string chunk)
+        private static DateTimeOffset ParseTime(DateTimeOffset date, string chunk)
         {
             if(chunk.Length != 12) {
                 throw new InvalidOperationException($"{chunk} doesn't look like a valid time");
