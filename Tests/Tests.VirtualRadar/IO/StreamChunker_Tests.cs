@@ -350,16 +350,8 @@ namespace Tests.VirtualRadar.IO
         [DataRow(8)]
         [DataRow(9)]
         [DataRow(10)]
-        public async Task Read_Can_Cope_When_Start_Seen_At_Very_End_Of_First_Read(int packetSize)
+        public async Task Read_Can_Cope_With_Incomplete_Messages_At_End_Of_Packet(int packetSize)
         {
-            // This test is a bit dodgy - we need to be sure that if we see the start of a packet
-            // at the very end of the first read then we will not end up overrunning the buffer that
-            // holds incomplete packets. It relies on insider knowledge of the chunker, and might
-            // not catch the same issue in the future.
-            //
-            // Actually this might be a better test that I thought... it's thrown up problems that I
-            // wasn't expecting and not reproduced the issue that I was hoping to fix :) Always good
-            // to stumble across that kind of thing.
             _Stream.Configure([
                 0x00, 0x01, 0xff,   0x00, 0x02, 0xff,   0x00, 0x03, 0xff,
                 0x00, 0x04, 0xff,   0x00, 0x05, 0xff,   0x00, 0x06, 0xff,
@@ -370,6 +362,26 @@ namespace Tests.VirtualRadar.IO
             await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
 
             Assert.AreEqual(9, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public async Task Read_Can_Cope_With_Messages_Spanning_More_Than_One_Packet()
+        {
+            // This test relies on inside knowledge of .NET 8 and the chunker, I'm not sure
+            // how useful it will be in the future. It relies on knowing that the .NET pool
+            // will allocate in blocks of 16 bytes
+            CreateTestChunker(maxChunkSize: 17);
+            _Stream.Configure([
+              //   0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f
+                0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00,
+                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0xff,
+                0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+            ], packetSize: 16);
+            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0xff ], chunk);
+
+            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+
+            Assert.AreEqual(1, _CountChunksSeen);
         }
     }
 }

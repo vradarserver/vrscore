@@ -90,8 +90,8 @@ namespace VirtualRadar.IO
         /// <returns></returns>
         public async Task ReadChunksFromStream(Stream stream, CancellationToken cancellationToken)
         {
-            using var parseBuffer = _IsolatedPool.Rent(_MaximumChunkSize);
             using var readBuffer = _IsolatedPool.Rent(Math.Min(2048, _MaximumChunkSize));
+            using var parseBuffer = _IsolatedPool.Rent(_MaximumChunkSize + readBuffer.Memory.Length);
 
             var parseBufferLength = 0;
 
@@ -114,27 +114,27 @@ namespace VirtualRadar.IO
             }
         }
 
-        private int ExtractChunks(Span<byte> readBuffer, int newBlockStartOffset)
+        private int ExtractChunks(Span<byte> buffer, int newBlockStartOffset)
         {
-            var parseable = readBuffer;
-            var moveParseableToStartOfReadBuffer = false;
+            var window = buffer;
+            var moveWindowToStartOfBuffer = false;
 
             do {
                 (var startOffset, var endOffset) = FindStartAndEndOffset(
-                    parseable,
+                    window,
                     newBlockStartOffset
                 );
 
                 if(startOffset == -1 && endOffset == -1) {
-                    if(parseable.Length > _MaximumChunkSize) {
-                        parseable = [];
+                    if(window.Length > _MaximumChunkSize) {
+                        window = [];
                     }
                     break;
                 }
                 if(startOffset != -1 && endOffset == -1) {
-                    var incompleteChunkSize = parseable.Length - startOffset;
+                    var incompleteChunkSize = window.Length - startOffset;
                     if(incompleteChunkSize >= _MaximumChunkSize) {
-                        parseable = [];
+                        window = [];
                         break;
                     }
                 }
@@ -146,25 +146,25 @@ namespace VirtualRadar.IO
                 if(chunkLength <= _MaximumChunkSize) {
                     using(var chunk = _IsolatedPool.Rent(chunkLength)) {
                         ++CountChunksExtracted;
-                        parseable
+                        window
                             .Slice(startOffset, chunkLength)
                             .CopyTo(chunk.Memory.Span);
                         OnChunkRead(chunk.Memory[..chunkLength]);
                     }
                 }
 
-                if(chunkLength <= parseable.Length) {
-                    moveParseableToStartOfReadBuffer = true;
-                    parseable = parseable[(endOffset + 1)..];
+                if(chunkLength <= window.Length) {
+                    moveWindowToStartOfBuffer = true;
+                    window = window[(endOffset + 1)..];
                     newBlockStartOffset = 0;
                 }
-            } while(parseable.Length > 0);
+            } while(window.Length > 0);
 
-            if(moveParseableToStartOfReadBuffer && parseable.Length > 0) {
-                parseable.CopyTo(readBuffer);
+            if(moveWindowToStartOfBuffer && window.Length > 0) {
+                window.CopyTo(buffer);
             }
 
-            return parseable.Length;
+            return window.Length;
         }
 
         /// <summary>
