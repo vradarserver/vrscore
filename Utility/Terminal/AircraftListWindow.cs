@@ -9,10 +9,11 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.Text;
+using WindowProcessor;
 
 namespace VirtualRadar.Utility.Terminal
 {
-    class AircraftListWindow
+    class AircraftListWindow : Window
     {
         class AircraftDetail
         {
@@ -29,16 +30,22 @@ namespace VirtualRadar.Utility.Terminal
             public string Longitude { get; set; }
         }
 
+        private IAircraftList _AircraftList;
+
         private (int Left,int Top) _CountTrackedPoint;
         private readonly Timer _Timer;
 
-        public IAircraftList AircraftList { get; set; }
-
         public long CountChunksSeen { get; set; }
 
-        public AircraftListWindow()
+        public AircraftListWindow(
+            IAircraftList aircraftList
+        )
         {
-            Console.Clear();
+            _AircraftList = aircraftList;
+
+            ClearScreen(ConsoleColor.Blue);
+            Console.ForegroundColor = ConsoleColor.White;
+
             Console.Write("Count tracked: ");
             _CountTrackedPoint = (Console.CursorLeft, Console.CursorTop);
             Console.WriteLine();
@@ -73,14 +80,7 @@ namespace VirtualRadar.Utility.Terminal
                     line = line[..widthRemaining];
                 }
                 Console.Write(line);
-                var padding = widthRemaining - line.Length;
-                if(padding > 0) {
-                    var builder = new StringBuilder();
-                    for(var idx = 0;idx < padding;++idx) {
-                        builder.Append(' ');
-                    }
-                    Console.Write(builder.ToString());
-                }
+                ClearToEndOfLine();
                 Console.WriteLine();
             }
         }
@@ -88,11 +88,11 @@ namespace VirtualRadar.Utility.Terminal
         private static bool _Refreshing;
         public void RefreshContent()
         {
-            if(!_Refreshing && AircraftList != null) {
+            if(!_Refreshing && _AircraftList != null && !_CancellationToken.IsCancellationRequested) {
                 _Refreshing = true;
                 try {
                     Console.CursorVisible = false;
-                    var set = AircraftList
+                    var set = _AircraftList
                         .ToArray()
                         .OrderBy(r => r.Icao24)
                         .Select(r => new AircraftDetail() {
@@ -134,6 +134,14 @@ namespace VirtualRadar.Utility.Terminal
                     _Refreshing = false;
                 }
             }
+        }
+
+        protected override void HandleKeyPress(ConsoleKeyInfo keyInfo)
+        {
+            if(keyInfo.Key == ConsoleKey.Q) {
+                Cancel();
+            }
+            base.HandleKeyPress(keyInfo);
         }
     }
 }

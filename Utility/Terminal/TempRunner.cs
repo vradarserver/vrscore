@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 using VirtualRadar.Message;
+using WindowProcessor;
 
 namespace VirtualRadar.Utility.Terminal
 {
@@ -55,7 +56,9 @@ namespace VirtualRadar.Utility.Terminal
                 var connector = new TcpConnector(tcpConnectorOptions);
                 using(var networkStream = await connector.OpenAsync(cancellationTokenSource.Token)) {
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
-                    aircraftListWindow.AircraftList = aircraftList;
+                    var windowEventLoopTask = aircraftListWindow.EventLoop(cancellationTokenSource);
+
+                    ControlC.SuppressCancelBehaviour = true;
 
                     // In real life we'd want to copy the chunk into a queue rather than process it on the fly...
                     chunker.ChunkRead += (_,chunk) => {
@@ -64,35 +67,16 @@ namespace VirtualRadar.Utility.Terminal
                         ++aircraftListWindow.CountChunksSeen;
                     };
 
-                    var keyWatcherTask = CancelIfAnyKeyPressed(cancellationTokenSource);
                     try {
                         await chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
                     } catch(OperationCanceledException) {
                         await Console.Out.WriteLineAsync("Cancelled");
                     } finally {
                         cancellationTokenSource.Cancel();
-                        await keyWatcherTask;
+                        await windowEventLoopTask;
                     }
                 }
             }
-        }
-
-        protected async Task CancelIfAnyKeyPressed(CancellationTokenSource cancellationTokenSource)
-        {
-            await Task.Run(() => {
-                while(!Console.KeyAvailable) {
-                    if(cancellationTokenSource.IsCancellationRequested) {
-                        break;
-                    }
-                    Thread.Sleep(1);
-                }
-                if(Console.KeyAvailable) {
-                    Console.ReadKey(intercept: true);
-                    if(!cancellationTokenSource.IsCancellationRequested) {
-                        cancellationTokenSource.Cancel();
-                    }
-                }
-            }, cancellationTokenSource.Token);
         }
     }
 }
