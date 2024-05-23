@@ -8,7 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Text;
 using WindowProcessor;
 
 namespace VirtualRadar.Utility.Terminal
@@ -31,9 +30,9 @@ namespace VirtualRadar.Utility.Terminal
         }
 
         private IAircraftList _AircraftList;
-        private Table<AircraftTableRow> _AircraftTable;
+        private volatile Table<AircraftTableRow> _AircraftTable;
         private Point _CountTrackedPoint;
-        private readonly Timer _Timer;
+        private Timer _Timer;
 
         public long CountChunksSeen { get; set; }
 
@@ -42,66 +41,66 @@ namespace VirtualRadar.Utility.Terminal
         )
         {
             _AircraftList = aircraftList;
+        }
 
+        protected override void Initialise()
+        {
             _AircraftTable = new([
-                new("ICAO24", 6),
-                new("Msgs", 4, Alignment.Right),
-                new("Callsign", 8),
-                new("Squawk", 6, Alignment.Centre),
-                new("Latitude", 11, Alignment.Right),
-                new("Longitude", 11, Alignment.Right),
-            ], row => [
-                row.Icao24,
-                row.Msgs,
-                row.Callsign,
-                row.Squawk,
-                row.Latitude,
-                row.Longitude
-            ], new(BorderStyle.Double), new(BorderStyle.Single));
+                    new("ICAO24", 6),
+                    new("Msgs", 4, Alignment.Right),
+                    new("Callsign", 8),
+                    new("Squawk", 6, Alignment.Centre),
+                    new("Latitude", 11, Alignment.Right),
+                    new("Longitude", 11, Alignment.Right),
+                ], row => [
+                    row.Icao24,
+                    row.Msgs,
+                    row.Callsign,
+                    row.Squawk,
+                    row.Latitude,
+                    row.Longitude
+                ],
+                new(BorderStyle.Double), new(BorderStyle.Single)
+            );
 
             Console.CursorVisible = false;
             ClearScreen(ConsoleColor.Blue);
             Console.ForegroundColor = ConsoleColor.White;
 
-            Console.Write("Count tracked: ");
+            Console.Write("Tracking ");
             _CountTrackedPoint = Point.Current;
             Console.WriteLine();
 
             _AircraftTable.DrawHeadingInto(this);
 
-            _Timer = new Timer(_ => RefreshContent(), null, 1000, 1000);
+            _Timer = new Timer(_ => Redraw(), null, 1, 1000);
         }
 
-        private static bool _Refreshing;
-        public void RefreshContent()
+        protected override void DoRedraw()
         {
-            if(!_Refreshing && _AircraftList != null && !_CancellationToken.IsCancellationRequested) {
-                _Refreshing = true;
-                try {
-                    var set = _AircraftList
-                        .ToArray()
-                        .OrderBy(r => r.Icao24)
-                        .Select(r => new AircraftTableRow() {
-                            Icao24 =    r.Icao24.ToString(),
-                            Msgs =      r.CountMessagesReceived.Value.ToString("N0"),
-                            Callsign =  r.Callsign ?? "",
-                            Squawk =    Format.Squawk.Base10AsBase8(r.Squawk),
-                            Latitude =  Format.Latitude.IsoRounded(r.Location.Value?.Latitude),
-                            Longitude = Format.Longitude.IsoRounded(r.Location.Value?.Longitude),
-                        })
-                        .ToArray();
+            if(!_CancellationToken.IsCancellationRequested) {
+                var set = _AircraftList
+                    ?.ToArray()
+                    .OrderBy(r => r.Icao24)
+                    .Select(r => new AircraftTableRow() {
+                        Icao24 =    r.Icao24.ToString(),
+                        Msgs =      r.CountMessagesReceived.Value.ToString("N0"),
+                        Callsign =  r.Callsign ?? "",
+                        Squawk =    Format.Squawk.Base10AsBase8(r.Squawk),
+                        Latitude =  Format.Latitude.IsoRounded(r.Location.Value?.Latitude),
+                        Longitude = Format.Longitude.IsoRounded(r.Location.Value?.Longitude),
+                    })
+                    .ToArray()
+                    ?? [];
 
-                    Position = _CountTrackedPoint;
-                    Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks");
-                    ClearToEndOfLine();
+                Position = _CountTrackedPoint;
+                Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks");
+                ClearToEndOfLine();
 
-                    _AircraftTable.DrawBody(set, Console.WindowHeight - 6);
+                _AircraftTable.DrawBody(set, Console.WindowHeight - 5);
 
-                    Position = new(0, Console.WindowHeight - 2);
-                    Console.WriteLine($"Press Q to quit");
-                } finally {
-                    _Refreshing = false;
-                }
+                Position = new(0, Console.WindowHeight - 1);
+                Write($"Press Q to quit");
             }
         }
 

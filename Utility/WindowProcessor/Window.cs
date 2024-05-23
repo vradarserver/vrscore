@@ -45,14 +45,26 @@ namespace WindowProcessor
             _InitialColors = FBColors.Current;
             _InitialPosition = Point.Current;
             Initialise();
-            Redraw();
         }
 
         protected virtual void Initialise()
         {
         }
 
-        protected virtual void Redraw()
+        protected bool _Redrawing;
+        protected void Redraw()
+        {
+            if(!_Redrawing) {
+                _Redrawing = true;
+                try {
+                    DoRedraw();
+                } finally {
+                    _Redrawing = false;
+                }
+            }
+        }
+
+        protected virtual void DoRedraw()
         {
         }
 

@@ -38,7 +38,24 @@ namespace WindowProcessor
 
         public Func<T, string[]> ExtractCells { get; }
 
-        public Table(Column[] columns, Func<T, string[]> extractCells, BorderOptions outer, BorderOptions inner)
+        public FBColors? OuterBorderColors { get; }
+
+        public FBColors? InnerBorderColors { get; }
+
+        public FBColors? HeadingColors { get; }
+
+        public FBColors? BodyColors { get; }
+
+        public Table(
+            Column[] columns,
+            Func<T, string[]> extractCells,
+            BorderOptions outer,
+            BorderOptions inner,
+            FBColors? outerColors = null,
+            FBColors? innerColors = null,
+            FBColors? headingColors = null,
+            FBColors? bodyColors = null
+        )
         {
             Columns = columns;
             ExtractCells = extractCells;
@@ -46,6 +63,11 @@ namespace WindowProcessor
             InnerBorder = inner;
             TopBottomJunction = new(outer.HorizontalStyle, inner.VerticalStyle);
             LeftRightJunction = new(inner.HorizontalStyle, outer.VerticalStyle);
+
+            OuterBorderColors = outerColors;
+            InnerBorderColors = innerColors;
+            HeadingColors = headingColors;
+            BodyColors = bodyColors;
         }
 
         public void DrawHeadingInto(Window window)
@@ -53,8 +75,10 @@ namespace WindowProcessor
             Window = window;
             HeadingTopLeft = Point.Current;
 
-            int linesOutput = 0;
+            var linesOutput = 0;
+            var resetColors = FBColors.Current;
             if(HasOuterHorizontal) {
+                (OuterBorderColors ?? resetColors).Apply();
                 Window.Write(OuterBorder.TopLeft);
                 for(var idx = 0;idx < Columns.Length;++idx) {
                     Window.Write(OuterBorder.Horizontal, Columns[idx].Width);
@@ -68,16 +92,20 @@ namespace WindowProcessor
 
             Window.Position = HeadingTopLeft.Down(linesOutput);
             if(HasOuterVertical) {
+                (OuterBorderColors ?? resetColors).Apply();
                 Window.Write(OuterBorder.Vertical);
             }
             for(var idx = 0;idx < Columns.Length;++idx) {
                 var column = Columns[idx];
+                (HeadingColors ?? resetColors).Apply();
                 Window.WriteField(column.Heading, column.Width, column.Alignment);
                 if(idx + 1 < Columns.Length) {
+                    (InnerBorderColors ?? resetColors).Apply();
                     Window.Write(HasColumnDividers ? InnerBorder.Vertical : ' ');
                 }
             }
             if(HasOuterVertical) {
+                (OuterBorderColors ?? resetColors).Apply();
                 Window.Write(OuterBorder.Vertical);
             }
             ++linesOutput;
@@ -85,8 +113,10 @@ namespace WindowProcessor
             Window.Position = HeadingTopLeft.Down(linesOutput);
             if(HasHeadingRuleoff) {
                 if(HasOuterVertical) {
+                    (OuterBorderColors ?? resetColors).Apply();
                     Window.Write(LeftRightJunction.LeftJunction);
                 }
+                (InnerBorderColors ?? resetColors).Apply();
                 for(var idx = 0;idx < Columns.Length;++idx) {
                     var column = Columns[idx];
                     Window.Write(InnerBorder.Horizontal, column.Width);
@@ -95,16 +125,20 @@ namespace WindowProcessor
                     }
                 }
                 if(HasOuterVertical) {
+                    (OuterBorderColors ?? resetColors).Apply();
                     Window.Write(LeftRightJunction.RightJunction);
                 }
             }
             ++linesOutput;
+            resetColors.Apply();
 
             BodyTopLeft = HeadingTopLeft.Down(linesOutput);
         }
 
         public void DrawBody(IEnumerable<T> rows, int countDisplayRows)
         {
+            var resetColors = FBColors.Current;
+
             using(var enumerator = rows.GetEnumerator()) {
                 var hasRow = true;
 
@@ -119,21 +153,26 @@ namespace WindowProcessor
 
                     Window.Position = BodyTopLeft.Down(displayRow);
                     if(HasOuterVertical) {
+                        (OuterBorderColors ?? resetColors).Apply();
                         Window.Write(OuterBorder.Vertical);
                     }
                     for(var idx = 0;idx < Columns.Length;++idx) {
                         var column = Columns[idx];
+                        (BodyColors ?? resetColors).Apply();
                         Window.WriteField(cells == null ? "" : cells[idx], column.Width, column.Alignment);
                         if(idx + 1 < Columns.Length) {
+                            (InnerBorderColors ?? resetColors).Apply();
                             Window.Write(HasColumnDividers ? InnerBorder.Vertical : ' ');
                         }
                     }
                     if(HasOuterVertical) {
+                        (OuterBorderColors ?? resetColors).Apply();
                         Window.Write(OuterBorder.Vertical);
                     }
                 }
 
                 if(HasOuterHorizontal) {
+                    (OuterBorderColors ?? resetColors).Apply();
                     Window.Position = BodyTopLeft.Down(countDisplayRows - 1);
                     Window.Write(OuterBorder.BottomLeft);
                     for(var idx = 0;idx < Columns.Length;++idx) {
@@ -145,6 +184,8 @@ namespace WindowProcessor
                     Window.Write(OuterBorder.BottomRight);
                 }
             }
+
+            resetColors.Apply();
         }
     }
 }

@@ -70,7 +70,7 @@ namespace VirtualRadar.Utility.Terminal
                     try {
                         await chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
                     } catch(OperationCanceledException) {
-                        await Console.Out.WriteLineAsync("Cancelled");
+                        await Console.Out.WriteLineAsync();
                     } finally {
                         cancellationTokenSource.Cancel();
                         await windowEventLoopTask;
