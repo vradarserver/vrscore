@@ -10,36 +10,48 @@
 
 namespace WindowProcessor
 {
-    public readonly struct Point
+    public class BorderOptions
     {
-        public static readonly Point Zero = new(0,0);
+        public BorderStyle HorizontalStyle { get; }
 
-        public int X { get; }
+        public bool HasHorizontalBorder => HorizontalStyle != BorderStyle.None;
 
-        public int Y { get; }
+        public BorderStyle VerticalStyle { get; }
 
-        public Point(int x, int y)
+        public bool HasVerticalBorder => VerticalStyle != BorderStyle.None;
+
+        public char TopLeft => Border.TopLeft(this);
+
+        public char TopJunction => Border.TopJunction(this);
+
+        public char TopRight => Border.TopRight(this);
+
+        public char LeftJunction => Border.LeftJunction(this);
+
+        public char Crossroads => Border.Crossroads(this);
+
+        public char RightJunction => Border.RightJunction(this);
+
+        public char BottomLeft => Border.BottomLeft(this);
+
+        public char BottomJunction => Border.BottomJunction(this);
+
+        public char BottomRight => Border.BottomRight(this);
+
+        public char Horizontal => Border.Horizontal(this);
+
+        public char Vertical => Border.Vertical(this);
+
+        public BorderOptions(BorderStyle bothStyles) : this(bothStyles, bothStyles)
         {
-            X = x;
-            Y = y;
         }
 
-        public static Point Current => new(Console.CursorLeft, Console.CursorTop);
-
-        public Point Apply()
+        public BorderOptions(BorderStyle horizontal, BorderStyle vertical)
         {
-            var result = Current;
-            Console.SetCursorPosition(X, Y);
-
-            return result;
+            HorizontalStyle = horizontal;
+            VerticalStyle = vertical;
         }
 
-        public Point Up(int count) => new(X, Y - count);
-
-        public Point Down(int count) => new(X, Y + count);
-
-        public Point Left(int count) => new(X - count, Y);
-
-        public Point Right(int count) => new(X + count, Y);
+        public override string ToString() => $"H:{HorizontalStyle} V:{VerticalStyle}";
     }
 }

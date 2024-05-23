@@ -26,11 +26,11 @@ namespace WindowProcessor
             Background = background;
         }
 
-        public static FBColors Current() => new(Console.ForegroundColor, Console.BackgroundColor);
+        public static FBColors Current => new(Console.ForegroundColor, Console.BackgroundColor);
 
         public FBColors Apply()
         {
-            var result = Current();
+            var result = Current;
 
             Console.ForegroundColor = Foreground;
             Console.BackgroundColor = Background;

@@ -15,7 +15,7 @@ namespace VirtualRadar.Utility.Terminal
 {
     class AircraftListWindow : Window
     {
-        class AircraftDetail
+        class AircraftTableRow
         {
             public string Icao24 { get; set; }
 
@@ -31,8 +31,8 @@ namespace VirtualRadar.Utility.Terminal
         }
 
         private IAircraftList _AircraftList;
-
-        private (int Left,int Top) _CountTrackedPoint;
+        private Table<AircraftTableRow> _AircraftTable;
+        private Point _CountTrackedPoint;
         private readonly Timer _Timer;
 
         public long CountChunksSeen { get; set; }
@@ -43,46 +43,33 @@ namespace VirtualRadar.Utility.Terminal
         {
             _AircraftList = aircraftList;
 
+            _AircraftTable = new([
+                new("ICAO24", 6),
+                new("Msgs", 4, Alignment.Right),
+                new("Callsign", 8),
+                new("Squawk", 6, Alignment.Centre),
+                new("Latitude", 11, Alignment.Right),
+                new("Longitude", 11, Alignment.Right),
+            ], row => [
+                row.Icao24,
+                row.Msgs,
+                row.Callsign,
+                row.Squawk,
+                row.Latitude,
+                row.Longitude
+            ], new(BorderStyle.Double), new(BorderStyle.Single));
+
+            Console.CursorVisible = false;
             ClearScreen(ConsoleColor.Blue);
             Console.ForegroundColor = ConsoleColor.White;
 
             Console.Write("Count tracked: ");
-            _CountTrackedPoint = (Console.CursorLeft, Console.CursorTop);
+            _CountTrackedPoint = Point.Current;
             Console.WriteLine();
 
-            WriteTableLine([
-                $"{"ICAO",-6}",
-                $"{"Msgs",6}",
-                $"{"Callsign",-8}",
-                $"{"Squawk",-6}",
-                $"{"Latitude",12}",
-                $"{"Longitude",12}",
-            ]);
+            _AircraftTable.DrawHeadingInto(this);
 
             _Timer = new Timer(_ => RefreshContent(), null, 1000, 1000);
-        }
-
-        private void WriteTableLine(string[] columns)
-        {
-            var buffer = new StringBuilder();
-            buffer.Append('│');
-            foreach(var column in columns) {
-                buffer.Append($"{column}│");
-            }
-            WriteAndClearToEOL(buffer.ToString());
-        }
-
-        private void WriteAndClearToEOL(string line)
-        {
-            if(Console.CursorTop < Console.WindowHeight - 2) {
-                var widthRemaining = Console.WindowWidth - Console.CursorLeft;
-                if(line.Length > widthRemaining) {
-                    line = line[..widthRemaining];
-                }
-                Console.Write(line);
-                ClearToEndOfLine();
-                Console.WriteLine();
-            }
         }
 
         private static bool _Refreshing;
@@ -91,11 +78,10 @@ namespace VirtualRadar.Utility.Terminal
             if(!_Refreshing && _AircraftList != null && !_CancellationToken.IsCancellationRequested) {
                 _Refreshing = true;
                 try {
-                    Console.CursorVisible = false;
                     var set = _AircraftList
                         .ToArray()
                         .OrderBy(r => r.Icao24)
-                        .Select(r => new AircraftDetail() {
+                        .Select(r => new AircraftTableRow() {
                             Icao24 =    r.Icao24.ToString(),
                             Msgs =      r.CountMessagesReceived.Value.ToString("N0"),
                             Callsign =  r.Callsign ?? "",
@@ -105,32 +91,15 @@ namespace VirtualRadar.Utility.Terminal
                         })
                         .ToArray();
 
-                    Console.SetCursorPosition(_CountTrackedPoint.Left, _CountTrackedPoint.Top);
-                    WriteAndClearToEOL($"{set.Length:N0} from {CountChunksSeen:N0} chunks");
-                    Console.WriteLine();
-                    foreach(var aircraft in set) {
-                        WriteTableLine([
-                            $"{aircraft.Icao24,-6}",
-                            $"{aircraft.Msgs,6}",
-                            $"{aircraft.Callsign,-8}",
-                            $" {aircraft.Squawk,-5}",
-                            $"{aircraft.Latitude,12}",
-                            $"{aircraft.Longitude,12}",
-                        ]);
-                    }
-                    for(var lineNumber = Console.CursorTop;lineNumber < Console.WindowHeight;++lineNumber) {
-                        WriteTableLine([
-                            $"{"",-6}",
-                            $"{"",6}",
-                            $"{"",-8}",
-                            $"{"",-6}",
-                            $"{"",12}",
-                            $"{"",12}",
-                        ]);
-                    }
+                    Position = _CountTrackedPoint;
+                    Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks");
+                    ClearToEndOfLine();
+
+                    _AircraftTable.DrawBody(set, Console.WindowHeight - 6);
+
+                    Position = new(0, Console.WindowHeight - 2);
                     Console.WriteLine($"Press Q to quit");
                 } finally {
-                    Console.CursorVisible = true;
                     _Refreshing = false;
                 }
             }
@@ -140,6 +109,8 @@ namespace VirtualRadar.Utility.Terminal
         {
             if(keyInfo.Key == ConsoleKey.Q) {
                 Cancel();
+                _InitialColors.Apply();
+                Console.CursorVisible = true;
             }
             base.HandleKeyPress(keyInfo);
         }

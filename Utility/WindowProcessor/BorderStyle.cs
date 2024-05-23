@@ -10,36 +10,10 @@
 
 namespace WindowProcessor
 {
-    public readonly struct Point
+    public enum BorderStyle
     {
-        public static readonly Point Zero = new(0,0);
-
-        public int X { get; }
-
-        public int Y { get; }
-
-        public Point(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public static Point Current => new(Console.CursorLeft, Console.CursorTop);
-
-        public Point Apply()
-        {
-            var result = Current;
-            Console.SetCursorPosition(X, Y);
-
-            return result;
-        }
-
-        public Point Up(int count) => new(X, Y - count);
-
-        public Point Down(int count) => new(X, Y + count);
-
-        public Point Left(int count) => new(X - count, Y);
-
-        public Point Right(int count) => new(X + count, Y);
+        None,
+        Single,
+        Double,
     }
 }

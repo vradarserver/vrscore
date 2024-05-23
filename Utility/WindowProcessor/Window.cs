@@ -18,10 +18,32 @@ namespace WindowProcessor
 
         protected Point _InitialPosition;
 
+        public int AvailableWidth => Console.WindowWidth - Console.CursorLeft;
+
+        public int LastUsableLine => Console.WindowHeight - 1;
+
+        public Point Position
+        {
+            get => Point.Current;
+            set => value.Apply();
+        }
+
+        public int Left
+        {
+            get => Console.CursorLeft;
+            set => Console.CursorLeft = value;
+        }
+
+        public int Top
+        {
+            get => Console.CursorTop;
+            set => Console.CursorTop = value;
+        }
+
         public Window()
         {
-            _InitialColors = FBColors.Current();
-            _InitialPosition = Point.Current();
+            _InitialColors = FBColors.Current;
+            _InitialPosition = Point.Current;
             Initialise();
             Redraw();
         }
@@ -42,13 +64,67 @@ namespace WindowProcessor
 
         public void ClearToEndOfLine(char padChar = ' ')
         {
-            var padding = Console.WindowWidth - Console.CursorLeft;
+            var padding = AvailableWidth;
             if(padding > 0) {
                 var buffer = new StringBuilder();
                 for(var idx = 0;idx < padding;++idx) {
                     buffer.Append(padChar);
                 }
                 Console.Write(buffer.ToString());
+            }
+        }
+
+        public void WriteField(string text, int availableWidth, Alignment alignment)
+        {
+            text ??= "";
+            if(text.Length > availableWidth) {
+                text = alignment == Alignment.Right
+                    ? text[^availableWidth..]
+                    : text[..availableWidth];
+            }
+
+            var padding = availableWidth - text.Length;
+
+            if(alignment != Alignment.Left) {
+                var pad = alignment == Alignment.Centre ? padding / 2 : padding;
+                Write(' ', pad);
+                padding -= pad;
+            }
+            Write(text);
+            if(alignment != Alignment.Right) {
+                Write(' ', padding);
+            }
+        }
+
+        public void Write(string text)
+        {
+            if(!String.IsNullOrEmpty(text)) {
+                var actualLength = Math.Min(text.Length, AvailableWidth);
+                Console.Write(text[..actualLength]);
+            }
+        }
+
+        public void Write(char ch)
+        {
+            if(AvailableWidth > 0) {
+                Console.Write(ch);
+            }
+        }
+
+        public void Write(string text, int count)
+        {
+            if(!String.IsNullOrEmpty(text)) {
+                for(var idx = 0;idx < count;++idx) {
+                    Write(text);
+                }
+            }
+        }
+
+        public void Write(char ch, int count)
+        {
+            count = Math.Min(count, AvailableWidth);
+            for(var idx = 0;idx < count;++idx) {
+                Console.Write(ch);
             }
         }
 
