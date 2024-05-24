@@ -25,10 +25,12 @@ If this is your first build then restore the NuGet packages:
 
 | Operating System | Command |
 | ---              | --- |
+| Linux            | `./build.sh restore` |
 | Windows          | `build restore` |
 
 Then to build everything:
 
 | Operating System | Command |
 | ---              | --- |
+| Linux            | `./build.sh solution` |
 | Windows          | `build solution` |

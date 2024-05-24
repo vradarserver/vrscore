@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build.bat = build.bat
 		build.sh = build.sh
 		clean.bat = clean.bat
+		clean.sh = clean.sh
 		CleanObject.ps1 = CleanObject.ps1
 		CommonRules.ruleset = CommonRules.ruleset
 		Directory.Build.props = Directory.Build.props
