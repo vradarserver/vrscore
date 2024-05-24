@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SHDIR="$(cd "$(dirname "$0")" && pwd)"
 RUNARGS=${@:2}
 
