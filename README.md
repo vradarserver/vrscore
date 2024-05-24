@@ -5,15 +5,13 @@ transmissions from aircraft transponders and plot their positions on a map.
 
 This is in the very early stages of development. The mature version of VRS is here:
 
-```
 https://github.com/vradarserver/vrs
-```
 
 ## Compilation
 
 You will need the .NET 8 SDK, available here:
 
-`https://dotnet.microsoft.com/en-us/download/dotnet/8.0`
+https://dotnet.microsoft.com/en-us/download/dotnet/8.0
 
 Confirm that you have a .NET Core 8 SDK installed:
 
