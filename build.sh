@@ -1,4 +1,5 @@
 #!/bin/bash
+
 SHDIR="$(cd "$(dirname "$0")" && pwd)"
 
 SHOW_USAGE() {
