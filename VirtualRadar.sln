@@ -11,12 +11,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		build.bat = build.bat
+		build.sh = build.sh
 		clean.bat = clean.bat
 		CleanObject.ps1 = CleanObject.ps1
 		CommonRules.ruleset = CommonRules.ruleset
 		Directory.Build.props = Directory.Build.props
 		README.md = README.md
 		run.bat = run.bat
+		run.sh = run.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{1EEBE7DE-CF82-4D01-982F-55D3881A0387}"
@@ -49,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Feed.BaseStati
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Terminal", "Utility\Terminal\Terminal.csproj", "{F6310BCF-A44E-4B4A-BCF4-C908A6246B30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowProcessor", "Utility\WindowProcessor\WindowProcessor.csproj", "{FE136C23-5C01-4691-B112-64982D7C8D73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowProcessor", "Utility\WindowProcessor\WindowProcessor.csproj", "{FE136C23-5C01-4691-B112-64982D7C8D73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
