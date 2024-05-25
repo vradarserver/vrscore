@@ -40,7 +40,7 @@ namespace VirtualRadar.Feed.BaseStation
         public int AllocateChunkSize { get; } = 80;
 
         /// <inheritdoc/>
-        public TransponderMessage ConvertTo(ReadOnlyMemory<byte> chunk)
+        public TransponderMessage[] ConvertTo(ReadOnlyMemory<byte> chunk)
         {
             return ConvertBaseStationToTransponder(_Parser.FromFeed(chunk));
         }
@@ -51,13 +51,13 @@ namespace VirtualRadar.Feed.BaseStation
             throw new NotImplementedException();
         }
 
-        private TransponderMessage ConvertBaseStationToTransponder(BaseStationMessage baseStationMessage)
+        private TransponderMessage[] ConvertBaseStationToTransponder(BaseStationMessage baseStationMessage)
         {
-            TransponderMessage result = null;
+            TransponderMessage[] result = null;
 
             if(baseStationMessage != null && baseStationMessage.IsAircraftMessage) {
                 if(Icao24.TryParse(baseStationMessage.Icao24, out var icao24, ignoreNonHexDigits: _Options.Icao24CanHaveNonHexDigits)) {
-                    result = new() {
+                    result = [ new() {
                         Icao24 =                    icao24,
                         AltitudeFeet =              baseStationMessage.Altitude,
                         AltitudeType =              AltitudeType.AirPressure,
@@ -74,11 +74,11 @@ namespace VirtualRadar.Feed.BaseStation
                         Squawk =                    baseStationMessage.Squawk,
                         VerticalRateFeetPerMinute = baseStationMessage.VerticalRate,
                         VerticalRateType =          AltitudeType.AirPressure
-                    };
+                    } ];
                 }
             }
 
-            return result;
+            return result ?? [];
         }
     }
 }

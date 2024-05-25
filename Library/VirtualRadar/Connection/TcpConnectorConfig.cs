@@ -17,7 +17,7 @@ namespace VirtualRadar.Connection
     /// <param name="CanWrite">
     /// True if the port is opened for writing.
     /// </param>
-    public record TcpConnectorOptions(
+    public record TcpConnectorConfig(
         IPAddress Address,
         int Port,
         bool CanRead,
@@ -27,7 +27,7 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Default ctor.
         /// </summary>
-        public TcpConnectorOptions() : this(IPAddress.None, 0, false, false)
+        public TcpConnectorConfig() : this(IPAddress.None, 0, false, false)
         {
         }
 

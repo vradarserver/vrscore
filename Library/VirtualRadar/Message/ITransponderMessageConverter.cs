@@ -40,7 +40,7 @@ namespace VirtualRadar.Message
         /// </summary>
         /// <param name="chunk">The chunk of memory holding the message to convert.</param>
         /// <returns>The transponder message extracted from the chunk or null if it cannot be extracted.</returns>
-        TransponderMessage ConvertTo(ReadOnlyMemory<byte> chunk);
+        TransponderMessage[] ConvertTo(ReadOnlyMemory<byte> chunk);
 
         /// <summary>
         /// Converts a <see cref="TransponderMessage"/> back into a native message.

@@ -48,7 +48,7 @@ namespace VirtualRadar.Utility.Terminal
                 if(!IPAddress.TryParse(_Options.Address, out var address)) {
                     OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
                 }
-                var tcpConnectorOptions = new TcpConnectorOptions() {
+                var tcpConnectorOptions = new TcpConnectorConfig() {
                     Address =   address,
                     Port =      _Options.Port,
                     CanRead =   true,
@@ -62,15 +62,16 @@ namespace VirtualRadar.Utility.Terminal
 
                     // In real life we'd want to copy the chunk into a queue rather than process it on the fly...
                     chunker.ChunkRead += (_,chunk) => {
-                        var message = translator.ConvertTo(chunk);
-                        aircraftList.CopyFromMessage(message);
                         ++aircraftListWindow.CountChunksSeen;
+                        foreach(var message in translator.ConvertTo(chunk)) {
+                            aircraftList.CopyFromMessage(message);
+                        }
                     };
 
                     try {
                         await chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
                     } catch(OperationCanceledException) {
-                        await Console.Out.WriteLineAsync();
+                        Console.Clear();
                     } finally {
                         cancellationTokenSource.Cancel();
                         await windowEventLoopTask;

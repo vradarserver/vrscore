@@ -24,7 +24,7 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Gets the options that the connector's using.
         /// </summary>
-        public TcpConnectorOptions Options { get; }
+        public TcpConnectorConfig Options { get; }
 
         /// <inheritdoc/>
         public string Description => $"tcp://{Options.Address}:{Options.Port}";
@@ -63,7 +63,7 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        public TcpConnector(TcpConnectorOptions options)
+        public TcpConnector(TcpConnectorConfig options)
         {
             if(!options.CanRead && !options.CanWrite) {
                 throw new InvalidOperationException("A connector cannot forbid both reading and writing");
