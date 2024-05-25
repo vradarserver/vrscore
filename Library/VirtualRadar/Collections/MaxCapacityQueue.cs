@@ -20,7 +20,7 @@ namespace VirtualRadar.Collections
         private object _SyncLock = new();
         private readonly LinkedList<T> _LinkedList = new();
 
-        private int _MaximumCapacity = 1000;
+        private int _MaximumCapacity = int.MaxValue;
         /// <summary>
         /// The maximum number of entries that the queue can accept.
         /// </summary>
