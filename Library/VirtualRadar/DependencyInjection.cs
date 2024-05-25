@@ -18,7 +18,9 @@ namespace VirtualRadar
         {
             services.AddLifetime<BootService,                       BootService>();
             services.AddLifetime<IAircraftList,                     AircraftList>();
-            services.AddLifetime<IFileSystem,                       FileSystem>();
+            services.AddLifetime<IFileSystem,                       Services.FileSystem>();
+            services.AddLifetime<IWebAddressManager,                Services.WebAddressManager>();
+            services.AddLifetime<WorkingFolder,                     WorkingFolder>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             return services;

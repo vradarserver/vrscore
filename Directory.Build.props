@@ -33,7 +33,7 @@
         <Using Include="System" />
         <Using Include="System.Collections.Generic" />
         <Using Include="System.Globalization" />
-        <Using Include="System.IO" />               <!-- <- note the existence of the FileSystem service for testable file system access -->
+        <!-- <Using Include="System.IO" /> this makes it too easy to accidentally use File. and Directory. instead of IFileSystem -->
         <Using Include="System.Linq" />
         <Using Include="System.Net.Http" />
         <Using Include="System.Text" />
