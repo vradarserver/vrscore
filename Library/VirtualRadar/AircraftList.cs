@@ -20,7 +20,7 @@ namespace VirtualRadar
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = new();
 
         /// <inheritdoc/>
-        public bool CopyFromMessage(TransponderMessage message)
+        public bool ApplyMessage(TransponderMessage message)
         {
             var changed = false;
 
@@ -32,7 +32,23 @@ namespace VirtualRadar
                         _AircraftByIcao24[message.Icao24] = aircraft;
                     }
 
-                    changed = aircraft.CopyFromMessage(message, StampCentral.GetStamp()) || changed;
+                    changed = aircraft.CopyFromMessage(message) || changed;
+                }
+            }
+
+            return changed;
+        }
+
+        /// <inheritdoc/>
+        public bool ApplyLookup(LookupOutcome lookup)
+        {
+            var changed = false;
+
+            if(lookup?.Success ?? false) {
+                lock(_SyncLock) {
+                    if(_AircraftByIcao24.TryGetValue(lookup.Icao24, out var aircraft)) {
+                        changed = aircraft.CopyFromLookup(lookup);
+                    }
                 }
             }
 

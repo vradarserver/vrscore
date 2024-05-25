@@ -8,16 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Copyright © 2024 onwards, Andrew Whewell
-// All rights reserved.
-//
-// Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-//    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-//    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-//    * Neither the name of the author nor the names of the program's contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 using VirtualRadar.Message;
 
 namespace VirtualRadar
@@ -25,13 +15,16 @@ namespace VirtualRadar
     /// <summary>
     /// Describes an aircraft.
     /// </summary>
+    /// <remarks>
+    /// Aircraft lists must not expose live aircraft objects. Clone the aircraft before returning it.
+    /// </remarks>
     public class Aircraft
     {
-        private object _SyncLock = new();
+        private readonly object _SyncLock = new();
 
         /// <summary>
-        /// A marker indicating when the aircraft was last changed. This value is
-        /// only allowed to increment.
+        /// A value indicating when the aircraft was last changed. See <see cref="PostOffice"/> for the rules
+        /// about how this value is established, and what you can infer from it.
         /// </summary>
         public long Stamp { get; private set; }
 
@@ -46,6 +39,10 @@ namespace VirtualRadar
         /// can never change.
         /// </summary>
         public Icao24 Icao24 { get; }
+
+        //
+        //                                  TRANSMITTED INFORMATION
+        //
 
         public DateTimeOffset FirstMessageReceived { get; private set; }
 
@@ -85,6 +82,29 @@ namespace VirtualRadar
 
         public StampedValue<bool?> IdentActive { get; } = new();
 
+        //
+        //                              LOOKUP OUTCOME(S)
+        //
+
+        public StampedValue<string> Registration { get; } = new();
+
+        public StampedValue<string> Country { get; } = new();
+
+        public StampedValue<string> ModelIcao { get; } = new();
+
+        public StampedValue<string> Manufacturer { get; } = new();
+
+        public StampedValue<string> Model { get; } = new();
+
+        public StampedValue<string> OperatorIcao { get; } = new();
+
+        public StampedValue<string> Operator { get; } = new();
+
+        public StampedValue<string> Serial { get; } = new();
+
+        public StampedValue<int?> YearFirstFlight { get; } = new();
+
+
         /// <summary>
         /// Creates a new object.
         /// </summary>
@@ -105,6 +125,8 @@ namespace VirtualRadar
                     Stamp =                 Stamp,
                     FirstMessageReceived =  FirstMessageReceived,
                 };
+
+                // TRANSMITTED VALUES
                 AirPressureInHg             .CopyTo(result.AirPressureInHg);
                 AltitudeFeet                .CopyTo(result.AltitudeFeet);
                 AltitudeType                .CopyTo(result.AltitudeType);
@@ -124,6 +146,17 @@ namespace VirtualRadar
                 VerticalRateType            .CopyTo(result.VerticalRateType);
                 VerticalRateFeetPerMinute   .CopyTo(result.VerticalRateFeetPerMinute);
 
+                // LOOKED-UP VALUES
+                Country                     .CopyTo(result.Country);
+                Manufacturer                .CopyTo(result.Manufacturer);
+                Model                       .CopyTo(result.Model);
+                ModelIcao                   .CopyTo(result.ModelIcao);
+                Operator                    .CopyTo(result.Operator);
+                OperatorIcao                .CopyTo(result.OperatorIcao);
+                Registration                .CopyTo(result.Registration);
+                Serial                      .CopyTo(result.Serial);
+                YearFirstFlight             .CopyTo(result.YearFirstFlight);
+
                 return result;
             }
         }
@@ -132,8 +165,7 @@ namespace VirtualRadar
         /// Sets aircraft values from the message passed across.
         /// </summary>
         /// <param name="message"></param>
-        /// <param name="stamp"></param>
-        public bool CopyFromMessage(TransponderMessage message, long stamp)
+        public bool CopyFromMessage(TransponderMessage message)
         {
             var changed = false;
 
@@ -141,7 +173,7 @@ namespace VirtualRadar
                 if(message.Icao24 != Icao24) {
                     throw new ArgumentException(
                         $"An attempt was made to assign values transmitted from ICAO {message.Icao24} " +
-                        $"to the aircraft object for {message.Icao24}"
+                        $"to the aircraft object for {Icao24}"
                     );
                 }
 
@@ -151,6 +183,9 @@ namespace VirtualRadar
                         FirstMessageReceived = DateTimeOffset.Now;
                     }
 
+                    var stamp = PostOffice.GetStamp();
+
+                    // TRANSMITTED VALUES
                     changed = AltitudeFeet              .SetIfNotDefault(   message.AltitudeFeet, stamp)                || changed;
                     changed = AltitudeType              .Set(               message.AltitudeType, stamp)                || changed;
                     changed = Callsign                  .SetIfNotDefault(   message.Callsign, stamp)                    || changed;
@@ -171,6 +206,47 @@ namespace VirtualRadar
                     if(changed) {
                         SetStamp(stamp);
                         CountMessagesReceived.Set(CountMessagesReceived + 1, stamp);
+                    }
+                }
+            }
+
+            return changed;
+        }
+
+        /// <summary>
+        /// Sets aircraft details from the successful lookup outcome passed across.
+        /// </summary>
+        /// <param name="lookup"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public bool CopyFromLookup(LookupOutcome lookup)
+        {
+            var changed = false;
+
+            if(lookup?.Success ?? false) {
+                if(lookup.Icao24 != Icao24) {
+                    throw new ArgumentException(
+                        $"An attempt was made to assign values looked up for ICAO {lookup.Icao24} " +
+                        $"to the aircraft object for {Icao24}"
+                    );
+                }
+
+                lock(_SyncLock) {
+                    var stamp = PostOffice.GetStamp();
+
+                    // LOOKED-UP VALUES
+                    changed = Country           .SetIfNotDefault(lookup.Country, stamp)         || changed;
+                    changed = Manufacturer      .SetIfNotDefault(lookup.Manufacturer, stamp)    || changed;
+                    changed = Model             .SetIfNotDefault(lookup.Model, stamp)           || changed;
+                    changed = ModelIcao         .SetIfNotDefault(lookup.ModelIcao, stamp)       || changed;
+                    changed = Operator          .SetIfNotDefault(lookup.Operator, stamp)        || changed;
+                    changed = OperatorIcao      .SetIfNotDefault(lookup.OperatorIcao, stamp)    || changed;
+                    changed = Registration      .SetIfNotDefault(lookup.Registration, stamp)    || changed;
+                    changed = Serial            .SetIfNotDefault(lookup.Serial, stamp)          || changed;
+                    changed = YearFirstFlight   .SetIfNotDefault(lookup.YearFirstFlight, stamp) || changed;
+
+                    if(changed) {
+                        SetStamp(stamp);
                     }
                 }
             }

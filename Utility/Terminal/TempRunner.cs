@@ -64,7 +64,7 @@ namespace VirtualRadar.Utility.Terminal
                     chunker.ChunkRead += (_,chunk) => {
                         ++aircraftListWindow.CountChunksSeen;
                         foreach(var message in translator.ConvertTo(chunk)) {
-                            aircraftList.CopyFromMessage(message);
+                            aircraftList.ApplyMessage(message);
                         }
                     };
 
