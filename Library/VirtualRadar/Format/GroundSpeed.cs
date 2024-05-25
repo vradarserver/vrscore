@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace VirtualRadar.Format
+﻿namespace VirtualRadar.Format
 {
     public static class GroundSpeed
     {

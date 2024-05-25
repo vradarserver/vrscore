@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace VirtualRadar.Extensions
+﻿namespace VirtualRadar.Extensions
 {
     public static class StringBuilderExtensions
     {
