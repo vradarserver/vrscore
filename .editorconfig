@@ -21,3 +21,6 @@ csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 csharp_prefer_simple_using_statement = false:suggestion
+
+# Stop banging on about primary constructors. When we can set naming convention rules for them *then* they can be used.
+dotnet_diagnostic.IDE0290.severity = none
