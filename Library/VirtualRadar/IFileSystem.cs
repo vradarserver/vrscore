@@ -11,7 +11,8 @@
 namespace VirtualRadar
 {
     /// <summary>
-    /// The interface for services that abstract away the file system.
+    /// The interface for services that abstract away the file system. Useful if the code that is using the
+    /// file system needs to be testable.
     /// </summary>
     [Lifetime(Lifetime.Singleton)]
     public interface IFileSystem
