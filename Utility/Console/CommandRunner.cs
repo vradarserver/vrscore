@@ -14,6 +14,10 @@ namespace VirtualRadar.Utility.CLIConsole
     {
         public abstract Task<bool> Run();
 
+        protected string Timestamp => $"[{DateTime.Now:HH:mm:ss.fff}]";
+
+        protected string Timindent => "              ";
+
         protected async Task WriteLine() => await Console.Out.WriteLineAsync();
 
         protected async Task WriteLine(string message) => await Console.Out.WriteLineAsync(message);

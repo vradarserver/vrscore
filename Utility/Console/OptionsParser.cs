@@ -31,9 +31,16 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "connecttcp":
                         result.Command = ParseCommand(result, Command.ConnectTcpListener);
                         break;
+                    case "-id":
+                        result.Id = UseNextArg(arg, nextArg, ref i);
+                        break;
                     case "list":
                         result.Command = ParseCommand(result, Command.List);
                         result.ListEntity = ParseEnum<ListEntity>(UseNextArg(arg, nextArg, ref i));
+                        break;
+                    case "lookup":
+                        result.Command = ParseCommand(result, Command.Lookup);
+                        result.LookupEntity = ParseEnum<LookupEntity>(UseNextArg(arg, nextArg, ref i));
                         break;
                     case "-port":
                         result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
@@ -124,12 +131,16 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  version             Show version information");
             Console.WriteLine($"  list <entity>       List stuff: {String.Join(", ", Enum.GetNames<ListEntity>())}");
             Console.WriteLine($"  connectTCP          Connect to TCP address");
+            Console.WriteLine($"  lookup <entity>     Look something up: {String.Join(", ", Enum.GetNames<LookupEntity>())}");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");
             Console.WriteLine($"  -port    <port>     Port to connect to [{defaults.Port}]");
             Console.WriteLine($"  -show               Show feed content [{defaults.Show}]");
             Console.WriteLine($"  -save    <filename> Save feed content [{defaults.SaveFileName}]");
+            Console.WriteLine();
+            Console.WriteLine($"LOOKUP OPTIONS");
+            Console.WriteLine($"  -id <string>        Hyphen-separated list of things to lookup [{defaults.Id}]");
 
             if (!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();

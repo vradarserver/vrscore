@@ -19,5 +19,7 @@ namespace VirtualRadar.Utility.CLIConsole
         List,
 
         ShowVersion,
+
+        Lookup,
     }
 }

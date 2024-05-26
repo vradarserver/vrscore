@@ -35,10 +35,3 @@ Then to build everything:
 | macOS            | `./build.sh solution` |
 | Windows          | `build solution` |
 
-## Third Party Libraries
-
-### JSON Serialisation and Deserialisation
-
-Newtonsoft (https://www.newtonsoft.com/json) is used for JSON serialisation. The
-built-in JSON serialiser forces you to use its own attributes rather than the
-serialiser agnostic `DataContract` and `DataMember`, it is off-limits.

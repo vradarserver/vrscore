@@ -13,8 +13,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace VirtualRadar
 {
     /// <summary>
-    /// Describes an ICAO Mode-S 24-bit aircraft identifier.
+    /// An ICAO24 code that uniquely identifies an aircraft at the time that it transmits a message
     /// </summary>
+    /// <remarks>
+    /// The International Civil Aviation Organization allocates blocks of 24-bit integers to civil aviation
+    /// registries around the world, and then those registries allocate individual codes to aircraft. Each
+    /// aircraft transmits its ICAO24 code in Mode-S and ADS-B messages. The code is not permanently assigned
+    /// to an aircraft, it will be reassigned in the fullness of time. However, generally speaking it will
+    /// keep its ICAO24 for the same period of time that it keeps its registration.
+    /// </remarks>
     public struct Icao24 : IComparable<Icao24>
     {
         private int _Value;
@@ -141,7 +148,8 @@ namespace VirtualRadar
                 var countDigits = 0;
                 for(var idx = 0;idx < hexText.Length;++idx) {
                     var digit = -1;
-                    // This looks long-winded but it goes like the clappers.
+                    // This looks long-winded but it goes like the clappers. It was much, much faster than
+                    // the hex parser in .NET Framework, don't know if that's still the case in .NET Core.
                     switch(hexText[idx]) {
                         case '0':   digit = 0; break;
                         case '1':   digit = 1; break;

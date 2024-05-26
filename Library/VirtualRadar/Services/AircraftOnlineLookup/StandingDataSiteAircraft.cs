@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2015 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,67 +8,66 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Message
+namespace VirtualRadar.Services.AircraftOnlineLookup
 {
     /// <summary>
-    /// Describes the outcome of a lookup of aircraft detail.
+    /// Holds the detail for an aircraft returned by the standing data site.
     /// </summary>
-    public class LookupOutcome
+    public class StandingDataSiteAircraft
     {
         /// <summary>
-        /// The aircraft that was looked up.
+        /// Gets or sets the aircraft's ICAO as a string.
         /// </summary>
-        public Icao24 Icao24 { get; set; }
+        public string Icao { get; set; }
 
         /// <summary>
-        /// True if information could be found for it.
+        /// Gets <see cref="Icao"/> as an <see cref="Icao24"/>.
         /// </summary>
-        public bool Success { get; set; }
+        public Icao24 Icao24 => Icao24.Parse(Icao);
 
         /// <summary>
-        /// How long ago was this information established - e.g. if this is from a cache
-        /// of online lookups then this would be the date and time that the lookup was
-        /// cached. This is a UTC timestamp.
+        /// Gets or sets the aircraft's registration.
         /// </summary>
-        public DateTime SourceAgeUtc { get; set; }
-
         public string Registration { get; set; }
 
+        /// <summary>
+        /// Gets or sets the aircraft's country of registration.
+        /// </summary>
         public string Country { get; set; }
 
-        public string ModelIcao { get; set; }
-
+        /// <summary>
+        /// Gets or sets the aircraft's manufacturer.
+        /// </summary>
         public string Manufacturer { get; set; }
 
+        /// <summary>
+        /// Gets or sets the aircraft model.
+        /// </summary>
         public string Model { get; set; }
 
-        public string OperatorIcao { get; set; }
+        /// <summary>
+        /// Gets or sets the aircraft model's ICAO 8643 code.
+        /// </summary>
+        public string ModelIcao { get; set; }
 
+        /// <summary>
+        /// Gets or sets the aircraft's operator.
+        /// </summary>
         public string Operator { get; set; }
 
+        /// <summary>
+        /// Gets or sets the aircraft's operator ICAO.
+        /// </summary>
+        public string OperatorIcao { get; set; }
+
+        /// <summary>
+        /// Gets or sets the aircraft's serial number.
+        /// </summary>
         public string Serial { get; set; }
 
-        public int? YearFirstFlight { get; set; }
-
         /// <summary>
-        /// Creates a new object.
+        /// Gets or sets the aircraft's year of manufacture.
         /// </summary>
-        public LookupOutcome() : this(Icao24.Invalid, false)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="icao24"></param>
-        /// <param name="success"></param>
-        public LookupOutcome(Icao24 icao24, bool success)
-        {
-            Icao24 = icao24;
-            Success = success;
-        }
-
-        /// <inheritdoc/>
-        public override string ToString() => Icao24.ToString();
+        public int? YearBuilt { get; set; }
     }
 }
