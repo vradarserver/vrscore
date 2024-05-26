@@ -22,14 +22,21 @@ namespace VirtualRadar.Utility.Terminal
     /// </summary>
     class TempRunner
     {
-        Options                   _Options;
-        IFeedFormatFactoryService _FeedFormatFactory;
-        IServiceProvider          _ServiceProvider;
+        Options                         _Options;
+        IFeedFormatFactoryService       _FeedFormatFactory;
+        IServiceProvider                _ServiceProvider;
+        IAircraftOnlineLookupService    _AircraftLookupService;
 
-        public TempRunner(Options options, IFeedFormatFactoryService feedFormatFactory, IServiceProvider serviceProvider)
+        public TempRunner(
+            Options options,
+            IFeedFormatFactoryService feedFormatFactory,
+            IAircraftOnlineLookupService aircraftLookupService,
+            IServiceProvider serviceProvider
+        )
         {
             _Options = options;
             _FeedFormatFactory = feedFormatFactory;
+            _AircraftLookupService = aircraftLookupService;
             _ServiceProvider = serviceProvider;
         }
 
@@ -43,6 +50,10 @@ namespace VirtualRadar.Utility.Terminal
                 var translator = (ITransponderMessageConverter)scope.ServiceProvider.GetRequiredService(feedFormatConfig.GetTransponderMessageConverterServiceType());
                 var aircraftList = scope.ServiceProvider.GetRequiredService<IAircraftList>();
                 var cancellationTokenSource = new CancellationTokenSource();
+
+                _AircraftLookupService.LookupCompleted += (_,batchOutcome) => {
+                    aircraftList.ApplyLookup(batchOutcome);
+                };
 
                 Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
                 if(!IPAddress.TryParse(_Options.Address, out var address)) {
@@ -64,7 +75,10 @@ namespace VirtualRadar.Utility.Terminal
                     chunker.ChunkRead += (_,chunk) => {
                         ++aircraftListWindow.CountChunksSeen;
                         foreach(var message in translator.ConvertTo(chunk)) {
-                            aircraftList.ApplyMessage(message);
+                            var applyOutcome = aircraftList.ApplyMessage(message);
+                            if(applyOutcome.AddedAircraft) {
+                                _AircraftLookupService.Lookup(message.Icao24);
+                            }
                         }
                     };
 

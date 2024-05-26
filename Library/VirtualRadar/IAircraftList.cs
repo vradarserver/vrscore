@@ -24,8 +24,10 @@ namespace VirtualRadar
         /// aircraft in the list. Adds the aircraft if it does not already exist.
         /// </summary>
         /// <param name="message"></param>
-        /// <remarks>True if the aircraft changed state as a result of the message.</remarks>
-        bool ApplyMessage(TransponderMessage message);
+        /// <remarks>A tuple where the first item indicates whether the message created a
+        /// new aircraft record for the list and the second item indicates whether the message
+        /// changed the aircraft record. A new aircraft will always be considered changed.</remarks>
+        (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message);
 
         /// <summary>
         /// Applies the outcome of a successful lookup to the state held for the aircraft in
@@ -33,8 +35,16 @@ namespace VirtualRadar
         /// in the list.
         /// </summary>
         /// <param name="lookup"></param>
-        /// <returns></returns>
+        /// <returns>True if the lookup changed an aircraft record.</returns>
         bool ApplyLookup(LookupOutcome lookup);
+
+        /// <summary>
+        /// Applies the outcome of a successful lookup to the state held for the aircraft in
+        /// the list. Ignores failed outcomes and outcomes for aircraft not in the list.
+        /// </summary>
+        /// <param name="batchedOutcome"></param>
+        /// <returns>True if at least one aircraft was changed.</returns>
+        bool ApplyLookup(BatchedLookupOutcome batchedOutcome);
 
         /// <summary>
         /// Returns a copy of the contents of the aircraft list.

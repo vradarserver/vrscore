@@ -16,10 +16,12 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     class LookupService : IAircraftOnlineLookupService
     {
         private readonly object _SyncLock = new();
+        private readonly IAircraftOnlineLookupProvider _Provider;
+        private readonly Dictionary<Icao24, DateTime> _LookupMap = new();       // <-- value is the time at UTC when the lookup was added
+        private readonly System.Threading.Timer _Timer;
 
-        private readonly HashSet<Icao24> _AwaitingLookup = new();
-
-        private DateTimeOffset _WaitStartedUtc;
+        private bool _ProviderInitialised;
+        private int _TimerPauseSeconds = 1;
 
         /// <inheritdoc/>
         public event EventHandler<BatchedLookupOutcome> LookupCompleted;
@@ -33,13 +35,22 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             LookupCompleted?.Invoke(this, batchedOutcome);
         }
 
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="provider"></param>
+        public LookupService(IAircraftOnlineLookupProvider provider)
+        {
+            _Provider = provider;
+            _Timer = new(Timer_Ticked, null, dueTime: 100, period: Timeout.Infinite);
+        }
+
         /// <inheritdoc/>
         public void Lookup(Icao24 icao24)
         {
             lock(_SyncLock) {
-                _AwaitingLookup.Add(icao24);
-                if(_WaitStartedUtc == default) {
-                    _WaitStartedUtc = DateTime.UtcNow;
+                if(!_LookupMap.ContainsKey(icao24)) {
+                    _LookupMap.Add(icao24, DateTime.UtcNow);
                 }
             }
         }
@@ -83,6 +94,62 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public bool LookupNeedsRefresh(LookupOutcome lookupOutcome)
         {
             throw new NotImplementedException();
+        }
+
+        private async void Timer_Ticked(object state)
+        {
+            var backOff = false;
+
+            if(!_ProviderInitialised) {
+                try {
+                    await _Provider.InitialiseSupplierDetails(CancellationToken.None);
+                    _ProviderInitialised = true;
+                } catch {
+                    // We don't log exceptions from the provider, they would spam the log if the user is offline.
+                    backOff = true;
+                }
+            }
+
+            if(_ProviderInitialised) {
+                Icao24[] icao24s;
+                lock(_SyncLock) {
+                    icao24s = _LookupMap.Keys.ToArray();
+                }
+
+                if(icao24s.Length > 0) {
+                    BatchedLookupOutcome batchOutcome = null;
+                    try {
+                        batchOutcome = await _Provider.LookupIcaos(icao24s, CancellationToken.None);
+                    } catch {
+                        // We don't log exceptions from the provider, they would spam the log if the user goes offline
+                        batchOutcome = null;
+                        backOff = true;
+                    }
+
+                    if(batchOutcome != null) {
+                        lock(_SyncLock) {
+                            foreach(var outcome in batchOutcome.AllOutcomes) {
+                                _LookupMap.Remove(outcome.Icao24);
+                            }
+                        }
+
+                        try {
+                            OnLookupCompleted(batchOutcome);
+                        } catch {
+                            // TODO: These exceptions do actually need to be logged...
+                        }
+                    }
+                }
+            }
+
+            _TimerPauseSeconds = !backOff
+                ? _Provider.MinSecondsBetweenRequests
+                : Math.Min(
+                      _Provider.MaxSecondsAfterFailedRequest,
+                      _TimerPauseSeconds + Math.Max(1, _Provider.MinSecondsBetweenRequests)
+                  );
+
+            _Timer.Change(dueTime: _TimerPauseSeconds * 1000, period: Timeout.Infinite);
         }
     }
 }

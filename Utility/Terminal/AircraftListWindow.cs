@@ -27,6 +27,10 @@ namespace VirtualRadar.Utility.Terminal
             public string Latitude { get; set; }
 
             public string Longitude { get; set; }
+
+            public string Registration { get; set; }
+
+            public string ModelIcao { get; set; }
         }
 
         private IAircraftList _AircraftList;
@@ -52,13 +56,17 @@ namespace VirtualRadar.Utility.Terminal
                     new("Squawk", 6, Alignment.Centre),
                     new("Latitude", 11, Alignment.Right),
                     new("Longitude", 11, Alignment.Right),
+                    new("Reg", 10),
+                    new("Model", 8),
                 ], row => [
                     row.Icao24,
                     row.Msgs,
                     row.Callsign,
                     row.Squawk,
                     row.Latitude,
-                    row.Longitude
+                    row.Longitude,
+                    row.Registration,
+                    row.ModelIcao
                 ],
                 new(BorderStyle.Double), new(BorderStyle.Single)
             );
@@ -83,12 +91,14 @@ namespace VirtualRadar.Utility.Terminal
                     ?.ToArray()
                     .OrderBy(r => r.Icao24)
                     .Select(r => new AircraftTableRow() {
-                        Icao24 =    r.Icao24.ToString(),
-                        Msgs =      r.CountMessagesReceived.Value.ToString("N0"),
-                        Callsign =  r.Callsign ?? "",
-                        Squawk =    Format.Squawk.Base10AsBase8(r.Squawk),
-                        Latitude =  Format.Latitude.IsoRounded(r.Location.Value?.Latitude),
-                        Longitude = Format.Longitude.IsoRounded(r.Location.Value?.Longitude),
+                        Icao24 =        r.Icao24.ToString(),
+                        Msgs =          r.CountMessagesReceived.Value.ToString("N0"),
+                        Callsign =      r.Callsign ?? "",
+                        Squawk =        Format.Squawk.Base10AsBase8(r.Squawk),
+                        Latitude =      Format.Latitude.IsoRounded(r.Location.Value?.Latitude),
+                        Longitude =     Format.Longitude.IsoRounded(r.Location.Value?.Longitude),
+                        Registration =  r.Registration ?? "",
+                        ModelIcao =     r.ModelIcao ?? "",
                     })
                     .ToArray()
                     ?? [];
