@@ -1,4 +1,4 @@
-// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2024 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,8 +18,6 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private readonly object _SyncLock = new();
         private readonly IFileSystem _FileSystem;
         private readonly WorkingFolder _WorkingFolder;
-
-        private LiteDatabase _CacheDatabase;
 
         public string FileName => _FileSystem.Combine(
             _WorkingFolder.Folder,
@@ -57,15 +55,17 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         {
             var result = new BatchedLookupOutcome();
 
-            var collection = GetCacheRecordCollection();
-            foreach(var icao24 in icaos) {
-                var cachedRecord = collection.Query()
-                    .Where(cached => cached.Icao24 == icao24)
-                    .FirstOrDefault();
-                if(cachedRecord != null) {
-                    result.Found.Add(cachedRecord.ToLookupOutcome());
-                } else {
-                    result.Missing.Add(new LookupOutcome(icao24, success: false));
+            using(var database = GetDatabase()) {
+                var collection = GetCacheRecordCollection(database);
+                foreach(var icao24 in icaos) {
+                    var cachedRecord = collection.Query()
+                        .Where(cached => cached.Icao24 == icao24)
+                        .FirstOrDefault();
+                    if(cachedRecord != null) {
+                        result.Found.Add(cachedRecord.ToLookupOutcome());
+                    } else {
+                        result.Missing.Add(new LookupOutcome(icao24, success: false));
+                    }
                 }
             }
 
@@ -76,27 +76,33 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public Task Write(BatchedLookupOutcome outcome, bool hasBeenSavedByAnotherCache)
         {
             if(!hasBeenSavedByAnotherCache) {
-                var collection = GetCacheRecordCollection();
-
-                foreach(var lookup in outcome.AllOutcomes) {
-                    collection.Upsert(new CacheRecord(lookup));
+                using(var database = GetDatabase()) {
+                    var collection = GetCacheRecordCollection(database);
+                    foreach(var lookup in outcome.AllOutcomes) {
+                        collection.Upsert(new CacheRecord(lookup));
+                    }
                 }
             }
 
             return Task.CompletedTask;
         }
 
-        private ILiteCollection<CacheRecord> GetCacheRecordCollection()
+        private LiteDatabase GetDatabase()
+        {
+            return new LiteDatabase($"Filename={FileName}; Connection=shared");
+        }
+
+        private ILiteCollection<CacheRecord> GetCacheRecordCollection(LiteDatabase database)
         {
             lock(_SyncLock) {
-                if(_CacheDatabase == null) {
-                    _CacheDatabase = new(FileName);
-                    _CacheDatabase.Pragma("USER_VERSION", 1);
-                    _CacheDatabase.Pragma("UTC_DATE",     true);
+                if(database == null) {
+                    database = new(FileName);
+                    database.Pragma("USER_VERSION", 1);
+                    database.Pragma("UTC_DATE",     true);
                 }
             }
 
-            return _CacheDatabase.GetCollection<CacheRecord>("aclookup");
+            return database.GetCollection<CacheRecord>("aclookup");
         }
     }
 }
