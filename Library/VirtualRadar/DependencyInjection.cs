@@ -18,6 +18,7 @@ namespace VirtualRadar
         {
             services.AddLifetime<BootService,                       BootService>();
             services.AddLifetime<IAircraftList,                     AircraftList>();
+            services.AddLifetime<IAircraftOnlineLookupCache,        Services.AircraftOnlineLookup.Cache>();
             services.AddLifetime<IAircraftOnlineLookupProvider,     Services.AircraftOnlineLookup.LookupProvider>();
             services.AddLifetime<IAircraftOnlineLookupService,      Services.AircraftOnlineLookup.LookupService>();
             services.AddLifetime<IFileSystem,                       Services.FileSystem>();

@@ -13,7 +13,11 @@ using VirtualRadar.Configuration;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_ShowVersion(HeaderService _Header, IOptions<ApplicationSettings> _ApplicationSettings) : CommandRunner
+    class CommandRunner_ShowVersion(
+        HeaderService _Header,
+        IOptions<ApplicationSettings> _ApplicationSettings,
+        WorkingFolder _WorkingFolder
+    ) : CommandRunner
     {
         public override async Task<bool> Run()
         {
@@ -27,7 +31,8 @@ namespace VirtualRadar.Utility.CLIConsole
                 ("Beta Revision",       application.BetaRevision.ToString()),
                 ("Version Description", application.VersionDescription),
                 ("Build Date",          application.BuildDate.LocalDateTime.ToString("dd-MMM-yyyy HH:mm:ss")),
-                ("Culture Info",        application.CultureInfo.Name)
+                ("Culture Info",        application.CultureInfo.Name),
+                ("Working Folder",      _WorkingFolder.Folder)
             );
 
             return true;

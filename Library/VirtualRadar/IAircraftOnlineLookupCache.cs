@@ -52,7 +52,7 @@ namespace VirtualRadar
         /// <summary>
         /// True if the cache can write lookup values.
         /// </summary>
-        bool CanCreate { get; }
+        bool CanWrite { get; }
 
         /// <summary>
         /// Reads cached data for the ICAOs passed across. Note that if a cache with a higher priority exists

@@ -18,6 +18,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private readonly object _SyncLock = new();
         private readonly IAircraftOnlineLookupProvider _Provider;
         private readonly Dictionary<Icao24, DateTime> _LookupMap = new();       // <-- value is the time at UTC when the lookup was added
+        private readonly IAircraftOnlineLookupCache[] _Caches;
         private readonly System.Threading.Timer _Timer;
 
         private bool _ProviderInitialised;
@@ -39,9 +40,14 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         /// Creates a new object.
         /// </summary>
         /// <param name="provider"></param>
-        public LookupService(IAircraftOnlineLookupProvider provider)
+        /// <param name="caches"></param>
+        public LookupService(
+            IAircraftOnlineLookupProvider provider,
+            IEnumerable<IAircraftOnlineLookupCache> caches
+        )
         {
             _Provider = provider;
+            _Caches = caches.ToArray();
             _Timer = new(Timer_Ticked, null, dueTime: 100, period: Timeout.Infinite);
         }
 
@@ -100,15 +106,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         {
             var backOff = false;
 
-            if(!_ProviderInitialised) {
-                try {
-                    await _Provider.InitialiseSupplierDetails(CancellationToken.None);
-                    _ProviderInitialised = true;
-                } catch {
-                    // We don't log exceptions from the provider, they would spam the log if the user is offline.
-                    backOff = true;
-                }
-            }
+            backOff = await InitialiseProvider(backOff);
 
             if(_ProviderInitialised) {
                 Icao24[] icao24s;
@@ -117,28 +115,16 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                 }
 
                 if(icao24s.Length > 0) {
-                    BatchedLookupOutcome batchOutcome = null;
-                    try {
-                        batchOutcome = await _Provider.LookupIcaos(icao24s, CancellationToken.None);
-                    } catch {
-                        // We don't log exceptions from the provider, they would spam the log if the user goes offline
-                        batchOutcome = null;
-                        backOff = true;
-                    }
+                    var batchOutcome = await ReadFromCache(icao24s);
+                    backOff = await LookupMissingIcaosOnline(batchOutcome, backOff);
 
-                    if(batchOutcome != null) {
-                        lock(_SyncLock) {
-                            foreach(var outcome in batchOutcome.AllOutcomes) {
-                                _LookupMap.Remove(outcome.Icao24);
-                            }
-                        }
-
-                        try {
-                            OnLookupCompleted(batchOutcome);
-                        } catch {
-                            // TODO: These exceptions do actually need to be logged...
+                    lock(_SyncLock) {
+                        foreach(var outcome in batchOutcome.AllOutcomes) {
+                            _LookupMap.Remove(outcome.Icao24);
                         }
                     }
+
+                    OnLookupCompleted(batchOutcome);
                 }
             }
 
@@ -150,6 +136,79 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                   );
 
             _Timer.Change(dueTime: _TimerPauseSeconds * 1000, period: Timeout.Infinite);
+        }
+
+        private async Task<bool> InitialiseProvider(bool backOff)
+        {
+            if(!_ProviderInitialised) {
+                try {
+                    await _Provider.InitialiseSupplierDetails(CancellationToken.None);
+                    _ProviderInitialised = true;
+                } catch {
+                    // We don't log exceptions from the provider, they would spam the log if the user is offline.
+                    backOff = true;
+                }
+            }
+
+            return backOff;
+        }
+
+        private async Task<bool> LookupMissingIcaosOnline(BatchedLookupOutcome batchedOutcome, bool backOff)
+        {
+            if(batchedOutcome.Missing.Count > 0) {
+                BatchedLookupOutcome lookupOutcome;
+                try {
+                    lookupOutcome = await _Provider.LookupIcaos(batchedOutcome.Missing.Select(r => r.Icao24), CancellationToken.None);
+                } catch {
+                    // We don't log exceptions from the provider, they would spam the log if the user goes offline
+                    lookupOutcome = null;
+                    backOff = true;
+                }
+
+                if(lookupOutcome != null) {
+                    await WriteToCache(lookupOutcome);
+
+                    batchedOutcome.Found.AddRange(lookupOutcome.Found);
+                    batchedOutcome.Missing.Clear();
+                    batchedOutcome.Missing.AddRange(lookupOutcome.Missing);
+                }
+            }
+
+            return backOff;
+        }
+
+        private async Task<BatchedLookupOutcome> ReadFromCache(Icao24[] icao24s)
+        {
+            var result = new BatchedLookupOutcome();
+            var unknownSet = new HashSet<Icao24>(icao24s);
+
+            foreach(var cache in _Caches.Where(r => r.CanRead).OrderByDescending(r => r.ReadPriority)) {
+                var cachedOutcome = await cache.Read(unknownSet);
+                foreach(var found in cachedOutcome.Found) {
+                    result.Found.Add(found);
+                    unknownSet.Remove(found.Icao24);
+                }
+                if(unknownSet.Count == 0) {
+                    break;
+                }
+            }
+
+            foreach(var unknownIcao in unknownSet) {
+                result.Missing.Add(new LookupOutcome(unknownIcao, success: false));
+            }
+
+            return result;
+        }
+
+        private async Task WriteToCache(BatchedLookupOutcome lookupOutcome)
+        {
+            if(lookupOutcome.Found.Count > 0 || lookupOutcome.Missing.Count > 0) {
+                var alreadySaved = false;
+                foreach(var cache in _Caches.Where(r => r.CanWrite).OrderByDescending(r => r.WritePriority)) {
+                    await cache.Write(lookupOutcome, alreadySaved);
+                    alreadySaved = true;
+                }
+            }
         }
     }
 }
