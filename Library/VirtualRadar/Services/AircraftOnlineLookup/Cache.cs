@@ -31,10 +31,10 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public bool Enabled => true;
 
         /// <inheritdoc/>
-        public int ReadPriority => int.MaxValue;
+        public int ReadPriority => int.MinValue;
 
         /// <inheritdoc/>
-        public int WritePriority => int.MaxValue;
+        public int WritePriority => int.MinValue;
 
         /// <inheritdoc/>
         public bool CanRead => true;
