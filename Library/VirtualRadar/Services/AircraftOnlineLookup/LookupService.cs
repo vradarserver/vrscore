@@ -118,7 +118,10 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
 
             Icao24[] icao24s;
             lock(_SyncLock) {
-                icao24s = _LookupMap.Keys.ToArray();
+                icao24s = _LookupMap
+                    .Keys
+                    .Take(_Provider.MaxBatchSize)
+                    .ToArray();
             }
 
             if(icao24s.Length > 0) {
