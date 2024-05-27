@@ -44,7 +44,7 @@ namespace VirtualRadar
         //                                  TRANSMITTED INFORMATION
         //
 
-        public DateTimeOffset FirstMessageReceived { get; private set; }
+        public DateTime FirstMessageReceivedUtc { get; private set; }
 
         public StampedTimedValue<long> CountMessagesReceived { get; } = new();
 
@@ -86,6 +86,8 @@ namespace VirtualRadar
         //                              LOOKUP OUTCOME(S)
         //
 
+        public StampedValue<DateTime> LookupAgeUtc { get; } = new();
+
         public StampedValue<string> Registration { get; } = new();
 
         public StampedValue<string> Country { get; } = new();
@@ -122,8 +124,8 @@ namespace VirtualRadar
         {
             lock(_SyncLock) {
                 var result = new Aircraft(Icao24) {
-                    Stamp =                 Stamp,
-                    FirstMessageReceived =  FirstMessageReceived,
+                    Stamp =                   Stamp,
+                    FirstMessageReceivedUtc = FirstMessageReceivedUtc,
                 };
 
                 // TRANSMITTED VALUES
@@ -148,6 +150,7 @@ namespace VirtualRadar
 
                 // LOOKED-UP VALUES
                 Country                     .CopyTo(result.Country);
+                LookupAgeUtc                .CopyTo(result.LookupAgeUtc);
                 Manufacturer                .CopyTo(result.Manufacturer);
                 Model                       .CopyTo(result.Model);
                 ModelIcao                   .CopyTo(result.ModelIcao);
@@ -178,9 +181,9 @@ namespace VirtualRadar
                 }
 
                 lock(_SyncLock) {
-                    if(FirstMessageReceived == default) {
+                    if(FirstMessageReceivedUtc == default) {
                         changed = true;
-                        FirstMessageReceived = DateTimeOffset.Now;
+                        FirstMessageReceivedUtc = DateTime.UtcNow;          // <-- as of .NET 8 this is still the fastest UTC function, faster that DateTimeOffset.UtcNow.
                     }
 
                     var stamp = PostOffice.GetStamp();
@@ -236,6 +239,7 @@ namespace VirtualRadar
 
                     // LOOKED-UP VALUES
                     changed = Country           .SetIfNotDefault(lookup.Country, stamp)         || changed;
+                    changed = LookupAgeUtc      .SetIfNotDefault(lookup.SourceAgeUtc, stamp)    || changed;
                     changed = Manufacturer      .SetIfNotDefault(lookup.Manufacturer, stamp)    || changed;
                     changed = Model             .SetIfNotDefault(lookup.Model, stamp)           || changed;
                     changed = ModelIcao         .SetIfNotDefault(lookup.ModelIcao, stamp)       || changed;

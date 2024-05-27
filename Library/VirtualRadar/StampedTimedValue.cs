@@ -11,22 +11,22 @@
         /// depending on whether the user or the O/S changes the system's real-time
         /// clock.
         /// </summary>
-        public DateTimeOffset LastChanged { get; private set; }
+        public DateTime LastChangedUtc { get; private set; }
 
         protected override void SetChangedValue(T newValue, long stamp)
         {
             base.SetChangedValue(newValue, stamp);
-            LastChanged = DateTimeOffset.Now;
+            LastChangedUtc = DateTime.UtcNow;
         }
 
-        public override string ToString() => $"{base.ToString()} @{LastChanged}";
+        public override string ToString() => $"{base.ToString()} @{LastChangedUtc} UTC";
 
         public override StampedValue<T> ShallowCopy() => CopyTo(new StampedTimedValue<T>());
 
         public override StampedValue<T> CopyTo(StampedValue<T> obj)
         {
             var other = (StampedTimedValue<T>)obj;
-            other.LastChanged = LastChanged;
+            other.LastChangedUtc = LastChangedUtc;
             return base.CopyTo(obj);
         }
     }

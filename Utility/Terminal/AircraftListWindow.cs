@@ -31,6 +31,8 @@ namespace VirtualRadar.Utility.Terminal
             public string Registration { get; set; }
 
             public string ModelIcao { get; set; }
+
+            public string LookupAge { get; set; }
         }
 
         private IAircraftList _AircraftList;
@@ -58,6 +60,7 @@ namespace VirtualRadar.Utility.Terminal
                     new("Longitude", 11, Alignment.Right),
                     new("Reg", 10),
                     new("Model", 8),
+                    new("Looked Up", 12),
                 ], row => [
                     row.Icao24,
                     row.Msgs,
@@ -66,7 +69,8 @@ namespace VirtualRadar.Utility.Terminal
                     row.Latitude,
                     row.Longitude,
                     row.Registration,
-                    row.ModelIcao
+                    row.ModelIcao,
+                    row.LookupAge
                 ],
                 new(BorderStyle.Double), new(BorderStyle.Single)
             );
@@ -99,6 +103,9 @@ namespace VirtualRadar.Utility.Terminal
                         Longitude =     Format.Longitude.IsoRounded(r.Location.Value?.Longitude),
                         Registration =  r.Registration ?? "",
                         ModelIcao =     r.ModelIcao ?? "",
+                        LookupAge =     r.LookupAgeUtc.Value == default
+                                        ? ""
+                                        : Format.Duration.AgoAway(DateTime.UtcNow, r.LookupAgeUtc.Value, CultureInfo.CurrentCulture, shortUnits: true),
                     })
                     .ToArray()
                     ?? [];

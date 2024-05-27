@@ -106,24 +106,32 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         {
             var backOff = false;
 
-            backOff = await InitialiseProvider(backOff);
+            Icao24[] icao24s;
+            lock(_SyncLock) {
+                icao24s = _LookupMap.Keys.ToArray();
+            }
 
-            if(_ProviderInitialised) {
-                Icao24[] icao24s;
-                lock(_SyncLock) {
-                    icao24s = _LookupMap.Keys.ToArray();
-                }
+            if(icao24s.Length > 0) {
+                var batchOutcome = await ReadFromCache(icao24s);
+                icao24s = icao24s
+                    .Except(batchOutcome.AllOutcomes.Select(r => r.Icao24))
+                    .ToArray();
 
                 if(icao24s.Length > 0) {
-                    var batchOutcome = await ReadFromCache(icao24s);
-                    backOff = await LookupMissingIcaosOnline(batchOutcome, backOff);
+                    backOff = await InitialiseProvider(backOff);
 
-                    lock(_SyncLock) {
-                        foreach(var outcome in batchOutcome.AllOutcomes) {
-                            _LookupMap.Remove(outcome.Icao24);
-                        }
+                    if(_ProviderInitialised) {
+                        backOff = await LookupMissingIcaosOnline(icao24s, batchOutcome, backOff);
                     }
+                }
 
+                lock(_SyncLock) {
+                    foreach(var outcome in batchOutcome.AllOutcomes) {
+                        _LookupMap.Remove(outcome.Icao24);
+                    }
+                }
+
+                if(batchOutcome.Found.Count > 0 || batchOutcome.Missing.Count > 0) {
                     OnLookupCompleted(batchOutcome);
                 }
             }
@@ -153,12 +161,12 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             return backOff;
         }
 
-        private async Task<bool> LookupMissingIcaosOnline(BatchedLookupOutcome batchedOutcome, bool backOff)
+        private async Task<bool> LookupMissingIcaosOnline(Icao24[] icao24s, BatchedLookupOutcome batchedOutcome, bool backOff)
         {
-            if(batchedOutcome.Missing.Count > 0) {
+            if(icao24s.Length > 0) {
                 BatchedLookupOutcome lookupOutcome;
                 try {
-                    lookupOutcome = await _Provider.LookupIcaos(batchedOutcome.Missing.Select(r => r.Icao24), CancellationToken.None);
+                    lookupOutcome = await _Provider.LookupIcaos(icao24s, CancellationToken.None);
                 } catch {
                     // We don't log exceptions from the provider, they would spam the log if the user goes offline
                     lookupOutcome = null;
@@ -169,7 +177,6 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                     await WriteToCache(lookupOutcome);
 
                     batchedOutcome.Found.AddRange(lookupOutcome.Found);
-                    batchedOutcome.Missing.Clear();
                     batchedOutcome.Missing.AddRange(lookupOutcome.Missing);
                 }
             }
@@ -179,25 +186,33 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
 
         private async Task<BatchedLookupOutcome> ReadFromCache(Icao24[] icao24s)
         {
-            var result = new BatchedLookupOutcome();
+            var foundSet = new Dictionary<Icao24, LookupOutcome>();
+            var missingSet = new Dictionary<Icao24, LookupOutcome>();
             var unknownSet = new HashSet<Icao24>(icao24s);
 
             foreach(var cache in _Caches.Where(r => r.CanRead).OrderByDescending(r => r.ReadPriority)) {
                 var cachedOutcome = await cache.Read(unknownSet);
+
                 foreach(var found in cachedOutcome.Found) {
-                    result.Found.Add(found);
+                    foundSet.Add(found.Icao24, found);
                     unknownSet.Remove(found.Icao24);
+                    missingSet.Remove(found.Icao24);
                 }
+                foreach(var missing in cachedOutcome.Missing) {
+                    if(!missingSet.TryAdd(missing.Icao24, missing)) {
+                        var extant = missingSet[missing.Icao24];
+                        if(extant.SourceAgeUtc > missing.SourceAgeUtc) {
+                            extant.SourceAgeUtc = missing.SourceAgeUtc;
+                        }
+                    }
+                }
+
                 if(unknownSet.Count == 0) {
                     break;
                 }
             }
 
-            foreach(var unknownIcao in unknownSet) {
-                result.Missing.Add(new LookupOutcome(unknownIcao, success: false));
-            }
-
-            return result;
+            return new BatchedLookupOutcome(foundSet.Values, missingSet.Values);
         }
 
         private async Task WriteToCache(BatchedLookupOutcome lookupOutcome)

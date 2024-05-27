@@ -23,6 +23,10 @@ namespace VirtualRadar
     /// </para><para>
     /// The default cache has a priority of Int.MinValue for reading and writing, it is always called last. It
     /// will not save lookups that have already been saved by another cache.
+    /// </para><para>
+    /// The cache is expected to self-police the lifetime of cached records. There is a set of default thresholds
+    /// for hit and miss limits in <see cref="VirtualRadar.Configuration.AircraftOnlineLookupCacheConfig"/>, but
+    /// caches are free to impose their own thresholds if they wish.
     /// </para></remarks>
     [Lifetime(Lifetime.Singleton)]
     public interface IAircraftOnlineLookupCache
@@ -56,11 +60,16 @@ namespace VirtualRadar
 
         /// <summary>
         /// Reads cached data for the ICAOs passed across. Note that if a cache with a higher priority exists
-        /// then any ICAOs that it could supply will be excluded from the set passed across. This function
-        /// will never be called while <see cref="CanRead"/> returns false.
+        /// then any ICAOs that it could supply will be excluded from the set passed across, but if the higher
+        /// priority indicated that it had saved a miss for an ICAO then those are still passed to lower
+        /// priority caches to see if one of those can fulfill it. This function will never be called while
+        /// <see cref="CanRead"/> returns false.
         /// </summary>
         /// <param name="icaos"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// Cached hits and misses. Do not return records for entries that have not been cached, I.E. if a
+        /// failure has not previously been saved for an ICAO then do not return a 'Missing' entry for it.
+        /// </returns>
         Task<BatchedLookupOutcome> Read(IEnumerable<Icao24> icaos);
 
         /// <summary>
