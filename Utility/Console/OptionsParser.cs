@@ -28,8 +28,8 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "-address":
                         result.Address = UseNextArg(arg, nextArg, ref i);
                         break;
-                    case "connecttcp":
-                        result.Command = ParseCommand(result, Command.ConnectTcpListener);
+                    case "connect":
+                        result.Command = ParseCommand(result, Command.ConnectListener);
                         break;
                     case "-id":
                         result.Id = UseNextArg(arg, nextArg, ref i);
@@ -53,6 +53,9 @@ namespace VirtualRadar.Utility.CLIConsole
                         break;
                     case "version":
                         result.Command = ParseCommand(result, Command.ShowVersion);
+                        break;
+                    case "workingfolder":
+                        result.Command = ParseCommand(result, Command.OpenWorkingFolder);
                         break;
                     default:
                         Usage($"Unrecognised parameter {arg}");
@@ -130,8 +133,9 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"Console command [options]");
             Console.WriteLine($"  version             Show version information");
             Console.WriteLine($"  list <entity>       List stuff: {String.Join(", ", Enum.GetNames<ListEntity>())}");
-            Console.WriteLine($"  connectTCP          Connect to TCP address");
             Console.WriteLine($"  lookup <entity>     Look something up: {String.Join(", ", Enum.GetNames<LookupEntity>())}");
+            Console.WriteLine($"  connect             Connect to feed");
+            Console.WriteLine($"  workingFolder       Open Explorer / Finder etc. on working folder");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");

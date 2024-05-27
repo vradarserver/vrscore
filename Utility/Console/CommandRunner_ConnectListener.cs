@@ -13,13 +13,13 @@ using VirtualRadar.Connection;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_ConnectTcpListener : CommandRunner
+    class CommandRunner_ConnectListener : CommandRunner
     {
         private Options _Options;
         private HeaderService _Header;
         private StreamDumperService _StreamDumper;
 
-        public CommandRunner_ConnectTcpListener(Options options, HeaderService header, StreamDumperService streamDumper)
+        public CommandRunner_ConnectListener(Options options, HeaderService header, StreamDumperService streamDumper)
         {
             _Options = options;
             _Header = header;
