@@ -42,6 +42,10 @@ namespace VirtualRadar.Utility.CLIConsole
                         result.Command = ParseCommand(result, Command.Lookup);
                         result.LookupEntity = ParseEnum<LookupEntity>(UseNextArg(arg, nextArg, ref i));
                         break;
+                    case "open":
+                        result.Command = ParseCommand(result, Command.Open);
+                        result.OpenEntity = ParseEnum<OpenEntity>(UseNextArg(arg, nextArg, ref i));
+                        break;
                     case "-port":
                         result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
                         break;
@@ -53,9 +57,6 @@ namespace VirtualRadar.Utility.CLIConsole
                         break;
                     case "version":
                         result.Command = ParseCommand(result, Command.ShowVersion);
-                        break;
-                    case "workingfolder":
-                        result.Command = ParseCommand(result, Command.OpenWorkingFolder);
                         break;
                     default:
                         Usage($"Unrecognised parameter {arg}");
@@ -134,8 +135,8 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  version             Show version information");
             Console.WriteLine($"  list <entity>       List stuff: {String.Join(", ", Enum.GetNames<ListEntity>())}");
             Console.WriteLine($"  lookup <entity>     Look something up: {String.Join(", ", Enum.GetNames<LookupEntity>())}");
+            Console.WriteLine($"  open <entity>       Open something: {String.Join(", ", Enum.GetNames<OpenEntity>())}");
             Console.WriteLine($"  connect             Connect to feed");
-            Console.WriteLine($"  workingFolder       Open Explorer / Finder etc. on working folder");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");

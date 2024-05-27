@@ -22,6 +22,6 @@ namespace VirtualRadar.Utility.CLIConsole
 
         Lookup,
 
-        OpenWorkingFolder,
+        Open,
     }
 }

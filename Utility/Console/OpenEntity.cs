@@ -10,24 +10,8 @@
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class Options
+    public enum OpenEntity
     {
-        public Command Command { get; set; }
-
-        public string Address { get; set; } = "127.0.0.1";
-
-        public int Port { get; set; } = 30003;
-
-        public bool Show { get; set; }
-
-        public string SaveFileName { get; set; }
-
-        public ListEntity ListEntity { get; set; }
-
-        public LookupEntity LookupEntity { get; set; }
-
-        public OpenEntity OpenEntity { get; set; }
-
-        public string Id { get; set; }
+        WorkingFolder,
     }
 }

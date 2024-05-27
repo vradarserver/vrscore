@@ -13,9 +13,21 @@ using System.Runtime.InteropServices;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_OpenWorkingFolder(WorkingFolder _WorkingFolder) : CommandRunner
+    class CommandRunner_Open(Options _Options, WorkingFolder _WorkingFolder) : CommandRunner
     {
         public override async Task<bool> Run()
+        {
+            bool result = false;
+
+            switch(_Options.OpenEntity) {
+                case OpenEntity.WorkingFolder:  result = await OpenWorkingFolder(); break;
+                default:                        throw new NotImplementedException();
+            }
+
+            return result;
+        }
+
+        private async Task<bool> OpenWorkingFolder()
         {
             await WriteLine($"Opening {_WorkingFolder.Folder}");
 
