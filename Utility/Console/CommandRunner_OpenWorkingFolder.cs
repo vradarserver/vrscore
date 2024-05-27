@@ -20,9 +20,17 @@ namespace VirtualRadar.Utility.CLIConsole
             await WriteLine($"Opening {_WorkingFolder.Folder}");
 
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                Process.Start("explorer.exe", _WorkingFolder.Folder);
+                Process.Start(new ProcessStartInfo() {
+                    FileName = "explorer.exe",
+                    ArgumentList = { _WorkingFolder.Folder, },
+                    UseShellExecute = true,
+                });
             } else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
-                Process.Start("open", _WorkingFolder.Folder);
+                Process.Start(new ProcessStartInfo() {
+                    FileName = "open",
+                    ArgumentList = { _WorkingFolder.Folder, },
+                    UseShellExecute = true,
+                });
             } else {
                 Process.Start("xdg-open", _WorkingFolder.Folder);
             }
