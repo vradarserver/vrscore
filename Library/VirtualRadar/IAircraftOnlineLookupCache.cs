@@ -25,7 +25,7 @@ namespace VirtualRadar
     /// will not save lookups that have already been saved by another cache.
     /// </para><para>
     /// The cache is expected to self-police the lifetime of cached records. There is a set of default thresholds
-    /// for hit and miss limits in <see cref="VirtualRadar.Configuration.AircraftOnlineLookupCacheConfig"/>, but
+    /// for hit and miss limits in <see cref="VirtualRadar.Configuration.AircraftOnlineLookupCacheOptions"/>, but
     /// caches are free to impose their own thresholds if they wish.
     /// </para></remarks>
     [Lifetime(Lifetime.Singleton)]

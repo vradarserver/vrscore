@@ -20,7 +20,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private readonly object _SyncLock = new();
         private readonly IFileSystem _FileSystem;
         private readonly WorkingFolder _WorkingFolder;
-        private readonly IOptions<AircraftOnlineLookupCacheConfig> _Options;
+        private readonly IOptions<AircraftOnlineLookupCacheOptions> _Options;
 
         public string FileName => _FileSystem.Combine(
             _WorkingFolder.Folder,
@@ -50,7 +50,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public Cache(
             WorkingFolder workingFolder,
             IFileSystem fileSystem,
-            IOptions<AircraftOnlineLookupCacheConfig> options
+            IOptions<AircraftOnlineLookupCacheOptions> options
         )
         {
             _WorkingFolder = workingFolder;

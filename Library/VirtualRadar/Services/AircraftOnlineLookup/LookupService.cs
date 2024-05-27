@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Microsoft.Extensions.Options;
+using VirtualRadar.Configuration;
 using VirtualRadar.Message;
 
 namespace VirtualRadar.Services.AircraftOnlineLookup
@@ -16,6 +18,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     class LookupService : IAircraftOnlineLookupService
     {
         private readonly object _SyncLock = new();
+        private readonly IOptions<AircraftOnlineLookupServiceOptions> _Options;
         private readonly IAircraftOnlineLookupProvider _Provider;
         private readonly Dictionary<Icao24, DateTime> _LookupMap = new();       // <-- value is the time at UTC when the lookup was added
         private readonly IAircraftOnlineLookupCache[] _Caches;
@@ -23,6 +26,8 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
 
         private bool _ProviderInitialised;
         private int _TimerPauseSeconds = 1;
+
+        int QueueLength { get; }
 
         /// <inheritdoc/>
         public event EventHandler<BatchedLookupOutcome> LookupCompleted;
@@ -41,13 +46,16 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         /// </summary>
         /// <param name="provider"></param>
         /// <param name="caches"></param>
+        /// <param name="options"></param>
         public LookupService(
             IAircraftOnlineLookupProvider provider,
-            IEnumerable<IAircraftOnlineLookupCache> caches
+            IEnumerable<IAircraftOnlineLookupCache> caches,
+            IOptions<AircraftOnlineLookupServiceOptions> options
         )
         {
             _Provider = provider;
             _Caches = caches.ToArray();
+            _Options = options;
             _Timer = new(Timer_Ticked, null, dueTime: 100, period: Timeout.Infinite);
         }
 
@@ -106,6 +114,8 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         {
             var backOff = false;
 
+            RemoveExpiredLookups();
+
             Icao24[] icao24s;
             lock(_SyncLock) {
                 icao24s = _LookupMap.Keys.ToArray();
@@ -144,6 +154,31 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                   );
 
             _Timer.Change(dueTime: _TimerPauseSeconds * 1000, period: Timeout.Infinite);
+        }
+
+        private void RemoveExpiredLookups()
+        {
+            var threshold = DateTime.UtcNow.AddMinutes(-_Options.Value.ExpireQueueAfterMinutes);
+
+            Icao24[] expired;
+            lock(_SyncLock) {
+                expired = _LookupMap
+                    .Where(kvp => kvp.Value < threshold)
+                    .Select(kvp => kvp.Key)
+                    .ToArray();
+
+                foreach(var icao24 in expired) {
+                    _LookupMap.Remove(icao24);
+                }
+            }
+
+            if(expired.Length > 0) {
+                var fakeOutcome = new BatchedLookupOutcome(
+                    null,
+                    expired.Select(icao24 => new LookupOutcome(icao24, success: false))
+                );
+                OnLookupCompleted(fakeOutcome);
+            }
         }
 
         private async Task<bool> InitialiseProvider(bool backOff)

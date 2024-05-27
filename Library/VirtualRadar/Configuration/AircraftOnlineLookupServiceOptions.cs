@@ -11,35 +11,24 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The configuration for the default online lookup cache.
+    /// Configures values for <see cref="IAircraftOnlineLookupService"/> implementations. Note that the
+    /// default URL for the service is not configured here, it is managed by <see cref="IWebAddressManager"/>
+    /// and can be overridden by editing its JSON file in the working folder.
     /// </summary>
-    public record AircraftOnlineLookupCacheConfig
+    public record AircraftOnlineLookupServiceOptions
     {
         /// <summary>
-        /// If the online lookup cannot find the details for an ICAO then the cache records
-        /// the miss and the lookup service will not look it up again for this many hours.
+        /// How many minutes of lookup failures are to be endured before the service gives
+        /// up and reports the ICAO missing (without caching it as a miss).
         /// </summary>
-        public int MissLifetimeHours { get; init; }
+        public int ExpireQueueAfterMinutes { get; set; }
 
-        /// <summary>
-        /// If the online lookup finds the details for an ICAO then the cache records the
-        /// hit and the lookup service will not look it up again for this many days.
-        /// </summary>
-        public int HitLifetimeDays { get; init; }
-
-        public AircraftOnlineLookupCacheConfig(
-            int missLifetimeHours,
-            int hitLifetimeDays
-        )
+        public AircraftOnlineLookupServiceOptions(int expireQueueAfterMinutes)
         {
-            MissLifetimeHours = missLifetimeHours;
-            HitLifetimeDays =   hitLifetimeDays;
+            ExpireQueueAfterMinutes = expireQueueAfterMinutes;
         }
 
-        public AircraftOnlineLookupCacheConfig() : this(
-            missLifetimeHours:  24,
-            hitLifetimeDays:    28
-        )
+        public AircraftOnlineLookupServiceOptions() : this(30)
         {
         }
     }

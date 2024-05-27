@@ -35,6 +35,10 @@ namespace VirtualRadar.Utility.Terminal
                             opt.AlphaRevision = 1;
                         })
 
+                        .Configure<AircraftOnlineLookupServiceOptions>(opt => {
+                            opt.ExpireQueueAfterMinutes = 1;
+                        })
+
                         .AddVirtualRadarGroup()
                         .AddBaseStationFeedGroup()
 
