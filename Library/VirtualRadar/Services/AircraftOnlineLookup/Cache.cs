@@ -75,7 +75,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                         .Where(cached => cached.Icao24 == icao24)
                         .FirstOrDefault();
                     if(cachedRecord != null) {
-                        z`if(cachedRecord.Success && cachedRecord.UpdatedUtc >= hitThreshold) {
+                        if(cachedRecord.Success && cachedRecord.UpdatedUtc >= hitThreshold) {
                             result.Found.Add(cachedRecord.ToLookupOutcome());
                         } else if(!cachedRecord.Success && cachedRecord.UpdatedUtc >= missThreshold) {
                             result.Missing.Add(cachedRecord.ToLookupOutcome());
