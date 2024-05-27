@@ -2,7 +2,6 @@
 
 These are the things that need to be done next.
 
-- [ ] Console option to open Explorer / Finder etc. on working folder
 - [ ] Can I run ipv6 over home network?
 - [ ] Add ipvX selection to Terminal
 - [ ] TCP listener
@@ -24,10 +23,14 @@ These are the things that need to be done next.
 - [ ] Port VATSIM format - example of complex state + lookup feed
 - [ ] TransponderMessage needs to indicate when lookup is not required because it is fake
 - [ ] Terminal noddy listener needs to filter out ICAO24s for fake aircraft when requesting lookups
+- [ ] Console option to open Explorer / Finder etc. on working folder
+    * Not tested on Linux
+    * Not tested on FreeBSD
 
 These are the things that need doing but I don't need to think about right now. Very much not exhaustive.
 
 - [ ] Text log - use Microsoft's logger, needs provider to write to text file
+- [ ] Raspberry Pi support
 - [ ] Plugin support
 - [ ] Configuration
     * JSON store
