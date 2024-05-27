@@ -24,7 +24,6 @@ These are the things that need to be done next.
 - [ ] TransponderMessage needs to indicate when lookup is not required because it is fake
 - [ ] Terminal noddy listener needs to filter out ICAO24s for fake aircraft when requesting lookups
 - [ ] Console option to open Explorer / Finder etc. on working folder
-    * Not tested on Linux
     * Not tested on FreeBSD
 
 These are the things that need doing but I don't need to think about right now. Very much not exhaustive.
