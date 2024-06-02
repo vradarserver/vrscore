@@ -8,10 +8,12 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.IO;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
+using VirtualRadar.Feed.Recording;
 using VirtualRadar.Message;
 using WindowProcessor;
 
@@ -55,17 +57,7 @@ namespace VirtualRadar.Utility.Terminal
                     aircraftList.ApplyLookup(batchOutcome);
                 };
 
-                Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
-                if(!IPAddress.TryParse(_Options.Address, out var address)) {
-                    OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
-                }
-                var tcpConnectorOptions = new TcpConnectorConfig() {
-                    Address =   address,
-                    Port =      _Options.Port,
-                    CanRead =   true,
-                };
-                var connector = new TcpConnector(tcpConnectorOptions);
-                using(var networkStream = await connector.OpenAsync(cancellationTokenSource.Token)) {
+                using(var feedStream = await OpenFeedStream(cancellationTokenSource.Token)) {
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
                     var windowEventLoopTask = aircraftListWindow.EventLoop(cancellationTokenSource);
 
@@ -83,7 +75,7 @@ namespace VirtualRadar.Utility.Terminal
                     };
 
                     try {
-                        await chunker.ReadChunksFromStream(networkStream, cancellationTokenSource.Token);
+                        await chunker.ReadChunksFromStream(feedStream, cancellationTokenSource.Token);
                     } catch(OperationCanceledException) {
                         Console.Clear();
                     } finally {
@@ -92,6 +84,38 @@ namespace VirtualRadar.Utility.Terminal
                     }
                 }
             }
+        }
+
+        private async Task<Stream> OpenFeedStream(CancellationToken cancellationToken)
+        {
+            return String.IsNullOrEmpty(_Options.FileName)
+                ? await OpenNetworkStream(cancellationToken)
+                : await OpenRecordingStream(cancellationToken);
+        }
+
+        private async Task<Stream> OpenNetworkStream(CancellationToken cancellationToken)
+        {
+            Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
+            if(!IPAddress.TryParse(_Options.Address, out var address)) {
+                OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
+            }
+            var tcpConnectorOptions = new TcpConnectorConfig() {
+                Address =   address,
+                Port =      _Options.Port,
+                CanRead =   true,
+            };
+            var connector = new TcpConnector(tcpConnectorOptions);
+            return await connector.OpenAsync(cancellationToken);
+        }
+
+        private Task<Stream> OpenRecordingStream(CancellationToken cancellationToken)
+        {
+            Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
+
+            var fileStream = new FileStream(_Options.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var replayStream = new RecordingPlaybackStream(fileStream, leaveOpen: false);
+
+            return Task.FromResult<Stream>(replayStream);
         }
     }
 }

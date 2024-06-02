@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VirtualRadar.Configuration;
 using VirtualRadar.Feed.BaseStation;
+using VirtualRadar.Feed.Recording;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
@@ -34,15 +35,18 @@ namespace VirtualRadar.Utility.CLIConsole
 
                         .AddVirtualRadarGroup()
                         .AddBaseStationFeedGroup()
+                        .AddFeedRecordingGroup()
 
                         .AddSingleton<Options>(options)
                         .AddSingleton<HeaderService, HeaderService>()
                         .AddSingleton<StreamDumperService, StreamDumperService>()
 
                         .AddTransient<CommandRunner_ConnectListener,    CommandRunner_ConnectListener>()
+                        .AddTransient<CommandRunner_DumpFeed,           CommandRunner_DumpFeed>()
                         .AddTransient<CommandRunner_List,               CommandRunner_List>()
                         .AddTransient<CommandRunner_Lookup,             CommandRunner_Lookup>()
                         .AddTransient<CommandRunner_Open,               CommandRunner_Open>()
+                        .AddTransient<CommandRunner_RecordFeed,         CommandRunner_RecordFeed>()
                         .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
                     ;
                 });
@@ -53,9 +57,11 @@ namespace VirtualRadar.Utility.CLIConsole
                         var services = scope.ServiceProvider;
                         switch(options.Command) {
                             case Command.ConnectListener:   commandRunner = services.GetRequiredService<CommandRunner_ConnectListener>(); break;
+                            case Command.DumpFeed:          commandRunner = services.GetRequiredService<CommandRunner_DumpFeed>(); break;
                             case Command.List:              commandRunner = services.GetRequiredService<CommandRunner_List>(); break;
                             case Command.Lookup:            commandRunner = services.GetRequiredService<CommandRunner_Lookup>(); break;
                             case Command.Open:              commandRunner = services.GetRequiredService<CommandRunner_Open>(); break;
+                            case Command.RecordFeed:        commandRunner = services.GetRequiredService<CommandRunner_RecordFeed>(); break;
                             case Command.ShowVersion:       commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
                             case Command.None:              OptionsParser.Usage("Missing command"); break;
                             default:                        throw new NotImplementedException();

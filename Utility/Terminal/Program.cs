@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VirtualRadar.Configuration;
 using VirtualRadar.Feed.BaseStation;
+using VirtualRadar.Feed.Recording;
 
 namespace VirtualRadar.Utility.Terminal
 {
@@ -40,6 +41,7 @@ namespace VirtualRadar.Utility.Terminal
 
                         .AddVirtualRadarGroup()
                         .AddBaseStationFeedGroup()
+                        .AddFeedRecordingGroup()
 
                         .AddSingleton<Options>(options)
                         .AddScoped<AircraftListWindow, AircraftListWindow>()

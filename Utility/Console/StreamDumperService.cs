@@ -16,9 +16,12 @@ namespace VirtualRadar.Utility.CLIConsole
     {
         public async Task DumpStream(Stream stream, bool showHex, string saveToFileName, CancellationToken cancellationToken)
         {
+            var hexDump = new HexDump() {
+                EmitHeader = false,
+            };
+
             var buffer = new byte[16];
             var bufferOffset = 0;
-            var totalRead = 0L;
 
             using(var saveToFileStream = await OpenSaveToFileStream(saveToFileName)) {
                 while(!cancellationToken.IsCancellationRequested) {
@@ -27,26 +30,8 @@ namespace VirtualRadar.Utility.CLIConsole
                         saveToFileStream.Write(buffer, bufferOffset, read);
 
                         if(showHex) {
-                            if(bufferOffset == 0) {
-                                await Console.Out.WriteAsync(totalRead.ToString("X8"));
-                                await Console.Out.WriteAsync(' ');
-                            }
-                            for(var idx = bufferOffset;idx < read + bufferOffset;++idx) {
-                                await Console.Out.WriteAsync(' ');
-                                await Console.Out.WriteAsync(buffer[idx].ToString("X2"));
-                            }
-
-                            totalRead += read;
-                            bufferOffset += read;
-
-                            if(bufferOffset == buffer.Length) {
-                                await Console.Out.WriteAsync("   ");
-                                for(var idx = 0;idx < buffer.Length;++idx) {
-                                    var ch = buffer[idx];
-                                    await Console.Out.WriteAsync(ch >= 32 && ch <= 127 ? (char)ch : '.');
-                                }
-                                await Console.Out.WriteLineAsync();
-                                bufferOffset = 0;
+                            foreach(var line in hexDump.DumpBuffer(buffer.AsMemory(0, read))) {
+                                await Console.Out.WriteLineAsync(line);
                             }
                         }
                     }

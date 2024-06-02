@@ -31,6 +31,10 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "connect":
                         result.Command = ParseCommand(result, Command.ConnectListener);
                         break;
+                    case "dumpfeed":
+                        result.Command = ParseCommand(result, Command.DumpFeed);
+                        result.LoadFileName = UseNextArg(arg, nextArg, ref i);
+                        break;
                     case "-id":
                         result.Id = UseNextArg(arg, nextArg, ref i);
                         break;
@@ -48,6 +52,9 @@ namespace VirtualRadar.Utility.CLIConsole
                         break;
                     case "-port":
                         result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
+                        break;
+                    case "record":
+                        result.Command = ParseCommand(result, Command.RecordFeed);
                         break;
                     case "-save":
                         result.SaveFileName = UseNextArg(arg, nextArg, ref i);
@@ -137,6 +144,8 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  lookup <entity>     Look something up: {String.Join(", ", Enum.GetNames<LookupEntity>())}");
             Console.WriteLine($"  open <entity>       Open something: {String.Join(", ", Enum.GetNames<OpenEntity>())}");
             Console.WriteLine($"  connect             Connect to feed");
+            Console.WriteLine($"  record              Record a feed for future playback");
+            Console.WriteLine($"  dumpFeed <filename> Load and dump a recorded feed");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");
@@ -146,6 +155,15 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine();
             Console.WriteLine($"LOOKUP OPTIONS");
             Console.WriteLine($"  -id <string>        Hyphen-separated list of things to lookup [{defaults.Id}]");
+            Console.WriteLine();
+            Console.WriteLine($"RECORD FEED OPTIONS");
+            Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");
+            Console.WriteLine($"  -port    <port>     Port to connect to [{defaults.Port}]");
+            Console.WriteLine($"  -save    <filename> Filename to save to [{defaults.SaveFileName}]");
+            Console.WriteLine();
+            Console.WriteLine($"DUMP FEED OPTIONS");
+            Console.WriteLine($"  -show               Dump packet content");
+
 
             if (!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();

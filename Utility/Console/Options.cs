@@ -29,5 +29,7 @@ namespace VirtualRadar.Utility.CLIConsole
         public OpenEntity OpenEntity { get; set; }
 
         public string Id { get; set; }
+
+        public string LoadFileName { get; set; }
     }
 }

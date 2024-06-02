@@ -8,18 +8,47 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using VirtualRadar.Connection;
+using System.IO;
 
-namespace VirtualRadar.Utility.Terminal
+namespace VirtualRadar.Feed.Recording
 {
-    class Options
+    /// <summary>
+    /// The interface for an object that can read a feed recording.
+    /// </summary>
+    public interface IRecordingReader
     {
-        public Command Command { get; set; }
+        /// <summary>
+        /// True if the stream has finished.
+        /// </summary>
+        bool IsCompleted { get; }
 
-        public string Address { get; set; } = "127.0.0.1";
+        /// <summary>
+        /// The header read from the stream.
+        /// </summary>
+        Header Header { get; }
 
-        public int Port { get; set; } = 30003;
+        /// <summary>
+        /// Initialises the stream that we will be reading from.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="leaveOpen"></param>
+        Task InitialiseStream(Stream stream, bool leaveOpen);
 
-        public string FileName { get; set; }
+        /// <summary>
+        /// Stops all activity on the stream. Further calls to <see cref="TryGetNext"/> always
+        /// return false. You should always call this if you have previously successfully
+        /// called <see cref="InitialiseStream"/>. Do not call this if <see cref="TryGetNext"/>
+        /// is running.
+        /// </summary>
+        Task TearDownStream();
+
+        /// <summary>
+        /// Fetches the next parcel from the stream.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>The next parcel on the stream or null if there are no more parcels.</returns>
+        /// <exception cref="BadFeedHeaderException">Thrown if the stream is not a
+        /// feed recording.</exception>
+        Task<Parcel> GetNext(CancellationToken token);
     }
 }

@@ -31,6 +31,9 @@ namespace VirtualRadar.Utility.Terminal
                     case "-port":
                         result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
                         break;
+                    case "-recording":
+                        result.FileName = UseNextArg(arg, nextArg, ref i);
+                        break;
                     default:
                         Usage($"Unrecognised parameter {arg}");
                         break;

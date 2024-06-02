@@ -23,5 +23,9 @@ namespace VirtualRadar.Utility.CLIConsole
         Lookup,
 
         Open,
+
+        RecordFeed,
+
+        DumpFeed,
     }
 }
