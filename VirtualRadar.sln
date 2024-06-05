@@ -55,7 +55,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Terminal", "Utility\Termina
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowProcessor", "Utility\WindowProcessor\WindowProcessor.csproj", "{FE136C23-5C01-4691-B112-64982D7C8D73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.Feed.Recording", "Library\VirtualRadar.Feed.Recording\VirtualRadar.Feed.Recording.csproj", "{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Feed.Recording", "Library\VirtualRadar.Feed.Recording\VirtualRadar.Feed.Recording.csproj", "{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{C25A04E7-848B-407A-A654-4547D2788E44}"
+	ProjectSection(SolutionItems) = preProject
+		Apps\Directory.Build.props = Apps\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar", "Apps\VirtualRadar\VirtualRadar.csproj", "{11D97EAC-DF16-415B-B89E-AC7FF236125B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Desktop", "Apps\VirtualRadar.Desktop\VirtualRadar.Desktop.csproj", "{8F528ED6-C7C9-4550-AB72-2EFD55543AC6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Browser", "Apps\VirtualRadar.Browser\VirtualRadar.Browser.csproj", "{5AC6B354-F639-4671-8FBE-BC49AD84948D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,6 +106,18 @@ Global
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11D97EAC-DF16-415B-B89E-AC7FF236125B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11D97EAC-DF16-415B-B89E-AC7FF236125B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11D97EAC-DF16-415B-B89E-AC7FF236125B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11D97EAC-DF16-415B-B89E-AC7FF236125B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F528ED6-C7C9-4550-AB72-2EFD55543AC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F528ED6-C7C9-4550-AB72-2EFD55543AC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F528ED6-C7C9-4550-AB72-2EFD55543AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F528ED6-C7C9-4550-AB72-2EFD55543AC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AC6B354-F639-4671-8FBE-BC49AD84948D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AC6B354-F639-4671-8FBE-BC49AD84948D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AC6B354-F639-4671-8FBE-BC49AD84948D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AC6B354-F639-4671-8FBE-BC49AD84948D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +131,9 @@ Global
 		{F6310BCF-A44E-4B4A-BCF4-C908A6246B30} = {CA1928E3-1A3E-48E8-9403-97FF78486188}
 		{FE136C23-5C01-4691-B112-64982D7C8D73} = {CA1928E3-1A3E-48E8-9403-97FF78486188}
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
+		{11D97EAC-DF16-415B-B89E-AC7FF236125B} = {C25A04E7-848B-407A-A654-4547D2788E44}
+		{8F528ED6-C7C9-4550-AB72-2EFD55543AC6} = {C25A04E7-848B-407A-A654-4547D2788E44}
+		{5AC6B354-F639-4671-8FBE-BC49AD84948D} = {C25A04E7-848B-407A-A654-4547D2788E44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D195B5EE-B00F-47BE-9FA3-F8175F6563DD}

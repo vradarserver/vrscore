@@ -1,0 +1,14 @@
+<Project>
+    <PropertyGroup>
+        <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)/..</SolutionDir>
+        <AvaloniaVersion>11.0.2</AvaloniaVersion>
+    </PropertyGroup>
+
+    <Import Project="..\Directory.Build.props" />
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
+    </PropertyGroup>
+
+</Project>
