@@ -1,9 +1,8 @@
 ﻿using System;
 
 using Avalonia;
-using Avalonia.ReactiveUI;
 
-namespace VirtualRadar.Desktop;
+namespace VirtualRadar.UI.Desktop;
 
 class Program
 {
@@ -19,6 +18,6 @@ class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace()
-            .UseReactiveUI();
+            .LogToTrace();
+
 }

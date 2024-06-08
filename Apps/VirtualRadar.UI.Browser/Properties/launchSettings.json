@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "VirtualRadar.Browser": {
+    "VirtualRadar.UI.Browser": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

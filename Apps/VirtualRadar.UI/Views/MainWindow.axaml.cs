@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace VirtualRadar.Views;
+namespace VirtualRadar.UI.Views;
 
 public partial class MainWindow : Window
 {

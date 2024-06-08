@@ -10,10 +10,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia.Browser" Version="$(AvaloniaVersion)" />
+        <PackageReference Include="Avalonia.Browser" Version="11.0.10" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\VirtualRadar\VirtualRadar.csproj" />
+        <ProjectReference Include="..\VirtualRadar.UI\VirtualRadar.UI.csproj" />
     </ItemGroup>
 </Project>
