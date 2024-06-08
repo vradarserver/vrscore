@@ -17,6 +17,7 @@ set RUNARGS=
 
     set BADARG=BAD
     if "%1"=="solution"      set BADARG=OK & set TARGET=SLN
+    if "%1"=="browser"       set BADARG=OK & set TARGET=BROWSER
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
     if "%1"=="terminal"      set BADARG=OK & set TARGET=TERMINAL
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE

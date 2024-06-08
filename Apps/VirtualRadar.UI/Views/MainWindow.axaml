@@ -6,7 +6,20 @@
         xmlns:views="clr-namespace:VirtualRadar.UI.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VirtualRadar.UI.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="VirtualRadar.UI">
+        Icon="/Assets/application-logo.ico"
+        Title="Virtual Radar Server">
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="E_xit" />
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="_Options" />
+            </MenuItem>
+        </Menu>
+        <Label>Foo</Label>
         <views:MainView />
+    </DockPanel>
+
 </Window>

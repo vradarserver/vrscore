@@ -9,6 +9,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Remove="Assets\application-logo.ico" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.0.10" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
