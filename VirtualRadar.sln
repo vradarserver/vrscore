@@ -55,7 +55,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Terminal", "Utility\Termina
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowProcessor", "Utility\WindowProcessor\WindowProcessor.csproj", "{FE136C23-5C01-4691-B112-64982D7C8D73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.Feed.Recording", "Library\VirtualRadar.Feed.Recording\VirtualRadar.Feed.Recording.csproj", "{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Feed.Recording", "Library\VirtualRadar.Feed.Recording\VirtualRadar.Feed.Recording.csproj", "{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{33293A57-708C-4BA6-83B1-43A1E1460431}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
