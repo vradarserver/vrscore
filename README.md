@@ -19,15 +19,7 @@ Confirm that you have a .NET Core 8 SDK installed:
 | ---              | --- |
 | All              | `dotnet --list-sdks` |
 
-If this is your first build then restore the NuGet packages:
-
-| Operating System | Command |
-| ---              | --- |
-| Linux            | `./build.sh restore` |
-| macOS            | `./build.sh restore` |
-| Windows          | `build restore` |
-
-Then to build everything:
+To build everything:
 
 | Operating System | Command |
 | ---              | --- |
@@ -35,3 +27,27 @@ Then to build everything:
 | macOS            | `./build.sh solution` |
 | Windows          | `build solution` |
 
+To build and run the server:
+
+| Operating System | Command |
+| ---              | --- |
+| Linux            | `./build.sh server -run` |
+| macOS            | `./build.sh server -run` |
+| Windows          | `build server -run` |
+
+To just run the server without building first:
+
+| Operating System | Command |
+| ---              | --- |
+| Linux            | `./run.sh server` |
+| macOS            | `./run.sh server` |
+| Windows          | `run server` |
+
+## Server Command-Line Options
+
+| Parameter              | Meaning |
+| ---                    | --- |
+| `-http <port number>`  | Specify the HTTP port to listen to. Note that ports below 1024 might be restricted or in use. Defaults to 5001. |
+| `-https <port number>` | Specify the HTTPS port to listen to. Note that ports below 1024 might be restricted or in use. Defaults to 6001. |
+| `-noBrowser`           | Don't open the default browser on the site after starting the server |
+| `-showLog`             | Show web server logging on the console |
