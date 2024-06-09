@@ -18,6 +18,7 @@ set RUNARGS=
     set BADARG=BAD
     if "%1"=="solution"      set BADARG=OK & set TARGET=SLN
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
+    if "%1"=="server"        set BADARG=OK & set TARGET=SERVER
     if "%1"=="terminal"      set BADARG=OK & set TARGET=TERMINAL
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
@@ -37,6 +38,7 @@ set RUNARGS=
     
 :ENDARGS
 if "%TARGET%"=="CONSOLE"    goto :CONSOLE
+if "%TARGET%"=="SERVER"     goto :SERVER
 if "%TARGET%"=="TERMINAL"   goto :TERMINAL
 if "%TARGET%"=="RESTORE"    goto :RESTORE
 if "%TARGET%"=="SLN"        goto :SLN
@@ -46,6 +48,7 @@ if "%TARGET%"=="SLN"        goto :SLN
 echo Usage: build command options
 echo restore      Restore all NuGet packages
 echo solution     Build the solution
+echo server       Build the server
 echo console      Build the console
 echo terminal     Build the terminal
 echo.
@@ -71,6 +74,14 @@ rem ## Common actions
 :NOBUILD
     exit /b 0
 
+:PUBLISH
+    IF %BUILD%==NO goto :NOBUILD
+    echo.
+    echo dotnet publish "%PROJ%" /p:"SolutionDir=%BATDIR%"
+    dotnet publish "%PROJ%" /p:"SolutionDir=%BATDIR%"
+    if ERRORLEVEL 1 goto :EOF
+    exit /b 0
+
 rem ##################################################
 rem ## Pseudo targets
 
@@ -86,6 +97,15 @@ rem ## Build targets
     call :BUILD
     if ERRORLEVEL 1 goto :EOF
     if "%RUN%"=="YES" "%BATDIR%Utility\Console\bin\%CONFIG%\net8.0\Console.exe" %RUNARGS%
+    goto :EOF
+
+:SERVER
+    set "PROJ=%BATDIR%Apps\VirtualRadar.Server\VirtualRadar.Server.csproj"
+    call :BUILD
+    if ERRORLEVEL 1 goto :EOF
+    call :PUBLISH
+    if ERRORLEVEL 1 goto :EOF
+    if "%RUN%"=="YES" "%BATDIR%Apps\VirtualRadar.Server\bin\Release\net8.0\publish\VirtualRadar.Server.exe" %RUNARGS%
     goto :EOF
 
 :SLN

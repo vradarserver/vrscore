@@ -22,5 +22,6 @@ csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 csharp_prefer_simple_using_statement = false:suggestion
 
-# Stop banging on about primary constructors. When we can set naming convention rules for them *then* they can be used.
-dotnet_diagnostic.IDE0290.severity = none
+dotnet_diagnostic.CA1806.severity = none        # Keeps wanting me to spam the source with underscores instead of just ignoring unwanted results.
+dotnet_diagnostic.IDE0066.severity = none       # Stop trying to make switch expressions happen. They are pugly.
+dotnet_diagnostic.IDE0290.severity = none       # Stop banging on about primary constructors. They have their place. It isn't "everywhere".

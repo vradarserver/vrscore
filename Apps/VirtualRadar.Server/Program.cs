@@ -8,54 +8,28 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using VirtualRadar.Configuration;
-using VirtualRadar.Feed.BaseStation;
-using VirtualRadar.Feed.Recording;
 
-namespace VirtualRadar.Utility.Terminal
+namespace VirtualRadar.Server
 {
-    class Program
+    public class Program
     {
         static async Task Main(string[] args)
         {
-            var exitCode = 0;
-            Options options = null;
-
-            Console.OutputEncoding = Encoding.UTF8;
+            int exitCode;
 
             try {
-                options = OptionsParser.Parse(args);
+                var options = OptionsParser.Parse(args);
 
-                var builder = Host.CreateDefaultBuilder();
-                builder.ConfigureServices((context, services) => {
-                    services
-                        .Configure<AircraftOnlineLookupServiceOptions>(opt => {
-                            opt.ExpireQueueAfterMinutes = 1;
-                        })
-
-                        .AddVirtualRadarGroup()
-                        .AddBaseStationFeedGroup()
-                        .AddFeedRecordingGroup()
-
-                        .AddSingleton<Options>(options)
-                        .AddScoped<AircraftListWindow, AircraftListWindow>()
-
-                        // This will do for now, I just want to see it working (or not)...
-                        .AddScoped<TempRunner, TempRunner>()
-                    ;
-                });
-
-                using(var host = builder.Build()) {
-                    using(var scope = host.Services.CreateScope()) {
-                        var bootService = scope.ServiceProvider.GetRequiredService<BootService>();
-                        bootService.Start();
-
-                        var tempRunner = scope.ServiceProvider.GetRequiredService<TempRunner>();
-                        await tempRunner.Run();
-                    }
+                CommandRunner commandRunner;
+                switch(options.Command) {
+                    case Command.StartServer:   commandRunner = new CommandRunner_StartServer(); break;
+                    default:                    throw new NotImplementedException();
                 }
+                commandRunner.Options = options;
+
+                exitCode = await commandRunner.Run()
+                    ? 0
+                    : 1;
             } catch(Exception ex) {
                 Console.WriteLine($"Caught exception during processing: {ex}");
                 exitCode = 2;

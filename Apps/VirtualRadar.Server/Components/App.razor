@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="/content/css/site.css" />
+    <link rel="stylesheet" href="VirtualRadar.Server.styles.css" />
+    <link rel="icon" href="favicon.ico" />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <script type="importmap">
+        {
+            "imports": {
+                "bootstrap":        "/lib/bootstrap/js/bootstrap.esm.min.js",
+                "@@popperjs/core":  "/lib/@@popperjs/dist/esm/index.js"
+            }
+        }
+    </script>
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/BlazorStrap/blazorstrap.js"></script>
+</body>
+
+</html>

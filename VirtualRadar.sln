@@ -57,7 +57,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowProcessor", "Utility\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Feed.Recording", "Library\VirtualRadar.Feed.Recording\VirtualRadar.Feed.Recording.csproj", "{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{33293A57-708C-4BA6-83B1-43A1E1460431}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{318077F8-4BD4-4675-9298-DFF5A787796B}"
+	ProjectSection(SolutionItems) = preProject
+		Apps\Directory.Build.props = Apps\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Server", "Apps\VirtualRadar.Server\VirtualRadar.Server.csproj", "{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +102,10 @@ Global
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -110,6 +119,7 @@ Global
 		{F6310BCF-A44E-4B4A-BCF4-C908A6246B30} = {CA1928E3-1A3E-48E8-9403-97FF78486188}
 		{FE136C23-5C01-4691-B112-64982D7C8D73} = {CA1928E3-1A3E-48E8-9403-97FF78486188}
 		{0C0B5800-D4A3-4417-ADC2-2E9065A7315E} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
+		{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0} = {318077F8-4BD4-4675-9298-DFF5A787796B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D195B5EE-B00F-47BE-9FA3-F8175F6563DD}

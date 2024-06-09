@@ -1,0 +1,13 @@
+<Project>
+    <PropertyGroup>
+        <SolutionDir Condition="'$(SolutionDir)' == ''">$(MSBuildThisFileDirectory)/..</SolutionDir>
+    </PropertyGroup>
+
+    <Import Project="..\Directory.Build.props" />
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+        <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
+    </PropertyGroup>
+
+</Project>

@@ -5,6 +5,7 @@ SHOW_USAGE() {
     echo "Usage: build.sh command options"
     echo "restore      Restore all NuGet packages"
     echo "solution     Build the solution"
+    echo "server       Build the server"
     echo "console      Build the console"
     echo "terminal     Build the terminal"
     echo
@@ -19,6 +20,17 @@ BUILD_DOTNET() {
         echo
         echo dotnet build --configuration $CONFIG "$1" /p:"SolutionDir=$SHDIR"
              dotnet build --configuration $CONFIG "$1" /p:"SolutionDir=$SHDIR"
+        if [ $? -ne 0 ]; then
+            exit 1
+        fi
+    fi
+}
+
+PUBLISH_DOTNET() {
+    if [ "$BUILD" = "YES" ]; then
+        echo
+        echo dotnet publish "$1" /p:"SolutionDir=$SHDIR"
+             dotnet publish "$1" /p:"SolutionDir=$SHDIR"
         if [ $? -ne 0 ]; then
             exit 1
         fi
@@ -49,7 +61,7 @@ do
         RUNARGS+=("$arg")
     else
         case $arg in
-            solution | console | terminal | restore)
+            solution | console | server | terminal | restore)
                 TARGET="$arg"
                 ;;
             -run)
@@ -79,6 +91,11 @@ case $TARGET in
         ;;
     restore)
         dotnet restore "$SHDIR/VirtualRadar.sln"
+        ;;
+    server)
+        BUILD_DOTNET   "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
+        PUBLISH_DOTNET "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
+        RUN_DOTNET     "$SHDIR/Apps/VirtualRadar.Server/bin/Release/net8.0/publish/VirtualRadar.Server.dll"
         ;;
     solution)
         BUILD_DOTNET "$SHDIR/VirtualRadar.sln"
