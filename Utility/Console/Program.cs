@@ -29,10 +29,6 @@ namespace VirtualRadar.Utility.CLIConsole
                 var builder = Host.CreateDefaultBuilder();
                 builder.ConfigureServices((context, services) => {
                     services
-                        .Configure<ApplicationSettings>(opt => {
-                            opt.AlphaRevision = 1;
-                        })
-
                         .AddVirtualRadarGroup()
                         .AddBaseStationFeedGroup()
                         .AddFeedRecordingGroup()

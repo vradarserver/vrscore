@@ -8,32 +8,21 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.Options;
-using VirtualRadar.Configuration;
-
-namespace VirtualRadar.Utility.CLIConsole
+namespace VirtualRadar.Configuration
 {
-    class CommandRunner_ShowVersion(
-        HeaderService _Header,
-        IOptions<ApplicationSettings> _ApplicationSettings,
-        WorkingFolder _WorkingFolder
-    ) : CommandRunner
+    /// <summary>
+    /// Describes a release type.
+    /// </summary>
+    /// <remarks>
+    /// The enum values have significance, do not change the relative order. Stable must be larger than beta
+    /// which in turn must be larger than alpha.
+    /// </remarks>
+    public enum ReleaseType
     {
-        public override async Task<bool> Run()
-        {
-            var application = _ApplicationSettings.Value;
+        Alpha,
 
-            await _Header.OutputTitle("Show Version");
-            await _Header.OutputOptions(
-                ("Application Name",    application.ApplicationName),
-                ("Version",             application.InformationalVersion.ToString()),
-                ("Build Date",          application.BuildDate.LocalDateTime.ToString("dd-MMM-yyyy HH:mm:ss")),
-                ("Built From Commit",   application.InformationalVersion.CommitHash),
-                ("Culture Info",        application.CultureInfo.Name),
-                ("Working Folder",      _WorkingFolder.Folder)
-            );
+        Beta,
 
-            return true;
-        }
+        Stable,
     }
 }

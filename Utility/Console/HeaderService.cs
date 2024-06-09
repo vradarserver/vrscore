@@ -28,7 +28,7 @@ namespace VirtualRadar.Utility.CLIConsole
         /// Gets the copyright notice as a single line.
         /// </summary>
         /// <returns></returns>
-        public string CopyrightNotice => $"{_ApplicationSettings.ApplicationName} v{_ApplicationSettings.VersionDescription} copyright (C) 2024 onwards, Andrew Whewell";
+        public string CopyrightNotice => $"{_ApplicationSettings.ApplicationName} v{_ApplicationSettings.InformationalVersion} copyright (C) 2024 onwards, Andrew Whewell";
 
         /// <summary>
         /// Outputs the <see cref="CopyrightNotice"/> to the console.

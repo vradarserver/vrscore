@@ -1,70 +1,133 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Options
+@using System.Runtime.InteropServices
 @using VirtualRadar.Configuration
 @inject IOptions<ApplicationSettings> _ApplicationSettings
 
 <PageTitle>VRS - Main</PageTitle>
 
-<h1>
-    Application Settings
-</h1>
-<BSTable>
-    <BSTHead>
-        <BSTR>
-            <BSTD>
-                Setting
-            </BSTD>
-            <BSTD>
-                Value
-            </BSTD>
-        </BSTR>
-    </BSTHead>
-    <BSTBody>
+<BSRow MarginTop="Margins.Small">
+    <BSCol>
+        <h1>
+            Application Settings
+        </h1>
+    </BSCol>
+</BSRow>
 
-        <BSTR>
-            <BSTD>
-                Application
-            </BSTD>
-            <BSTD>
-                @_ApplicationSettings.Value.ApplicationName
-            </BSTD>
-        </BSTR>
+<BSRow>
+    <BSCol>
+        <BSTable>
+            <BSTHead>
+                <BSTR>
+                    <BSTD>
+                        Setting
+                    </BSTD>
+                    <BSTD>
+                        Value
+                    </BSTD>
+                </BSTR>
+            </BSTHead>
+            <BSTBody>
 
-        <BSTR>
-            <BSTD>
-                Version
-            </BSTD>
-            <BSTD>
-                @_ApplicationSettings.Value.VersionDescription
-            </BSTD>
-        </BSTR>
+                <BSTR>
+                    <BSTD>
+                        Application:
+                    </BSTD>
+                    <BSTD>
+                        @_ApplicationSettings.Value.ApplicationName
+                    </BSTD>
+                </BSTR>
 
-        <BSTR>
-            <BSTD>
-                Alpha Revision
-            </BSTD>
-            <BSTD>
-                @_ApplicationSettings.Value.AlphaRevision
-            </BSTD>
-        </BSTR>
+                <BSTR>
+                    <BSTD>
+                        Version:
+                    </BSTD>
+                    <BSTD>
+                        @_ApplicationSettings.Value.InformationalVersion
+                    </BSTD>
+                </BSTR>
 
-        <BSTR>
-            <BSTD>
-                Beta Revision
-            </BSTD>
-            <BSTD>
-                @_ApplicationSettings.Value.BetaRevision
-            </BSTD>
-        </BSTR>
+                <BSTR>
+                    <BSTD>
+                        Build date:
+                    </BSTD>
+                    <BSTD>
+                        @_ApplicationSettings.Value.BuildDate.ToLocalTime()
+                    </BSTD>
+                </BSTR>
 
-        <BSTR>
-            <BSTD>
-                Build Date
-            </BSTD>
-            <BSTD>
-                @_ApplicationSettings.Value.BuildDate
-            </BSTD>
-        </BSTR>
+                <BSTR>
+                    <BSTD>
+                        Built from commit hash:
+                    </BSTD>
+                    <BSTD>
+                        @_ApplicationSettings.Value.InformationalVersion.CommitHash
+                    </BSTD>
+                </BSTR>
 
-    </BSTBody>
-</BSTable>
+            </BSTBody>
+        </BSTable>
+    </BSCol>
+</BSRow>
+
+<BSRow MarginTop="Margins.Small">
+    <BSCol>
+        <h2>
+            RuntimeInformation
+        </h2>
+    </BSCol>
+</BSRow>
+
+<BSRow>
+    <BSCol>
+        <BSTable>
+            <BSTHead>
+                <BSTR>
+                    <BSTD>
+                        Variable
+                    </BSTD>
+                    <BSTD>
+                        Value
+                    </BSTD>
+                </BSTR>
+            </BSTHead>
+            <BSTBody>
+                <BSTR>
+                    <BSTD>
+                        OSDescription:
+                    </BSTD>
+                    <BSTD>
+                        @RuntimeInformation.OSDescription
+                    </BSTD>
+                </BSTR>
+
+                <BSTR>
+                    <BSTD>
+                        OSArchitecture:
+                    </BSTD>
+                    <BSTD>
+                        @RuntimeInformation.OSArchitecture
+                    </BSTD>
+                </BSTR>
+
+                <BSTR>
+                    <BSTD>
+                        FrameworkDescription:
+                    </BSTD>
+                    <BSTD>
+                        @RuntimeInformation.FrameworkDescription
+                    </BSTD>
+                </BSTR>
+
+                <BSTR>
+                    <BSTD>
+                        RuntimeIdentifier:
+                    </BSTD>
+                    <BSTD>
+                        @RuntimeInformation.RuntimeIdentifier
+                    </BSTD>
+                </BSTR>
+            </BSTBody>
+        </BSTable>
+    </BSCol>
+</BSRow>

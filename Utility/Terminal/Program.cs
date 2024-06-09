@@ -31,10 +31,6 @@ namespace VirtualRadar.Utility.Terminal
                 var builder = Host.CreateDefaultBuilder();
                 builder.ConfigureServices((context, services) => {
                     services
-                        .Configure<ApplicationSettings>(opt => {
-                            opt.AlphaRevision = 1;
-                        })
-
                         .Configure<AircraftOnlineLookupServiceOptions>(opt => {
                             opt.ExpireQueueAfterMinutes = 1;
                         })
