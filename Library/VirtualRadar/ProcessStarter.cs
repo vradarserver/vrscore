@@ -8,34 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
-namespace VirtualRadar.Server
+namespace VirtualRadar
 {
-    public class Program
+    public static class ProcessStarter
     {
-        static async Task Main(string[] args)
+        /// <summary>
+        /// Opens a native explorer window on the file or folder passed across.
+        /// </summary>
+        /// <param name="fileOrFolder"></param>
+        /// <returns>The process handle of the native explorer window.</returns>
+        public static Process OpenExplorerOnFileOrFolder(string fileOrFolder)
         {
-            int exitCode;
+            Process result;
 
-            try {
-                var options = OptionsParser.Parse(args);
-
-                CommandRunner commandRunner;
-                switch(options.Command) {
-                    case Command.StartServer:   commandRunner = new CommandRunner_StartServer(); break;
-                    default:                    throw new NotImplementedException();
-                }
-                commandRunner.Options = options;
-
-                exitCode = await commandRunner.Run()
-                    ? 0
-                    : 1;
-            } catch(Exception ex) {
-                Console.WriteLine($"Caught exception during processing: {ex}");
-                exitCode = 2;
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                result = Process.Start(new ProcessStartInfo() {
+                    FileName = "explorer.exe",
+                    ArgumentList = { fileOrFolder, },
+                    UseShellExecute = true,
+                });
+            } else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
+                result = Process.Start(new ProcessStartInfo() {
+                    FileName = "open",
+                    ArgumentList = { fileOrFolder, },
+                    UseShellExecute = true,
+                });
+            } else {
+                result = Process.Start("xdg-open", fileOrFolder);
             }
 
-            Environment.Exit(exitCode);
+            return result;
         }
+
+        /// <summary>
+        /// Opens a URL in the default browser.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns>The process handle of the browser, shell, whatever.</returns>
+        public static Process OpenUrlInDefaultBrowser(string url) => OpenExplorerOnFileOrFolder(url);
     }
 }

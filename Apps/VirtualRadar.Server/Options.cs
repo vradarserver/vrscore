@@ -8,34 +8,18 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 namespace VirtualRadar.Server
 {
-    public class Program
+    public class Options
     {
-        static async Task Main(string[] args)
-        {
-            int exitCode;
+        public Command Command { get; set; }
 
-            try {
-                var options = OptionsParser.Parse(args);
+        public int HttpPort { get; set; } = 5001;
 
-                CommandRunner commandRunner;
-                switch(options.Command) {
-                    case Command.StartServer:   commandRunner = new CommandRunner_StartServer(); break;
-                    default:                    throw new NotImplementedException();
-                }
-                commandRunner.Options = options;
+        public int HttpsPort { get; set; } = 6001;
 
-                exitCode = await commandRunner.Run()
-                    ? 0
-                    : 1;
-            } catch(Exception ex) {
-                Console.WriteLine($"Caught exception during processing: {ex}");
-                exitCode = 2;
-            }
+        public bool ShowLog { get; set; }
 
-            Environment.Exit(exitCode);
-        }
+        public bool SuppressBrowser { get; set; }
     }
 }

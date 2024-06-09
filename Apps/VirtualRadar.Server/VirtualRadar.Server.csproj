@@ -5,11 +5,16 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-      <NoWarn>1701;1702;ASP0014</NoWarn>
+        <NoWarn>1701;1702;ASP0014</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-      <NoWarn>1701;1702;ASP0014</NoWarn>
+        <NoWarn>1701;1702;ASP0014</NoWarn>
     </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
+      <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
+    </ItemGroup>
 
 </Project>

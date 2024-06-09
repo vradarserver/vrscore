@@ -4,6 +4,7 @@ RUNARGS=${@:2}
 
 SHOW_USAGE() {
     echo "Usage: run [program] (args to program)"
+    echo "server         Web server"
     echo "console        Command console"
     echo "terminal       Terminal"
 }
@@ -20,6 +21,9 @@ fi
 case $1 in
     console)
         RUN_BUILD console
+        ;;
+    server)
+        RUN_BUILD server
         ;;
     terminal)
         RUN_BUILD terminal
