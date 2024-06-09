@@ -15,6 +15,7 @@
     <ItemGroup>
       <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
       <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
+      <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
     </ItemGroup>
 
     <ItemGroup>
