@@ -1,20 +1,23 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<header class="vrs-bg-base">
+    <BSNavbar IsHeader="true" Class="border-bottom" IsDark="true">
+        <BSContainer Container="Container.Fluid">
+            <BSNavbarBrand Padding="Padding.Small">
+                <img class="logo" src="/content/images/logo.png" alt="logo" title="logo" />
+                <span class="ms-2">
+                    Virtual Radar Server
+                </span>
+            </BSNavbarBrand>
+        </BSContainer>
+    </BSNavbar>
+</header>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<main>
+    <BSContainer>
+        @Body
+    </BSContainer>
+</main>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

@@ -1,7 +1,70 @@
 ﻿@page "/"
+@using Microsoft.Extensions.Options
+@using VirtualRadar.Configuration
+@inject IOptions<ApplicationSettings> _ApplicationSettings
 
-<PageTitle>Home</PageTitle>
+<PageTitle>VRS - Main</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>
+    Application Settings
+</h1>
+<BSTable>
+    <BSTHead>
+        <BSTR>
+            <BSTD>
+                Setting
+            </BSTD>
+            <BSTD>
+                Value
+            </BSTD>
+        </BSTR>
+    </BSTHead>
+    <BSTBody>
 
-Welcome to your new app.
+        <BSTR>
+            <BSTD>
+                Application
+            </BSTD>
+            <BSTD>
+                @_ApplicationSettings.Value.ApplicationName
+            </BSTD>
+        </BSTR>
+
+        <BSTR>
+            <BSTD>
+                Version
+            </BSTD>
+            <BSTD>
+                @_ApplicationSettings.Value.VersionDescription
+            </BSTD>
+        </BSTR>
+
+        <BSTR>
+            <BSTD>
+                Alpha Revision
+            </BSTD>
+            <BSTD>
+                @_ApplicationSettings.Value.AlphaRevision
+            </BSTD>
+        </BSTR>
+
+        <BSTR>
+            <BSTD>
+                Beta Revision
+            </BSTD>
+            <BSTD>
+                @_ApplicationSettings.Value.BetaRevision
+            </BSTD>
+        </BSTR>
+
+        <BSTR>
+            <BSTD>
+                Build Date
+            </BSTD>
+            <BSTD>
+                @_ApplicationSettings.Value.BuildDate
+            </BSTD>
+        </BSTR>
+
+    </BSTBody>
+</BSTable>

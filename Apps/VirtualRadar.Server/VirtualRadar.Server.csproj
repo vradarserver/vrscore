@@ -13,6 +13,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
+      <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
       <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>

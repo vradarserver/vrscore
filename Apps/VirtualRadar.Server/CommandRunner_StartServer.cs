@@ -10,6 +10,7 @@
 
 using System.IO;
 using System.Reflection;
+using BlazorStrap;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,9 +37,11 @@ namespace VirtualRadar.Server
                     options.EnableEndpointRouting = false;          // <-- need this for web API
                 });
                 builder.Services.AddControllers();                  // <-- need this for web API
-                builder.Services                                    // <-- these are for Blazor
+                builder.Services
                     .AddRazorComponents()
                     .AddInteractiveServerComponents();
+
+                builder.Services.AddBlazorStrap();
 
                 if(!Options.ShowLog) {
                     builder.Logging.ClearProviders();

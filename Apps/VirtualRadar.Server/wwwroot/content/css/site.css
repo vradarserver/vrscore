@@ -1,0 +1,19 @@
+﻿.vrs-base { color: #404570; }
+.vrs-light { color: #5c63a1; }
+.vrs-lighter { color: #6b72ab; }
+.vrs-very-light { color: #7c81b4; }
+.vrs-dark { color: #373b60; }
+.vrs-darker { color: #2d3150; }
+.vrs-very-dark { color: #24273f; }
+.vrs-bg-base { background-color: #404570; }
+.vrs-bg-light { background-color: #5c63a1; }
+.vrs-bg-lighter { background-color: #6b72ab; }
+.vrs-bg-very-light { background-color: #7c81b4; }
+.vrs-bg-dark { background-color: #373b60; }
+.vrs-bg-darker { background-color: #2d3150; }
+.vrs-bg-very-dark { background-color: #24273f; }
+
+header .logo {
+    width: 64px;
+    height: 43px;
+}
