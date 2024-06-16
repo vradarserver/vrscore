@@ -23,7 +23,7 @@ namespace Tests.VirtualRadar.IO
 
             protected override int _MaximumChunkSize { get; }
 
-            public TestChunker(byte[] startMarker, byte[] endMarker, int maximumChunkSize, bool readAhead)
+            public TestChunker(byte[] startMarker, byte[] endMarker, int maximumChunkSize)
             {
                 _StartMarker = startMarker;
                 _EndMarker = endMarker;
@@ -62,11 +62,12 @@ namespace Tests.VirtualRadar.IO
         }
 
         private TestChunker                         _TestChunker;
+        private IDisposable                         _TestChunkerState;
         private Action<ReadOnlyMemory<byte>>        _ChunkExtractedCallback;
         private int                                 _CountChunksSeen;
         private CancellationTokenSource             _CancellationTokenSource;
         private CancellationToken                   _CancellationToken;
-        private ReadOnlyStream                  _Stream;
+        private ReadOnlyStream                      _Stream;
 
         [TestInitialize]
         public void TestInitialise()
@@ -79,13 +80,19 @@ namespace Tests.VirtualRadar.IO
             _CountChunksSeen = 0;
             _ChunkExtractedCallback = null;
             _TestChunker = CreateTestChunker();
+            _TestChunkerState = null;
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            _TestChunkerState?.Dispose();
         }
 
         private TestChunker CreateTestChunker(
             byte[] startMarkers = null,
             byte[] endMarkers = null,
             int maxChunkSize = 3,
-            bool readAhead = true,
             bool setFields = true,
             Action<ReadOnlyMemory<byte>> callback = null
         )
@@ -93,8 +100,7 @@ namespace Tests.VirtualRadar.IO
             var result = new TestChunker(
                 startMarkers ?? [ 0x00, ],
                 endMarkers   ?? [ 0xff, ],
-                maximumChunkSize:   maxChunkSize,
-                readAhead:          readAhead
+                maximumChunkSize:   maxChunkSize
             );
 
             callback ??= (args) => _ChunkExtractedCallback?.Invoke(args);
@@ -108,6 +114,18 @@ namespace Tests.VirtualRadar.IO
             }
 
             return result;
+        }
+
+        private void BreakStreamIntoBlocks(Action<ReadOnlyMemory<byte>> action)
+        {
+            var buffer = new byte[_Stream.PacketSize];
+            int bytesRead;
+            do {
+                bytesRead = _Stream.Read(buffer);
+                if(bytesRead > 0) {
+                    action(buffer[..bytesRead]);
+                }
+            } while(bytesRead > 0);
         }
 
         private string FormatChunk(ReadOnlySpan<byte> chunk, int showFirst = 10, int showLast = 2)
@@ -139,66 +157,59 @@ namespace Tests.VirtualRadar.IO
         }
 
         [TestMethod]
-        public async Task Read_Exposes_Chunk_From_Stream()
+        public void ParseBlock_Exposes_Chunk_From_Single_Block()
         {
             _Stream.Configure([ 0x00, 0xff, ], sendOnePacket: true);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Expose_Unfiltered_Content()
-        {
-            var streamContent = new byte[] { 0xa0, 0xa1, 0xa2, 0x00, 0xff, 0xee };
-            _Stream.Configure(streamContent, sendOnePacket: true);
-            _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
-
-            byte[] block = [];
-            _TestChunker.BlockRead += (_,a) => block = a.ToArray();
-
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
-
-            Assert.IsTrue(block.SequenceEqual(streamContent));
-        }
-
-        [TestMethod]
-        public async Task Read_Increments_Count_Of_Chunks()
+        public void ParseBlock_Increments_Count_Of_Chunks()
         {
             _Stream.Configure([ 0x00, 0xff, ], sendOnePacket: true);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1L, _TestChunker.CountChunksExtracted);
         }
 
         [TestMethod]
-        public async Task Read_Discards_Bytes_Before_Start_Marker()
+        public void ParseBlock_Discards_Bytes_Before_Start_Marker()
         {
             _Stream.Configure([ 0x01, 0x00, 0xff, ], sendOnePacket: true);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Reads_Up_To_End_Marker()
+        public void ParseBlock_Reads_Up_To_End_Marker()
         {
             _Stream.Configure([ 0x01, 0x00, 0xff, 0x01 ], sendOnePacket: true);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Read_Two_Chunks_From_One_Packet()
+        public void ParseBlock_Can_Read_Two_Chunks_From_One_Packet()
         {
             _Stream.Configure([
                 0x00, 0x01, 0xff,
@@ -210,24 +221,28 @@ namespace Tests.VirtualRadar.IO
                 chunk
             );
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(2, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Read_Chunk_Built_From_Many_Packets()
+        public void ParseBlock_Can_Read_Chunk_Built_From_Many_Packets()
         {
             _Stream.Configure([ 0x00, 0xff, ], packetSize: 1);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Read_Two_Chunks_Built_From_Many_Packets()
+        public void ParseBlock_Can_Read_Two_Chunks_Built_From_Many_Packets()
         {
             _Stream.Configure([
                 0x00, 0x01, 0xff,
@@ -239,13 +254,15 @@ namespace Tests.VirtualRadar.IO
                 chunk
             );
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(2, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Read_Very_Large_Chunk()
+        public void ParseBlock_Can_Read_Very_Large_Chunk()
         {
             var chunk = new byte[1024 * 1024];
             new Random().NextBytes(chunk);
@@ -269,23 +286,59 @@ namespace Tests.VirtualRadar.IO
             _Stream.Configure(chunk, packetSize: 1024);
             _ChunkExtractedCallback = args => AssertChunk(chunk, args);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Abandons_Chunks_That_Are_Too_Long()
+        public void ParseBlock_Abandons_Chunks_That_Are_Too_Long()
         {
             _Stream.Configure([ 0x00, 0x01, 0x02, 0xff, ], sendOnePacket: true);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(0, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Read_Two_Chunks_Built_From_Many_Packets_While_Ignoring_OverLength_Chunk()
+        public void ParseBlock_Can_Handle_Buffers_That_Exceed_MaxChunkSize()
+        {
+            var packet = new byte[100 * 1024];
+            new Random().NextBytes(packet);
+            for(var idx = 0;idx < packet.Length;++idx) {
+                switch(packet[idx]) {
+                    case 0x00:
+                    case 0xff:
+                        packet[idx] = 0x80;
+                        break;
+                }
+            }
+            packet[0] = 0x00;
+            packet[^1] = 0xff;
+
+            var streamContent = new byte[packet.Length + 2];
+            packet.AsSpan().CopyTo(
+                streamContent.AsSpan(1, packet.Length)
+            );
+
+            CreateTestChunker(maxChunkSize: 10);
+            _Stream.Configure(packet, sendOnePacket: true);
+            _ChunkExtractedCallback = args => AssertChunk(packet, args);
+
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
+
+            Assert.AreEqual(0, _CountChunksSeen);
+        }
+
+        [TestMethod]
+        public void ParseBlock_Can_Read_Two_Chunks_Built_From_Many_Packets_While_Ignoring_OverLength_Chunk()
         {
             _Stream.Configure([
                 0x00, 0x01, 0xff,
@@ -298,13 +351,15 @@ namespace Tests.VirtualRadar.IO
                 chunk
             );
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(2, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Read_Two_Chunks_Built_From_Many_Packets_While_Ignoring_OverLength_And_Unfinished_Chunk()
+        public void ParseBlock_Can_Read_Two_Chunks_Built_From_Many_Packets_While_Ignoring_OverLength_And_Unfinished_Chunk()
         {
             _Stream.Configure([
                 0x00, 0x01, 0xff,
@@ -317,13 +372,15 @@ namespace Tests.VirtualRadar.IO
                 chunk
             );
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(2, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Ignores_Large_Blocks_Of_Leading_Garbage()
+        public void ParseBlock_Ignores_Large_Blocks_Of_Leading_Garbage()
         {
             var streamContent = new byte[(1024 * 1024) + 2];
             Array.Fill(streamContent, (byte)0x80);
@@ -332,7 +389,9 @@ namespace Tests.VirtualRadar.IO
             _Stream.Configure(streamContent, packetSize: 16);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0xff, ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }
@@ -348,7 +407,7 @@ namespace Tests.VirtualRadar.IO
         [DataRow(8)]
         [DataRow(9)]
         [DataRow(10)]
-        public async Task Read_Can_Cope_With_Incomplete_Messages_At_End_Of_Packet(int packetSize)
+        public void ParseBlock_Can_Cope_With_Incomplete_Messages_At_End_Of_Packet(int packetSize)
         {
             _Stream.Configure([
                 0x00, 0x01, 0xff,   0x00, 0x02, 0xff,   0x00, 0x03, 0xff,
@@ -357,13 +416,15 @@ namespace Tests.VirtualRadar.IO
             ], packetSize: packetSize);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, (byte)_CountChunksSeen, 0xff ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(9, _CountChunksSeen);
         }
 
         [TestMethod]
-        public async Task Read_Can_Cope_With_Messages_Spanning_More_Than_One_Packet()
+        public void ParseBlock_Can_Cope_With_Messages_Spanning_More_Than_One_Packet()
         {
             // This test relies on inside knowledge of .NET 8 and the chunker, I'm not sure
             // how useful it will be in the future. It relies on knowing that the .NET pool
@@ -377,7 +438,9 @@ namespace Tests.VirtualRadar.IO
             ], packetSize: 16);
             _ChunkExtractedCallback = chunk => AssertChunk([ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0xff ], chunk);
 
-            await _TestChunker.ReadChunksFromStream(_Stream, _CancellationToken);
+            BreakStreamIntoBlocks(buffer =>
+                _TestChunkerState = _TestChunker.ParseBlock(buffer, _TestChunkerState)
+            );
 
             Assert.AreEqual(1, _CountChunksSeen);
         }

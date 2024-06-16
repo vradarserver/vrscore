@@ -131,3 +131,59 @@
         </BSTable>
     </BSCol>
 </BSRow>
+
+<BSRow MarginTop="Margins.Small">
+    <BSCol>
+        <h2>
+            Thread Pool Statistics
+        </h2>
+    </BSCol>
+</BSRow>
+
+<BSRow>
+    <BSCol>
+        <BSTable>
+            <BSTHead>
+                <BSTR>
+                    <BSTD>
+                        Variable
+                    </BSTD>
+                    <BSTD>
+                        Value
+                    </BSTD>
+                </BSTR>
+            </BSTHead>
+            <BSTBody>
+                <BSTR>
+                    <BSTD>
+                        Max worker threads:
+                    </BSTD>
+                    <BSTD>
+                        @_ThreadPoolMaxWorkerThreads
+                    </BSTD>
+                </BSTR>
+
+                <BSTR>
+                    <BSTD>
+                        Max completion port threads:
+                    </BSTD>
+                    <BSTD>
+                        @_ThreadPoolMaxCompletionPortThreads
+                    </BSTD>
+                </BSTR>
+            </BSTBody>
+        </BSTable>
+    </BSCol>
+</BSRow>
+
+@code
+{
+    int _ThreadPoolMaxWorkerThreads;
+    int _ThreadPoolMaxCompletionPortThreads;
+
+    protected override Task OnInitializedAsync()
+    {
+        ThreadPool.GetMaxThreads(out int _ThreadPoolMaxWorkerThreads, out _ThreadPoolMaxCompletionPortThreads);
+        return base.OnInitializedAsync();
+    }
+}
