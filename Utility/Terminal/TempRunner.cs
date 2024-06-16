@@ -75,7 +75,7 @@ namespace VirtualRadar.Utility.Terminal
                     };
 
                     try {
-                        await chunker.ReadChunksFromStream(feedStream, cancellationTokenSource.Token);
+                        //TODO: Rework await chunker.ReadChunksFromStream(feedStream, cancellationTokenSource.Token);
                     } catch(OperationCanceledException) {
                         Console.Clear();
                     } finally {

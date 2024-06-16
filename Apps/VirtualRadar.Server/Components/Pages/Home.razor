@@ -183,7 +183,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        ThreadPool.GetMaxThreads(out int _ThreadPoolMaxWorkerThreads, out _ThreadPoolMaxCompletionPortThreads);
+        ThreadPool.GetMaxThreads(out _ThreadPoolMaxWorkerThreads, out _ThreadPoolMaxCompletionPortThreads);
         return base.OnInitializedAsync();
     }
 }
