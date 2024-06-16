@@ -8,44 +8,33 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Connection
+namespace VirtualRadar.Receivers
 {
     /// <summary>
-    /// The properties and functions that all connectors have in common.
+    /// Brings together a connection to a feed source and an aircraft list to record the current state of
+    /// aircraft on the feed.
     /// </summary>
-    public interface IConnector : IAsyncDisposable
+    public interface IReceiver
     {
         /// <summary>
-        /// A terse description of the connection.
+        /// Gets the unique identifier of the receiver.
         /// </summary>
-        string Description { get; }
+        Guid Id { get; }
 
         /// <summary>
-        /// The current state of the connection.
+        /// Gets or sets the name of the feed.
         /// </summary>
-        ConnectionState ConnectionState { get; }
+        string Name { get; set; }
 
         /// <summary>
-        /// Raised on a random thread when <see cref="ConnectionState"/> changes.
+        /// Gets or sets a value indicating that <see cref="AircraftList"/> is being updated with messages
+        /// from the feed.
         /// </summary>
-        event EventHandler ConnectionStateChanged;
+        bool Enabled { get; set; }
 
         /// <summary>
-        /// Establishes the connection.
+        /// Gets the aircraft list that represents the current state of the aircraft on the feed.
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="ConnectionAlreadyOpenException">
-        /// Thrown if an attempt to open a connection is made while the <see cref="ConnectionState"/> is not
-        /// <see cref="ConnectionState.Closed"/>.
-        /// </exception>
-        Task OpenAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Closes the connection. The connection should be left in a state where <see cref="OpenAsync"/>
-        /// could be called to re-establish the connection. Attempts to close a connection that is not in the
-        /// <see cref="ConnectionState.Open"/> state are ignored.
-        /// </summary>
-        /// <returns></returns>
-        Task CloseAsync();
+        IAircraftList AircraftList { get; }
     }
 }

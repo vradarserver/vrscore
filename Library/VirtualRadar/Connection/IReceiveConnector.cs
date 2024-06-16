@@ -11,41 +11,14 @@
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// The properties and functions that all connectors have in common.
+    /// The interface for connectors that receive a feed from a source.
     /// </summary>
-    public interface IConnector : IAsyncDisposable
+    public interface IReceiveConnector : IConnector
     {
         /// <summary>
-        /// A terse description of the connection.
+        /// Raised on background threads when the connector receives a packet. The event handlers
+        /// must not use the packet after they return and they must return as quickly as possible.
         /// </summary>
-        string Description { get; }
-
-        /// <summary>
-        /// The current state of the connection.
-        /// </summary>
-        ConnectionState ConnectionState { get; }
-
-        /// <summary>
-        /// Raised on a random thread when <see cref="ConnectionState"/> changes.
-        /// </summary>
-        event EventHandler ConnectionStateChanged;
-
-        /// <summary>
-        /// Establishes the connection.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="ConnectionAlreadyOpenException">
-        /// Thrown if an attempt to open a connection is made while the <see cref="ConnectionState"/> is not
-        /// <see cref="ConnectionState.Closed"/>.
-        /// </exception>
-        Task OpenAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Closes the connection. The connection should be left in a state where <see cref="OpenAsync"/>
-        /// could be called to re-establish the connection. Attempts to close a connection that is not in the
-        /// <see cref="ConnectionState.Open"/> state are ignored.
-        /// </summary>
-        /// <returns></returns>
-        Task CloseAsync();
+        event EventHandler<ReadOnlyMemory<byte>> PacketReceived;
     }
 }

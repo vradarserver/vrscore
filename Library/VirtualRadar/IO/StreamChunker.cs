@@ -34,7 +34,8 @@ namespace VirtualRadar.IO
         /// <summary>
         /// The maximum length of a chunk. If a sequence of bytes has not been identified
         /// as a chunk before this limit is reached then the chunk is abandoned and the
-        /// chunker begins looking for the start of the next chunk.
+        /// chunker begins looking for the start of the next chunk. Note that the chunker
+        /// will allocate a buffer of this size, so don't set it to anything mad.
         /// </summary>
         protected virtual int _MaximumChunkSize { get; } = 100;
 
@@ -82,36 +83,54 @@ namespace VirtualRadar.IO
         }
 
         /// <summary>
-        /// Reads chunks from the stream forever until the cancellation token is set or it errors
-        /// out. Each chunk is exposed via the <see cref="ChunkRead"/> event.
+        /// Given a block read as a part of a contiguous feed of blocks, this extracts chunks from the block
+        /// and raises <see cref="ChunkRead"/> events for each block.
         /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task ReadChunksFromStream(Stream stream, CancellationToken cancellationToken)
+        /// <param name="buffer">The next packet / datagram etc. read from a connection to a feed.</param>
+        /// <param name="state">
+        /// The state object returned by the previous call to <see cref="ParseBlock"/> for this feed.
+        /// </param>
+        /// <returns>
+        /// A state object that you should pass to the next call to <see cref="ParseBlock"/> for this feed.
+        /// The state is disposable, you must dispose of it once the last block has been read or you will leak
+        /// memory.
+        /// </returns>
+        /// <exception cref="ArgumentException"></exception>
+        public IDisposable ParseBlock(ReadOnlyMemory<byte> buffer, IDisposable state)
         {
-            using var readBuffer = _IsolatedPool.Rent(Math.Min(2048, _MaximumChunkSize));
-            using var parseBuffer = _IsolatedPool.Rent(_MaximumChunkSize + readBuffer.Memory.Length);
-
-            var parseBufferLength = 0;
-
-            while(!cancellationToken.IsCancellationRequested) {
-                var usableLength = await stream.ReadAsync(readBuffer.Memory, cancellationToken);
-                if(usableLength > 0) {
-                    OnBlockRead(readBuffer.Memory, usableLength);
-
-                    var newBlockStart = parseBufferLength;
-
-                    readBuffer
-                        .Memory.Span[..usableLength]
-                        .CopyTo(parseBuffer.Memory.Span[parseBufferLength..]);
-
-                    parseBufferLength = ExtractChunks(
-                        parseBuffer.Memory.Span[..(parseBufferLength + usableLength)],
-                        newBlockStart
-                    );
-                }
+            var parseState = state as StreamChunkerParseState;
+            if(state != null && parseState == null) {
+                throw new ArgumentException(null, nameof(state));
             }
+            parseState ??= new();
+
+            var bufferOffset = 0;
+            while(bufferOffset < buffer.Length) {
+                var parseBufferUsable = _MaximumChunkSize - parseState.ParseBufferLength;
+                var windowLength = Math.Min(buffer.Length - bufferOffset, parseBufferUsable);
+                if(windowLength < 1) {
+                    throw new InvalidOperationException($"Unexpected window length when parsing block: {nameof(parseBufferUsable)}={parseBufferUsable}");
+                }
+                var bufferEndOffset = bufferOffset + windowLength;
+                var bufferWindow = buffer.Span[bufferOffset..bufferEndOffset];
+
+                var newBlockStart = parseState.ParseBufferLength;
+                var newParseBufferLength = Math.Min(newBlockStart + bufferWindow.Length, _MaximumChunkSize);
+                parseState.ExpandParseBuffer(_IsolatedPool, newParseBufferLength);
+
+                bufferWindow.CopyTo(
+                    parseState.ParseBuffer.Memory.Span[parseState.ParseBufferLength..]
+                );
+
+                parseState.ParseBufferLength = ExtractChunks(
+                    parseState.ParseBuffer.Memory.Span[..(parseState.ParseBufferLength + bufferWindow.Length)],
+                    newBlockStart
+                );
+
+                bufferOffset += bufferWindow.Length;
+            }
+
+            return parseState;
         }
 
         private int ExtractChunks(Span<byte> buffer, int newBlockStartOffset)
@@ -136,6 +155,9 @@ namespace VirtualRadar.IO
                     if(incompleteChunkSize >= _MaximumChunkSize) {
                         window = [];
                         break;
+                    } else {
+                        moveWindowToStartOfBuffer = true;
+                        window = window[startOffset..];
                     }
                 }
                 if(startOffset == -1 || endOffset == -1 || startOffset > endOffset) {
@@ -162,6 +184,9 @@ namespace VirtualRadar.IO
 
             if(moveWindowToStartOfBuffer && window.Length > 0) {
                 window.CopyTo(buffer);
+            }
+            if(window.Length == _MaximumChunkSize) {
+                window = [];
             }
 
             return window.Length;

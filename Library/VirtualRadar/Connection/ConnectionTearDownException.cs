@@ -11,41 +11,45 @@
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// The properties and functions that all connectors have in common.
+    /// Based on <see cref="AggregateException"/>, this can be thrown when an <see cref="IConnector"/> tears
+    /// down a connection.
     /// </summary>
-    public interface IConnector : IAsyncDisposable
+    /// <remarks>
+    /// It is common for connections to collapse due to conditions beyond the program's control, and when the
+    /// connection is in a collapsed state the framework often throws exceptions when you try to dispose of it.
+    /// By having a distinct exception for exceptions thrown when a connection is torn down the application
+    /// can discriminate between these exceptions and those that are more likely to indicate a problem with the
+    /// program or setup.
+    /// </remarks>
+    [Serializable]
+    public class ConnectionTearDownException : AggregateException
     {
-        /// <summary>
-        /// A terse description of the connection.
-        /// </summary>
-        string Description { get; }
+        public ConnectionTearDownException()
+        {
+        }
 
-        /// <summary>
-        /// The current state of the connection.
-        /// </summary>
-        ConnectionState ConnectionState { get; }
+        public ConnectionTearDownException(IEnumerable<Exception> innerExceptions) : base(innerExceptions)
+        {
+        }
 
-        /// <summary>
-        /// Raised on a random thread when <see cref="ConnectionState"/> changes.
-        /// </summary>
-        event EventHandler ConnectionStateChanged;
+        public ConnectionTearDownException(params Exception[] innerExceptions) : base(innerExceptions)
+        {
+        }
 
-        /// <summary>
-        /// Establishes the connection.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="ConnectionAlreadyOpenException">
-        /// Thrown if an attempt to open a connection is made while the <see cref="ConnectionState"/> is not
-        /// <see cref="ConnectionState.Closed"/>.
-        /// </exception>
-        Task OpenAsync(CancellationToken cancellationToken);
+        public ConnectionTearDownException(string message) : base(message)
+        {
+        }
 
-        /// <summary>
-        /// Closes the connection. The connection should be left in a state where <see cref="OpenAsync"/>
-        /// could be called to re-establish the connection. Attempts to close a connection that is not in the
-        /// <see cref="ConnectionState.Open"/> state are ignored.
-        /// </summary>
-        /// <returns></returns>
-        Task CloseAsync();
+        public ConnectionTearDownException(string message, IEnumerable<Exception> innerExceptions) : base(message, innerExceptions)
+        {
+        }
+
+        public ConnectionTearDownException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        public ConnectionTearDownException(string message, params Exception[] innerExceptions) : base(message, innerExceptions)
+        {
+        }
     }
 }

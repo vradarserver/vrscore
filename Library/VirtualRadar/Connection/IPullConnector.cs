@@ -11,41 +11,18 @@
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// The properties and functions that all connectors have in common.
+    /// The interface for a connector that can initiate a connection to a source and pull a feed from it.
     /// </summary>
-    public interface IConnector : IAsyncDisposable
+    public interface IPullConnector : IReceiveConnector
     {
         /// <summary>
-        /// A terse description of the connection.
+        /// Gets or sets the ideal size of packets to pull from the source.
         /// </summary>
-        string Description { get; }
-
-        /// <summary>
-        /// The current state of the connection.
-        /// </summary>
-        ConnectionState ConnectionState { get; }
-
-        /// <summary>
-        /// Raised on a random thread when <see cref="ConnectionState"/> changes.
-        /// </summary>
-        event EventHandler ConnectionStateChanged;
-
-        /// <summary>
-        /// Establishes the connection.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="ConnectionAlreadyOpenException">
-        /// Thrown if an attempt to open a connection is made while the <see cref="ConnectionState"/> is not
-        /// <see cref="ConnectionState.Closed"/>.
-        /// </exception>
-        Task OpenAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Closes the connection. The connection should be left in a state where <see cref="OpenAsync"/>
-        /// could be called to re-establish the connection. Attempts to close a connection that is not in the
-        /// <see cref="ConnectionState.Open"/> state are ignored.
-        /// </summary>
-        /// <returns></returns>
-        Task CloseAsync();
+        /// <remarks>
+        /// This is a suggestion rather than a command, if the connector doesn't have the concept of packets
+        /// then it is free to ignore the parameter, or place upper or lower limits on it. The default value
+        /// is also at the whim of the connector and should not be relied upon.
+        /// </remarks>
+        int PacketSize { get; set; }
     }
 }

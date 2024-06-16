@@ -15,9 +15,9 @@ using System.Net.Sockets;
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// An implementation of <see cref="IConnector"/> that can pull a feed from an IPv4/6 address and port.
+    /// An implementation of <see cref="IConnectorDeprecated"/> that can pull a feed from an IPv4/6 address and port.
     /// </summary>
-    public class TcpConnector : IConnector
+    public class TcpConnector : IConnectorDeprecated
     {
         private Socket _Socket;             // The socket that communication is running over, if this is null then the connection is closed.
         private NetworkStream _Stream;      // The network stream opened on top of the socket, if this is null then the connection is closed.
