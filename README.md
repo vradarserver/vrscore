@@ -1,11 +1,15 @@
 # Virtual Radar Server
 
-A .NET Core application for Windows, Linux and macOS that can decode Mode-S and ADS-B
-transmissions from aircraft transponders and plot their positions on a map.
+A .NET Core application for Windows, Linux and macOS that can decode Mode-S and
+ADS-B transmissions from aircraft transponders and plot their positions on a
+map.
 
-This is in the very early stages of development. The mature version of VRS is here:
+This is in the very early stages of development. The mature version of VRS is
+here:
 
 https://github.com/vradarserver/vrs
+
+
 
 ## Compilation
 
@@ -42,6 +46,8 @@ To just run the server without building first:
 | Linux            | `./run.sh server` |
 | macOS            | `./run.sh server` |
 | Windows          | `run server` |
+
+
 
 ## Server Command-Line Options
 
