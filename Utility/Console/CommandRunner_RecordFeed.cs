@@ -35,66 +35,54 @@ namespace VirtualRadar.Utility.CLIConsole
                 OptionsParser.Usage($"Missing filename");
             }
 
-            var cancellationTokenSource = new CancellationTokenSource();
+            var cancelSource = new CancellationTokenSource();
 
-            await WriteLine($"Creating TCP connector to {ipAddress}:{_Options.Port}");
-            var connector = new TcpConnector(new() {
+            await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
+            var connector = new TcpPullConnector(new() {
                 Address = ipAddress,
                 Port = _Options.Port,
-                CanRead = true,
-                CanWrite = false
             });
+
+            await WriteLine($"Opening {_Options.SaveFileName} for writing");
+            var fileStream = new FileStream(_Options.SaveFileName, FileMode.Create, FileAccess.Write, FileShare.Read);
+            await _FeedRecorder.WriteHeaderAsync(fileStream);
+
+            connector.ConnectionStateChanged += (_,_) => Console.WriteLine($"Connection is now {connector.ConnectionState}");
+
+            var totalReadLength = 0L;
+            var packetCount = 0L;
+            var stopwatch = Stopwatch.StartNew();
+
+            connector.PacketReceived += (_,packet) => {
+                if(fileStream != null) {
+                    if(packetCount != 0) {
+                        Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
+                    }
+                    ++packetCount;
+                    totalReadLength += packet.Length;
+                    Console.WriteLine($"{stopwatch} read packet {packetCount} length {packet.Length:N0} for {totalReadLength:N0} total           ");
+                    _FeedRecorder.WritePacketAsync(fileStream, packet);
+                }
+            };
 
             try {
                 await WriteLine($"Opening stream (connector is currently {connector.ConnectionState})");
-                var stream = await connector.OpenAsync(CancellationToken.None);
-                await WriteLine($"Connection state is now {connector.ConnectionState}");
+                await connector.OpenAsync(cancelSource.Token);
 
-                await WriteLine($"Opening {_Options.SaveFileName} for writing");
-                using(var fileStream = new FileStream(_Options.SaveFileName, FileMode.Create, FileAccess.Write, FileShare.Read)) {
-                    await _FeedRecorder.WriteHeaderAsync(fileStream);
-
-                    await WriteLine($"Recording network feed to {_Options.SaveFileName}");
-                    await WriteLine($"Press any key to stop");
-                    var keyWatcherTask = CancelIfAnyKeyPressed(cancellationTokenSource);
-
-                    try {
-                        var readBuffer = new byte[64 * 1024];
-                        var readLength = 0;
-                        var totalReadLength = 0L;
-                        var packetCount = 0L;
-                        var stopwatch = Stopwatch.StartNew();
-
-                        do {
-                            readLength = await stream.ReadAsync(readBuffer, cancellationTokenSource.Token);
-                            if(!cancellationTokenSource.IsCancellationRequested) {
-                                if(packetCount != 0) {
-                                    Console.SetCursorPosition(Console.CursorLeft, Console.CursorTop - 1);
-                                }
-                                ++packetCount;
-                                totalReadLength += readLength;
-                                await WriteLine($"{stopwatch.ToString()} read packet {packetCount} length {readLength:N0} for {totalReadLength:N0} total           ");
-                                await _FeedRecorder.WritePacketAsync(fileStream, readBuffer.AsMemory(0, readLength));
-                            }
-                        } while(readLength != 0);
-
-                        cancellationTokenSource.Cancel();
-                    } catch(OperationCanceledException) {
-                        await WriteLine();
-                        await WriteLine("Recording stopped");
-                    } finally {
-                        cancellationTokenSource.Cancel();
-                        await keyWatcherTask;
-                    }
-
-                    await fileStream.FlushAsync();
-                }
-
-                await Console.Out.WriteLineAsync($"Wrote {new FileInfo(_Options.SaveFileName).Length:N0} bytes to {_Options.SaveFileName}");
-                await connector.CloseAsync();
+                await WriteLine($"Recording network feed to {_Options.SaveFileName}");
+                await WriteLine($"Press any key to stop");
+                await CancelIfAnyKeyPressed(cancelSource);
             } finally {
-                await connector.DisposeAsync();
+                var cleanupFileStream = fileStream;
+                fileStream = null;
+
+                await cleanupFileStream.FlushAsync();
+                await cleanupFileStream.DisposeAsync();
+
+                await connector.CloseAsync();
             }
+
+            await Console.Out.WriteLineAsync($"Wrote {new FileInfo(_Options.SaveFileName).Length:N0} bytes to {_Options.SaveFileName}");
 
             return true;
         }
