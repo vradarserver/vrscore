@@ -62,7 +62,7 @@ namespace Tests.VirtualRadar.IO
         }
 
         private TestChunker                         _TestChunker;
-        private IDisposable                         _TestChunkerState;
+        private IStreamChunkerState                 _TestChunkerState;
         private Action<ReadOnlyMemory<byte>>        _ChunkExtractedCallback;
         private int                                 _CountChunksSeen;
         private CancellationTokenSource             _CancellationTokenSource;

@@ -30,7 +30,7 @@ namespace VirtualRadar.Connection
 
             public Socket                   Socket;             // The socket that communication is running over
             public NetworkStream            Stream;             // The network stream that we are reading
-            public Thread                   PumpThread;         // The background packet pump thread
+            public Task                     PumpTask;           // The background packet pump thread
             public CancellationTokenSource  PumpCancelToken;    // Internal cancellation token that is never CancellationToken.None
             public CancellationTokenSource  StreamCancelToken;  // Our ThreadCancelToken merged with the cancellation token (which could be None) passed to the OpenAsync call
 
@@ -52,42 +52,51 @@ namespace VirtualRadar.Connection
                     try {
                         var exceptions = new List<Exception>();
 
-                        if(PumpCancelToken != null) {
+                        if(PumpTask != null) {
                             exceptions.Capture(() => {
+                                // We always have this - bear in mind that there are two reasons
+                                // why we might be here. First is that StreamCancelToken cancelled,
+                                // in which case this is redundant but harmless. Second is that
+                                // the connection is closing, in which case this is necessary.
                                 if(!PumpCancelToken.IsCancellationRequested) {
                                     PumpCancelToken.Cancel();
                                 }
                             });
+
+                            exceptions.Capture(() => {
+                                PumpTask.Wait(5000);
+                                PumpTask = null;
+                            });
+                        }
+
+                        if(PumpCancelToken != null) {
                             exceptions.Capture(() =>
                                 PumpCancelToken.Dispose()
                             );
                             PumpCancelToken = null;
                         }
+
                         if(StreamCancelToken != null) {
                             exceptions.Capture(() =>
                                 StreamCancelToken.Dispose()
                             );
                             StreamCancelToken = null;
                         }
-                        if(PumpThread != null) {
-                            // Sure would be nice to be able to abort the thread here, but c'est la vie.
-                            // All we can do is make sure we don't have a reference to it anywhere. If
-                            // cancelling it wasn't enough (and probably isn't, given that it isn't async)
-                            // then it should explode once the socket gets whipped away from it.
-                            PumpThread = null;
-                        }
+
                         if(Stream != null) {
                             exceptions.Capture(() =>
                                 Stream.Dispose()
                             );
                             Stream = null;
                         }
+
                         if(Socket != null) {
                             exceptions.Capture(() =>
                                 Socket.Dispose()
                             );
                             Socket = null;
                         }
+
                         if(_Connector._Connection == this && _Connector.ConnectionState == ConnectionState.Open) {
                             exceptions.Capture(() =>
                                 _Connector.ConnectionState = ConnectionState.Closed     // <-- can throw exceptions via the event handler
@@ -239,41 +248,40 @@ namespace VirtualRadar.Connection
         }
 
         /// <summary>
-        /// Starts a background thread to read the packets off the stream. We use a background thread because
-        /// typically there are a bunch of these and they run for the duration of the application. We don't
-        /// want to eat into / be at the mercy of the thread pool for these.
+        /// Starts a stream pump on a threadpool thread.
         /// </summary>
         /// <param name="connection"></param>
+        /// <remarks>
+        /// I had originally use a standard thread here instead of a threadpool thread,
+        /// under normal circumstances these pump threads are very long-lived and I didn't
+        /// want to waste pooled threads on them. However, it turns out that .NET Core
+        /// allocates thousands of thread pool threads instead of 20 per processor, and
+        /// that the value can also be configured... and having a pump that fits in with
+        /// .NET's parallel processing means you can have a meaningful cancellation token.
+        /// </remarks>
         private void StartPacketPump(Connection connection)
         {
-            connection.PumpThread = new Thread(PacketPumpThreadStart);
-            connection.PumpThread.Start(connection);
+            connection.PumpTask = PacketPumpThreadStart(connection);
         }
 
-        private void PacketPumpThreadStart(object connectionObj)
+        /// <summary>
+        /// Runs the packet pump for a connection.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        private async Task PacketPumpThreadStart(Connection connection)
         {
             try {
-                if(connectionObj is Connection connection) {
-                    try {
-                        RunPacketPump(connection);
-                    } catch(OperationCanceledException) {
-                        ;
-                    } catch(Exception) {
-                        try {
-                            // TODO: Expose the exceptions that cause read threads to stop via the connector log
-                            connection.TearDown();
-                        } catch {
-                            ;
-                        }
-                    }
-                }
-            } catch {
-                // Never let exceptions bubble out of a background thread, it will halt the runtime
+                await RunPacketPump(connection);
+            } catch(OperationCanceledException) {
                 ;
+            } catch(Exception) {
+                // TODO: Expose the exceptions that cause read threads to stop via the connector log
+                connection.TearDown();
             }
         }
 
-        private void RunPacketPump(Connection connection)
+        private async Task RunPacketPump(Connection connection)
         {
             IMemoryOwner<byte> buffer = null;
             var bufferLength = 0;
@@ -287,12 +295,12 @@ namespace VirtualRadar.Connection
                         buffer = MemoryPool<byte>.Shared.Rent(bufferLength);
                     }
 
-                    var bytesRead = connection.Stream.Read(buffer.Memory.Span);
+                    var bytesRead = await connection.Stream.ReadAsync(buffer.Memory, connection.StreamCancelToken.Token);
                     if(!connection.StreamCancelToken.IsCancellationRequested) {
                         if(bytesRead > 0) {
                             OnPacketReceived(buffer.Memory[..bytesRead]);
                         } else {
-                            Thread.Sleep(0);        // Give up timeslice
+                            await Task.Delay(0);
                         }
                     }
                 }
