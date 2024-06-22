@@ -42,6 +42,8 @@ namespace VirtualRadar.Utility.Terminal
 
         public long CountChunksSeen { get; set; }
 
+        public string ConnectionState { get; set; }
+
         public AircraftListWindow(
             IAircraftList aircraftList
         )
@@ -111,7 +113,7 @@ namespace VirtualRadar.Utility.Terminal
                     ?? [];
 
                 Position = _CountTrackedPoint;
-                Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks");
+                Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks, connection is {ConnectionState?.ToLower()}");
                 ClearToEndOfLine();
 
                 _AircraftTable.DrawBody(set, Console.WindowHeight - 5);

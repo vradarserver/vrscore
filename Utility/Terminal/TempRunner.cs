@@ -62,6 +62,8 @@ namespace VirtualRadar.Utility.Terminal
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
                     var windowEventLoopTask = aircraftListWindow.EventLoop(cancelSource);
 
+                    connector.ConnectionStateChanged += (_,_) => aircraftListWindow.ConnectionState = connector.ConnectionState.ToString();
+
                     connector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountChunksSeen;
                         foreach(var message in translator.ConvertTo(packet)) {
