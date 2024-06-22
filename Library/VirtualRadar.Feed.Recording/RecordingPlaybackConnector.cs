@@ -53,6 +53,31 @@ namespace VirtualRadar.Feed.Recording
             ConnectionStateChanged?.Invoke(this, args);
         }
 
+        private TimestampedException _LastException;
+        /// <inheritdoc/>
+        public TimestampedException LastException
+        {
+            get => _LastException;
+            private set {
+                if(value != LastException) {
+                    _LastException = value;
+                    OnLastExceptionChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public event EventHandler LastExceptionChanged;
+
+        /// <summary>
+        /// Raises <see cref="LastExceptionChanged"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnLastExceptionChanged(EventArgs args)
+        {
+            LastExceptionChanged?.Invoke(this, args);
+        }
+
         /// <inheritdoc/>
         public event EventHandler<ReadOnlyMemory<byte>> PacketReceived;
 
@@ -110,9 +135,16 @@ namespace VirtualRadar.Feed.Recording
 
                 _State = state;
                 _State.PumpTask = RunPacketPump(state);
+            } catch(Exception ex) {
+                LastException = new(ex);
+                throw;
             } finally {
                 if(ConnectionState != ConnectionState.Open) {
-                    state?.TearDown();
+                    try {
+                        state?.TearDown();
+                    } finally {
+                        ConnectionState = ConnectionState.Closed;
+                    }
                 }
             }
         }
@@ -146,8 +178,12 @@ namespace VirtualRadar.Feed.Recording
                 }
             } catch(OperationCanceledException) {
                 ;
-            } catch(Exception) {
-                // TODO: Log exceptions that force the connection closed
+            } catch(Exception ex) {
+                try {
+                    LastException = new(ex);
+                } catch {
+                    ;
+                }
                 try {
                     state.TearDown();
                 } catch {

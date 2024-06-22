@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2014 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,54 +8,43 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Connection
+namespace VirtualRadar
 {
     /// <summary>
-    /// The properties and functions that all connectors have in common.
+    /// Records an exception and the time (at UTC) when it was thrown.
     /// </summary>
-    public interface IConnector : IAsyncDisposable
+    public class TimestampedException
     {
         /// <summary>
-        /// A terse description of the connection.
+        /// The date and time at UTC when the exception was thrown.
         /// </summary>
-        string Description { get; }
+        public DateTime TimeUtc { get; }
 
         /// <summary>
-        /// The current state of the connection.
+        /// The exception that was thrown.
         /// </summary>
-        ConnectionState ConnectionState { get; }
+        public Exception Exception { get; }
 
         /// <summary>
-        /// Raised on a random thread when <see cref="ConnectionState"/> changes.
+        /// Creates a new object.
         /// </summary>
-        event EventHandler ConnectionStateChanged;
+        /// <param name="exception"></param>
+        public TimestampedException(Exception exception) : this(DateTime.UtcNow, exception)
+        {
+        }
 
         /// <summary>
-        /// The last exception thrown by the connector.
+        /// Creates a new object
         /// </summary>
-        TimestampedException LastException { get; }
+        /// <param name="timeUtc"></param>
+        /// <param name="exception"></param>
+        public TimestampedException(DateTime timeUtc, Exception exception)
+        {
+            TimeUtc = timeUtc;
+            Exception = exception;
+        }
 
-        /// <summary>
-        /// Raised when <see cref="LastException"/> changes.
-        /// </summary>
-        event EventHandler LastExceptionChanged;
-
-        /// <summary>
-        /// Establishes the connection.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="ConnectionAlreadyOpenException">
-        /// Thrown if an attempt to open a connection is made while the <see cref="ConnectionState"/> is not
-        /// <see cref="ConnectionState.Closed"/>.
-        /// </exception>
-        Task OpenAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Closes the connection. The connection should be left in a state where <see cref="OpenAsync"/>
-        /// could be called to re-establish the connection. Attempts to close a connection that is not in the
-        /// <see cref="ConnectionState.Open"/> state are ignored.
-        /// </summary>
-        /// <returns></returns>
-        Task CloseAsync();
+        /// <inheritdoc/>
+        public override string ToString() => $"{TimeUtc:HH:mm:ss.sss} {Exception?.Message}";
     }
 }

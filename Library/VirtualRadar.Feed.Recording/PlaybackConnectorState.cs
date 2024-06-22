@@ -18,8 +18,6 @@ namespace VirtualRadar.Feed.Recording
     {
         public RecordingPlaybackConnector Parent;
 
-        public CancellationToken CancellationToken;
-
         public FileStream FileStream;
 
         public RecordingReader Reader;

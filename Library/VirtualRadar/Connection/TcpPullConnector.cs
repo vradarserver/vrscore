@@ -16,6 +16,9 @@ using VirtualRadar.Extensions;
 
 namespace VirtualRadar.Connection
 {
+    /// <summary>
+    /// A connector that actively connects to a remote TCP port and pulls a feed from it.
+    /// </summary>
     public class TcpPullConnector : IPullConnector
     {
         /// <summary>
@@ -148,6 +151,31 @@ namespace VirtualRadar.Connection
             ConnectionStateChanged?.Invoke(this, args);
         }
 
+        private TimestampedException _LastException;
+        /// <inheritdoc/>
+        public TimestampedException LastException
+        {
+            get => _LastException;
+            private set {
+                if(value != LastException) {
+                    _LastException = value;
+                    OnLastExceptionChanged(EventArgs.Empty);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public event EventHandler LastExceptionChanged;
+
+        /// <summary>
+        /// Raises <see cref="LastExceptionChanged"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnLastExceptionChanged(EventArgs args)
+        {
+            LastExceptionChanged?.Invoke(this, args);
+        }
+
         /// <inheritdoc/>
         public int PacketSize { get; set; } = 1024;
 
@@ -219,6 +247,9 @@ namespace VirtualRadar.Connection
                         ConnectionState = ConnectionState.Open;
                     }
                 }
+            } catch(Exception ex) {
+                LastException = new(ex);
+                throw;
             } finally {
                 if(ConnectionState != ConnectionState.Open) {
                     try {
@@ -275,8 +306,12 @@ namespace VirtualRadar.Connection
                 await RunPacketPump(connection);
             } catch(OperationCanceledException) {
                 ;
-            } catch(Exception) {
-                // TODO: Expose the exceptions that cause read threads to stop via the connector log
+            } catch(Exception ex) {
+                try {
+                    LastException = new(ex);
+                } catch {
+                    ;
+                }
                 try {
                     connection.TearDown();
                 } catch {
