@@ -51,22 +51,20 @@ namespace VirtualRadar.Utility.Terminal
                 var chunker = feedFormatConfig.CreateChunker();
                 var translator = (ITransponderMessageConverter)scope.ServiceProvider.GetRequiredService(feedFormatConfig.GetTransponderMessageConverterServiceType());
                 var aircraftList = scope.ServiceProvider.GetRequiredService<IAircraftList>();
-                var cancellationTokenSource = new CancellationTokenSource();
+                var connector = OpenConnector();
+                var cancelSource = new CancellationTokenSource();
 
-                _AircraftLookupService.LookupCompleted += (_,batchOutcome) => {
-                    aircraftList.ApplyLookup(batchOutcome);
-                };
+                try {
+                    _AircraftLookupService.LookupCompleted += (_,batchOutcome) => {
+                        aircraftList.ApplyLookup(batchOutcome);
+                    };
 
-                using(var feedStream = await OpenFeedStream(cancellationTokenSource.Token)) {
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
-                    var windowEventLoopTask = aircraftListWindow.EventLoop(cancellationTokenSource);
+                    var windowEventLoopTask = aircraftListWindow.EventLoop(cancelSource);
 
-                    ControlC.SuppressCancelBehaviour = true;
-
-                    // In real life we'd want to copy the chunk into a queue rather than process it on the fly...
-                    chunker.ChunkRead += (_,chunk) => {
+                    connector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountChunksSeen;
-                        foreach(var message in translator.ConvertTo(chunk)) {
+                        foreach(var message in translator.ConvertTo(packet)) {
                             var applyOutcome = aircraftList.ApplyMessage(message);
                             if(applyOutcome.AddedAircraft) {
                                 _AircraftLookupService.Lookup(message.Icao24);
@@ -74,48 +72,43 @@ namespace VirtualRadar.Utility.Terminal
                         }
                     };
 
-                    try {
-                        //TODO: Rework await chunker.ReadChunksFromStream(feedStream, cancellationTokenSource.Token);
-                    } catch(OperationCanceledException) {
-                        Console.Clear();
-                    } finally {
-                        cancellationTokenSource.Cancel();
-                        await windowEventLoopTask;
-                    }
+                    ControlC.SuppressCancelBehaviour = true;
+
+                    await connector.OpenAsync(cancelSource.Token);
+                    await windowEventLoopTask;
+                } catch(OperationCanceledException) {
+                    Console.Clear();
                 }
             }
         }
 
-        private async Task<Stream> OpenFeedStream(CancellationToken cancellationToken)
+        private IReceiveConnector OpenConnector()
         {
             return String.IsNullOrEmpty(_Options.FileName)
-                ? await OpenNetworkStream(cancellationToken)
-                : await OpenRecordingStream(cancellationToken);
+                ? OpenNetworkConnector()
+                : OpenRecordingConnector();
         }
 
-        private async Task<Stream> OpenNetworkStream(CancellationToken cancellationToken)
+        private IReceiveConnector OpenNetworkConnector()
         {
             Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
             if(!IPAddress.TryParse(_Options.Address, out var address)) {
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
-            var tcpConnectorOptions = new TcpConnectorConfig() {
+
+            return new TcpPullConnector(new() {
                 Address =   address,
                 Port =      _Options.Port,
-                CanRead =   true,
-            };
-            var connector = new TcpConnector(tcpConnectorOptions);
-            return await connector.OpenAsync(cancellationToken);
+            });
         }
 
-        private Task<Stream> OpenRecordingStream(CancellationToken cancellationToken)
+        private IReceiveConnector OpenRecordingConnector()
         {
             Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
 
-            var fileStream = new FileStream(_Options.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            var replayStream = new RecordingPlaybackStream(fileStream, leaveOpen: false);
-
-            return Task.FromResult<Stream>(replayStream);
+            return new RecordingPlaybackConnector(new() {
+                RecordingFileName = _Options.FileName,
+            });
         }
     }
 }

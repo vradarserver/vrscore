@@ -38,12 +38,12 @@ namespace VirtualRadar.Utility.CLIConsole
             await WriteLine($"Opening {_Options.LoadFileName}");
             using (var stream = new FileStream(_Options.LoadFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
                 await WriteLine($"Initialising feed reader with stream");
-                await _Reader.InitialiseStream(stream, leaveOpen: true);
+                await _Reader.InitialiseStreamAsync(stream, leaveOpen: true);
                 await WriteLine();
 
                 Parcel parcel;
                 do {
-                    parcel = await _Reader.GetNext(CancellationToken.None);
+                    parcel = await _Reader.GetNextAsync(CancellationToken.None);
                     if(parcel != null) {
                         if(countParcels++ == 0) {
                             await DumpHeader(_Reader.Header);
