@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.IO;
 using System.Net;
 using VirtualRadar.Connection;
 
@@ -17,13 +18,11 @@ namespace VirtualRadar.Utility.CLIConsole
     {
         private Options _Options;
         private HeaderService _Header;
-        private StreamDumperService _StreamDumper;
 
-        public CommandRunner_ConnectListener(Options options, HeaderService header, StreamDumperService streamDumper)
+        public CommandRunner_ConnectListener(Options options, HeaderService header)
         {
             _Options = options;
             _Header = header;
-            _StreamDumper = streamDumper;
         }
 
         public override async Task<bool> Run()
@@ -41,39 +40,61 @@ namespace VirtualRadar.Utility.CLIConsole
                 OptionsParser.Usage($"Cannot parse \"{_Options.Address}\" into an IP address");
             }
 
-            await WriteLine($"Creating TCP connector to {ipAddress}:{_Options.Port}");
-            var connector = new TcpConnector(new() {
+            var cancelSource = new CancellationTokenSource();
+
+            await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
+            var connector = new TcpPullConnector(new() {
                 Address = ipAddress,
-                Port = _Options.Port,
-                CanRead = true,
-                CanWrite = false
+                Port = _Options.Port
             });
+
+            var hexDump = _Options.Show
+                ? new HexDump() { EmitHeader = false, }
+                : null;
+
+            FileStream fileStream = null;
+            if(!String.IsNullOrEmpty(_Options.SaveFileName)) {
+                var folder = Path.GetDirectoryName(_Options.SaveFileName);
+                if(folder != "" && !Directory.Exists(folder)) {
+                    await Console.Out.WriteLineAsync("Creating directory {folder}");
+                    Directory.CreateDirectory(folder);
+                }
+
+                fileStream = new FileStream(_Options.SaveFileName, FileMode.Create, FileAccess.Write, FileShare.Read);
+            }
+
+            connector.ConnectionStateChanged += (_,_) => Console.WriteLine($"Connection is now {connector.ConnectionState}");
+
+            connector.PacketReceived += (_,packet) => {
+                if(hexDump != null) {
+                    foreach(var line in hexDump.DumpBuffer(packet)) {
+                        Console.Out.WriteLineAsync(line);
+                    }
+                }
+                if(fileStream != null) {
+                    fileStream.Write(packet.Span);
+                }
+            };
 
             try {
                 await WriteLine($"Opening stream (connector is currently {connector.ConnectionState})");
-                var stream = await connector.OpenAsync(CancellationToken.None);
-                await WriteLine($"Connection state is now {connector.ConnectionState}");
+                await connector.OpenAsync(cancelSource.Token);
 
-                if(_Options.Show || !String.IsNullOrEmpty(_Options.SaveFileName)) {
+                if(hexDump != null || fileStream != null) {
                     await WriteLine($"Copying TCP stream to {_Options.SaveFileName}");
                     await WriteLine("Press any key to stop");
-                    var cts = new CancellationTokenSource();
-                    var keyWatcherTask = CancelIfAnyKeyPressed(cts);
-                    try {
-                        await _StreamDumper.DumpStream(stream, _Options.Show, _Options.SaveFileName, cts.Token);
-                    } catch(OperationCanceledException) {
-                        await WriteLine();
-                        await WriteLine("Dump cancelled");
-                    } finally {
-                        await keyWatcherTask;
-                    }
+                    await CancelIfAnyKeyPressed(cancelSource);
                 }
 
-                await WriteLine($"Closing stream");
+                await WriteLine($"Cleaning up stream");
                 await connector.CloseAsync();
-                await WriteLine($"Connection state is now {connector.ConnectionState}");
             } finally {
                 await connector.DisposeAsync();
+                if(fileStream != null) {
+                    fileStream.Flush();
+                    fileStream.Dispose();
+                    fileStream = null;
+                }
             }
 
             return true;

@@ -35,7 +35,6 @@ namespace VirtualRadar.Utility.CLIConsole
 
                         .AddSingleton<Options>(options)
                         .AddSingleton<HeaderService, HeaderService>()
-                        .AddSingleton<StreamDumperService, StreamDumperService>()
 
                         .AddTransient<CommandRunner_ConnectListener,    CommandRunner_ConnectListener>()
                         .AddTransient<CommandRunner_DumpFeed,           CommandRunner_DumpFeed>()
