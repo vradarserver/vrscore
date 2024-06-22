@@ -8,52 +8,30 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.IO;
-
 namespace VirtualRadar.Feed.Recording
 {
     /// <summary>
-    /// The interface for an object that can read a feed recording.
+    /// Carries options to a <see cref="RecordingPlaybackConnector"/>.
     /// </summary>
-    public interface IRecordingReader
+    /// <param name="RecordingFileName">The file containing the recording to play back.</param>
+    /// <param name="PlaybackSpeed">
+    /// The rate at which packets are played back from the file. A value of 1 plays the recording at the speed
+    /// it was recorded, 2 doubles the playback speed, 0.5 halves it and so on. A value of zero plays the
+    /// recording as quickly as it can be consumed.
+    /// </param>
+    public record RecordingPlaybackConnectorOptions (
+        string RecordingFileName,
+        double PlaybackSpeed = 1.0
+    )
     {
         /// <summary>
-        /// True if the stream has finished.
+        /// Default ctor.
         /// </summary>
-        bool IsCompleted { get; }
+        public RecordingPlaybackConnectorOptions() : this(null, 1.0)
+        {
+        }
 
-        /// <summary>
-        /// The header read from the stream.
-        /// </summary>
-        Header Header { get; }
-
-        /// <summary>
-        /// Initialises the stream that we will be reading from.
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="leaveOpen"></param>
-        Task InitialiseStreamAsync(Stream stream, bool leaveOpen);
-
-        /// <summary>
-        /// Stops all activity on the stream. Further calls to <see cref="TryGetNext"/> always
-        /// return false. You should always call this if you have previously successfully
-        /// called <see cref="InitialiseStreamAsync"/>. Do not call this if <see cref="TryGetNext"/>
-        /// is running.
-        /// </summary>
-        Task TearDownStreamAsync();
-
-        /// <summary>
-        /// As per <see cref="TearDownStreamAsync"/>.
-        /// </summary>
-        void TearDownStream();
-
-        /// <summary>
-        /// Fetches the next parcel from the stream.
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns>The next parcel on the stream or null if there are no more parcels.</returns>
-        /// <exception cref="BadFeedHeaderException">Thrown if the stream is not a
-        /// feed recording.</exception>
-        Task<Parcel> GetNextAsync(CancellationToken token);
+        /// <inheritdoc/>
+        public override string ToString() => $"{RecordingFileName} x{PlaybackSpeed} speed";
     }
 }

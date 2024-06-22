@@ -27,7 +27,7 @@ namespace VirtualRadar.Feed.Recording
         public Header Header { get; private set; }
 
         /// <inheritdoc/>
-        public Task InitialiseStream(Stream stream, bool leaveOpen)
+        public Task InitialiseStreamAsync(Stream stream, bool leaveOpen)
         {
             IsCompleted = false;
             Header = null;
@@ -40,7 +40,7 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public async Task TearDownStream()
+        public async Task TearDownStreamAsync()
         {
             if(_PipeReader != null) {
                 await _PipeReader.CompleteAsync();
@@ -49,7 +49,16 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public async Task<Parcel> GetNext(CancellationToken cancellationToken)
+        public void TearDownStream()
+        {
+            if(_PipeReader != null) {
+                _PipeReader.Complete();
+                _PipeReader = null;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<Parcel> GetNextAsync(CancellationToken cancellationToken)
         {
             Parcel result = null;
 

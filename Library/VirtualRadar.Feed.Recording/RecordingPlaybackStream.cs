@@ -20,7 +20,7 @@ namespace VirtualRadar.Feed.Recording
     public class RecordingPlaybackStream : Stream
     {
         private RecordingReader _Reader;
-        private DateTime _PlaybackStartedUtc;
+        private PlaybackTimeSync _PlaybackTime = new();
         private Parcel _CurrentParcel;
         private int _ReturnedUpToOffset;
 
@@ -59,18 +59,17 @@ namespace VirtualRadar.Feed.Recording
         public RecordingPlaybackStream(Stream recordingStream, bool leaveOpen)
         {
             var reader = new RecordingReader();
-            reader.InitialiseStream(recordingStream, leaveOpen)
+            reader.InitialiseStreamAsync(recordingStream, leaveOpen)
                 .GetAwaiter()
                 .GetResult();
             _Reader = reader;
-            _PlaybackStartedUtc = DateTime.UtcNow;
         }
 
         /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            _Reader?.TearDownStream()
+            _Reader?.TearDownStreamAsync()
                 .GetAwaiter()
                 .GetResult();
         }
@@ -112,18 +111,11 @@ namespace VirtualRadar.Feed.Recording
             var result = 0;
 
             if(_CurrentParcel == null && !_Reader.IsCompleted && !cancellationToken.IsCancellationRequested) {
-                _CurrentParcel = await _Reader.GetNext(cancellationToken);
+                _CurrentParcel = await _Reader.GetNextAsync(cancellationToken);
                 _ReturnedUpToOffset = 0;
 
-                if(_CurrentParcel != null && PlaybackSpeed > 0.0) {
-                    var now = DateTime.UtcNow;
-                    var adjustedReceived = _CurrentParcel.MillisecondReceived / PlaybackSpeed;
-                    var pauseUntil = _PlaybackStartedUtc.AddMilliseconds(adjustedReceived);
-                    while(now < pauseUntil && !cancellationToken.IsCancellationRequested) {
-                        var sleepMs = Math.Min(100.0, (pauseUntil - now).TotalMilliseconds);
-                        Thread.Sleep(Math.Max(1, (int)sleepMs));
-                        now = DateTime.UtcNow;
-                    }
+                if(_CurrentParcel != null) {
+                    await _PlaybackTime.WaitForEventAsync(_CurrentParcel.MillisecondReceived, cancellationToken);
                 }
             }
 

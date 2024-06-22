@@ -277,7 +277,11 @@ namespace VirtualRadar.Connection
                 ;
             } catch(Exception) {
                 // TODO: Expose the exceptions that cause read threads to stop via the connector log
-                connection.TearDown();
+                try {
+                    connection.TearDown();
+                } catch {
+                    ;
+                }
             }
         }
 
