@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Extensions;
 using WindowProcessor;
 
 namespace VirtualRadar.Utility.Terminal
@@ -43,6 +44,8 @@ namespace VirtualRadar.Utility.Terminal
         public long CountChunksSeen { get; set; }
 
         public string ConnectionState { get; set; }
+
+        public TimestampedException LastConnectorException { get; set; }
 
         public AircraftListWindow(
             IAircraftList aircraftList
@@ -113,7 +116,7 @@ namespace VirtualRadar.Utility.Terminal
                     ?? [];
 
                 Position = _CountTrackedPoint;
-                Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks, connection is {ConnectionState?.ToLower()}");
+                Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks, connection is {ConnectionState?.ToLower()}, last exception: {LastConnectorException?.Exception.Message.TruncateAt(40) ?? "none"}");
                 ClearToEndOfLine();
 
                 _AircraftTable.DrawBody(set, Console.WindowHeight - 5);

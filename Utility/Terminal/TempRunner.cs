@@ -64,6 +64,8 @@ namespace VirtualRadar.Utility.Terminal
 
                     connector.ConnectionStateChanged += (_,_) => aircraftListWindow.ConnectionState = connector.ConnectionState.ToString();
 
+                    connector.LastExceptionChanged += (_,_) => aircraftListWindow.LastConnectorException = connector.LastException;
+
                     connector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountChunksSeen;
                         foreach(var message in translator.ConvertTo(packet)) {
