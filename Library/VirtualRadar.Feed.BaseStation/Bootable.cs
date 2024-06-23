@@ -11,26 +11,12 @@
 namespace VirtualRadar.Feed.BaseStation
 {
     /// <inheritdoc/>
-    class Bootable : IBootable
+    class Bootable(
+        IFeedFormatFactoryService _FeedFormatFactory,
+        IFeedDecoderFactory       _FeedDecoderFactory,
+        FormatConfig              _FormatConfig
+    ) : IBootable
     {
-        // Injected services
-        private IFeedFormatFactoryService   _FeedFormatFactory;
-        private FormatConfig                _FormatConfig;
-
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="feedFormatFactory"></param>
-        /// <param name="formatConfig"></param>
-        public Bootable(
-            IFeedFormatFactoryService feedFormatFactory,
-            FormatConfig formatConfig
-        )
-        {
-            _FeedFormatFactory = feedFormatFactory;
-            _FormatConfig = formatConfig;
-        }
-
         /// <inheritdoc/>
         public void OnBootStep(BootStep bootStep)
         {
@@ -45,6 +31,7 @@ namespace VirtualRadar.Feed.BaseStation
         private void Initialise()
         {
             _FeedFormatFactory.RegisterConfig(_FormatConfig);
+            _FeedDecoderFactory.RegisterFeedDecoderByOptions<BaseStationFeedDecoderOptions, BaseStationFeedDecoder>();
         }
     }
 }

@@ -8,41 +8,26 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using VirtualRadar.IO;
+using VirtualRadar.Message;
 
 namespace VirtualRadar.Feed
 {
     /// <summary>
-    /// The base for feed format configuration objects. Each library or plugin that implements a feed format
-    /// has to fill one of these in and give it to the feed format factory service on startup.
+    /// Describes an object that can take packets of bytes and decode them into transponder messages.
     /// </summary>
-    public abstract class FeedFormatConfig
+    [Lifetime(Lifetime.Singleton)]
+    public interface IFeedDecoder : IAsyncDisposable
     {
         /// <summary>
-        /// The prefix used by all feed formats that ship with Virtual Radar Server.
+        /// Raised for every transponder message extracted from the feed.
         /// </summary>
-        public const string InternalIdPrefix = "vrs-";
+        event EventHandler<TransponderMessage> MessageReceived;
 
         /// <summary>
-        /// The feed format's internal ID. This is saved to configuration files so pick something that isn't
-        /// going to change. This is not shown to the user. IDs that start with <see cref="InternalIdPrefix"/>
-        /// are reserved for use with Virtual Radar Server.
+        /// Presents a packet to the decoder for parsing. The packet might be incomplete.
         /// </summary>
-        public abstract string Id { get; }
-
-        /// <summary>
-        /// Returns the name of the feed format. Defaults to <see cref="Id"/>, you probably want to return
-        /// something more sensible. The internal formats will Book Title Capitalise the format name for all
-        /// cultures.
-        /// </summary>
-        /// <param name="uiCulture"></param>
+        /// <param name="packet"></param>
         /// <returns></returns>
-        public virtual string Name(CultureInfo uiCulture) => Id;
-
-        /// <summary>
-        /// Returns an instance of a stream chunker that can extract message bytes out of a stream of bytes.
-        /// </summary>
-        /// <returns></returns>
-        public abstract StreamChunker CreateChunker();
+        Task ParseFeedPacket(ReadOnlyMemory<byte> packet);
     }
 }

@@ -14,39 +14,18 @@ namespace VirtualRadar.Message
     /// The interface for objects that can convert to and from message bytes and
     /// a single transponder message.
     /// </summary>
+    /// <remarks>
+    /// Conversion from a feed format to one or more transponder messages is
+    /// mandatory. Conversion from transponder messages back to the feed format
+    /// is optional.
+    /// </remarks>
     public interface ITransponderMessageConverter
     {
-        /// <summary>
-        /// Gets a value indicating that the object can convert a message chunk to a
-        /// <see cref="TransponderMessage"/>. This is the internal message format used
-        /// everywhere within VRS.
-        /// </summary>
-        bool CanConvertTo { get; }
-
-        /// <summary>
-        /// Gets a value indicating that the object can convert a <see cref="TransponderMessage"/>
-        /// to a message chunk.
-        /// </summary>
-        bool CanConvertFrom { get; }
-
-        /// <summary>
-        /// Gets the size of the chunk to allocate for <see cref="ConvertFrom"/> calls. Not used
-        /// if <see cref="CanConvertFrom"/> is false.
-        /// </summary>
-        int AllocateChunkSize { get; }
-
         /// <summary>
         /// Converts a chunk of memory holding a native feed message into the common <see cref="TransponderMessage"/>.
         /// </summary>
         /// <param name="chunk">The chunk of memory holding the message to convert.</param>
-        /// <returns>The transponder message extracted from the chunk or null if it cannot be extracted.</returns>
-        TransponderMessage[] ConvertTo(ReadOnlyMemory<byte> chunk);
-
-        /// <summary>
-        /// Converts a <see cref="TransponderMessage"/> back into a native message.
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="chunk"></param>
-        void ConvertFrom(TransponderMessage message, Memory<byte> chunk);
+        /// <returns>The transponder message(s) extracted from the chunk or null if it cannot be extracted.</returns>
+        TransponderMessage[] FromFeedMessage(ReadOnlyMemory<byte> chunk);
     }
 }

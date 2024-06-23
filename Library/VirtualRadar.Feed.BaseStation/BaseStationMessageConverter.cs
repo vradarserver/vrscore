@@ -8,7 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.Options;
 using VirtualRadar.Message;
 
 namespace VirtualRadar.Feed.BaseStation
@@ -16,39 +15,23 @@ namespace VirtualRadar.Feed.BaseStation
     /// <summary>
     /// Converts between <see cref="BaseStationMessage"/>s and <see cref="TransponderMessage"/>s.
     /// </summary>
-    class TransponderMessageConverter : ITransponderMessageConverter
+    class BaseStationMessageConverter(
+        BaseStationMessageParser _Parser
+    ) : ITransponderMessageConverter, IOneTimeConfigurable<BaseStationMessageConverterOptions>
     {
-        private BaseStationFeedFormatOptions _Options;
-        private BaseStationMessageParser _Parser;
+        private OneTimeConfigurableImplementer<BaseStationMessageConverterOptions> _OneTimeConfig = new(nameof(BaseStationMessageConverter), new());
 
-        public TransponderMessageConverter(
-            IOptions<BaseStationFeedFormatOptions> options,
-            BaseStationMessageParser parser
-        )
+        /// <inheritdoc/>
+        public BaseStationMessageConverterOptions Options => _OneTimeConfig.Options;
+
+        /// <inheritdoc/>
+        public void Configure(BaseStationMessageConverterOptions options) => _OneTimeConfig.Configure(options);
+
+        /// <inheritdoc/>
+        public TransponderMessage[] FromFeedMessage(ReadOnlyMemory<byte> chunk)
         {
-            _Options = options.Value;
-            _Parser = parser;
-        }
-
-        /// <inheritdoc/>
-        public bool CanConvertTo { get; } = true;
-
-        /// <inheritdoc/>
-        public bool CanConvertFrom { get; } = true;
-
-        /// <inheritdoc/>
-        public int AllocateChunkSize { get; } = 80;
-
-        /// <inheritdoc/>
-        public TransponderMessage[] ConvertTo(ReadOnlyMemory<byte> chunk)
-        {
+            _OneTimeConfig.AssertConfigured();
             return ConvertBaseStationToTransponder(_Parser.FromFeed(chunk));
-        }
-
-        /// <inheritdoc/>
-        public void ConvertFrom(TransponderMessage message, Memory<byte> chunk)
-        {
-            throw new NotImplementedException();
         }
 
         private TransponderMessage[] ConvertBaseStationToTransponder(BaseStationMessage baseStationMessage)
@@ -56,7 +39,7 @@ namespace VirtualRadar.Feed.BaseStation
             TransponderMessage[] result = null;
 
             if(baseStationMessage != null && baseStationMessage.IsAircraftMessage) {
-                if(Icao24.TryParse(baseStationMessage.Icao24, out var icao24, ignoreNonHexDigits: _Options.Icao24CanHaveNonHexDigits)) {
+                if(Icao24.TryParse(baseStationMessage.Icao24, out var icao24, ignoreNonHexDigits: Options.Icao24CanHaveNonHexDigits)) {
                     result = [ new() {
                         Icao24 =                    icao24,
                         AltitudeFeet =              baseStationMessage.Altitude,

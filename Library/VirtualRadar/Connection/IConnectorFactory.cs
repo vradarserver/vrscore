@@ -24,7 +24,8 @@ namespace VirtualRadar.Connection
         /// <typeparam name="TOptions"></typeparam>
         /// <typeparam name="TConnector"></typeparam>
         /// <returns></returns>
-        void RegisterConnectorByOptions<TOptions, TConnector>() where TConnector : IConnector, IOneTimeConfigurable<TOptions>;
+        void RegisterConnectorByOptions<TOptions, TConnector>()
+            where TConnector : IConnector, IOneTimeConfigurable<TOptions>;
 
         /// <summary>
         /// Builds a new connector from the options passed across.

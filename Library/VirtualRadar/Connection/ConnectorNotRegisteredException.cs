@@ -11,7 +11,7 @@
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// Thrown if a configuration object is passed to <see cref="ConnectorFactory"/> that isn't associated
+    /// Thrown if a configuration object is passed to <see cref="IConnectorFactory"/> that isn't associated
     /// with a connector type.
     /// </summary>
     [Serializable]

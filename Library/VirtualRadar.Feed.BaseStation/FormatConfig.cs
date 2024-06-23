@@ -13,21 +13,15 @@ using VirtualRadar.IO;
 namespace VirtualRadar.Feed.BaseStation
 {
     /// <inheritdoc/>
-    class FormatConfig : FeedFormatConfig
+    class FormatConfig() : FeedFormatConfig
     {
         /// <inheritdoc/>
         public override string Id => $"{InternalIdPrefix}basestation";
-
-        /// <inheritdoc/>
-        public override bool IsTransponderFormat => true;
 
         /// <inheritdoc/>
         public override string Name(CultureInfo _) => "BaseStation";
 
         /// <inheritdoc/>
         public override StreamChunker CreateChunker() => new AsciiLineChunker();
-
-        /// <inheritdoc/>
-        public override Type GetTransponderMessageConverterServiceType() => typeof(TransponderMessageConverter);
     }
 }

@@ -12,6 +12,7 @@ using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
+using VirtualRadar.Feed.BaseStation;
 using VirtualRadar.Feed.Recording;
 using VirtualRadar.IO;
 using VirtualRadar.Message;
@@ -22,37 +23,18 @@ namespace VirtualRadar.Utility.Terminal
     /// <summary>
     /// Just a quickie object to plug together a basic feed pipeline and show the results.
     /// </summary>
-    class TempRunner
+    class TempRunner(
+        Options                         _Options,
+        IFeedDecoderFactory             _FeedDecoderFactory,
+        IServiceProvider                _ServiceProvider,
+        IAircraftOnlineLookupService    _AircraftLookupService,
+        IConnectorFactory                _ConnectorFactory
+    )
     {
-        Options                         _Options;
-        IFeedFormatFactoryService       _FeedFormatFactory;
-        IServiceProvider                _ServiceProvider;
-        IAircraftOnlineLookupService    _AircraftLookupService;
-        IConnectorFactory                _ConnectorFactory;
-
-        public TempRunner(
-            Options options,
-            IFeedFormatFactoryService feedFormatFactory,
-            IAircraftOnlineLookupService aircraftLookupService,
-            IServiceProvider serviceProvider,
-            IConnectorFactory connectorFactory
-        )
-        {
-            _Options = options;
-            _FeedFormatFactory = feedFormatFactory;
-            _AircraftLookupService = aircraftLookupService;
-            _ServiceProvider = serviceProvider;
-            _ConnectorFactory = connectorFactory;
-        }
-
         public async Task Run()
         {
-            var feedFormatConfig = _FeedFormatFactory.GetConfig("vrs-basestation")
-                ?? throw new InvalidOperationException($"Can't retrieve config for vrs-basestation?");
-
+            var feedDecoder = _FeedDecoderFactory.Build(new BaseStationFeedDecoderOptions());
             using(var scope = _ServiceProvider.CreateScope()) {
-                var chunker = feedFormatConfig.CreateChunker();
-                var translator = (ITransponderMessageConverter)scope.ServiceProvider.GetRequiredService(feedFormatConfig.GetTransponderMessageConverterServiceType());
                 var aircraftList = scope.ServiceProvider.GetRequiredService<IAircraftList>();
                 var connector = OpenConnector();
                 var cancelSource = new CancellationTokenSource();
@@ -69,18 +51,15 @@ namespace VirtualRadar.Utility.Terminal
 
                     connector.LastExceptionChanged += (_,_) => aircraftListWindow.LastConnectorException = connector.LastException;
 
-                    IStreamChunkerState chunkerState = null;
                     connector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountPacketsSeen;
-                        chunkerState = chunker.ParseBlock(packet, chunkerState);
+                        feedDecoder.ParseFeedPacket(packet);
                     };
 
-                    chunker.ChunkRead += (_, chunk) => {
-                        foreach(var message in translator.ConvertTo(chunk)) {
-                            var applyOutcome = aircraftList.ApplyMessage(message);
-                            if(applyOutcome.AddedAircraft) {
-                                _AircraftLookupService.Lookup(message.Icao24);
-                            }
+                    feedDecoder.MessageReceived += (_, message) => {
+                        var applyOutcome = aircraftList.ApplyMessage(message);
+                        if(applyOutcome.AddedAircraft) {
+                            _AircraftLookupService.Lookup(message.Icao24);
                         }
                     };
 

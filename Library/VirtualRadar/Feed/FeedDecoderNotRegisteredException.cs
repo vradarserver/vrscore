@@ -8,41 +8,19 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using VirtualRadar.IO;
-
 namespace VirtualRadar.Feed
 {
     /// <summary>
-    /// The base for feed format configuration objects. Each library or plugin that implements a feed format
-    /// has to fill one of these in and give it to the feed format factory service on startup.
+    /// Thrown if a configuration object is passed to <see cref="IFeedDecoderFactory"/> that isn't associated
+    /// with a feed decoder type.
     /// </summary>
-    public abstract class FeedFormatConfig
+    [Serializable]
+    public class FeedDecoderNotRegisteredException : Exception
     {
-        /// <summary>
-        /// The prefix used by all feed formats that ship with Virtual Radar Server.
-        /// </summary>
-        public const string InternalIdPrefix = "vrs-";
+        public FeedDecoderNotRegisteredException() { }
 
-        /// <summary>
-        /// The feed format's internal ID. This is saved to configuration files so pick something that isn't
-        /// going to change. This is not shown to the user. IDs that start with <see cref="InternalIdPrefix"/>
-        /// are reserved for use with Virtual Radar Server.
-        /// </summary>
-        public abstract string Id { get; }
+        public FeedDecoderNotRegisteredException(string message) : base(message) { }
 
-        /// <summary>
-        /// Returns the name of the feed format. Defaults to <see cref="Id"/>, you probably want to return
-        /// something more sensible. The internal formats will Book Title Capitalise the format name for all
-        /// cultures.
-        /// </summary>
-        /// <param name="uiCulture"></param>
-        /// <returns></returns>
-        public virtual string Name(CultureInfo uiCulture) => Id;
-
-        /// <summary>
-        /// Returns an instance of a stream chunker that can extract message bytes out of a stream of bytes.
-        /// </summary>
-        /// <returns></returns>
-        public abstract StreamChunker CreateChunker();
+        public FeedDecoderNotRegisteredException(string message, Exception inner) : base(message, inner) { }
     }
 }

@@ -25,10 +25,12 @@ namespace VirtualRadar
             services.AddLifetime<IHttpClientService,                Services.HttpClientService>();
             services.AddLifetime<IWebAddressManager,                Services.WebAddressManager>();
             services.AddLifetime<WorkingFolder,                     WorkingFolder>();
-            services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             services.AddLifetime<Connection.IConnectorFactory,      Connection.ConnectorFactory>();
             services.AddLifetime<Connection.TcpPullConnector,       Connection.TcpPullConnector>();
+
+            services.AddLifetime<Feed.IFeedDecoderFactory,          Feed.FeedDecoderFactory>();
+            services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             return services;
         }

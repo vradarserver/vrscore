@@ -439,8 +439,14 @@ namespace VirtualRadar
             }
         }
 
-        private static Lifetime GetLifetime(Type serviceType) => serviceType.GetCustomAttribute<LifetimeAttribute>().Lifetime;
+        private static Lifetime GetLifetime(Type serviceType)
+        {
+            var attribute = serviceType.GetCustomAttribute<LifetimeAttribute>();
+            return attribute != null
+                ? attribute.Lifetime
+                : throw new InvalidOperationException($"{serviceType.Name} is not decorated with a {nameof(LifetimeAttribute)}");
+        }
 
-        private static Lifetime GetLifetime<T>() => typeof(T).GetCustomAttribute<LifetimeAttribute>().Lifetime;
+        private static Lifetime GetLifetime<T>() => GetLifetime(typeof(T));
     }
 }

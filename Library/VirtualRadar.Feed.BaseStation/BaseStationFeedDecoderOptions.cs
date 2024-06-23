@@ -11,15 +11,18 @@
 namespace VirtualRadar.Feed.BaseStation
 {
     /// <summary>
-    /// Configuration options to the BaseStation feed format. These apply to all BaseStation
-    /// feeds.
+    /// The options for BaseStation feed decoders.
     /// </summary>
-    public class BaseStationFeedFormatOptions
+    /// <param name="Icao24CanHaveNonHexDigits">True if invalid characters in ICAOs are accepted.</param>
+    public record BaseStationFeedDecoderOptions(
+        bool Icao24CanHaveNonHexDigits
+    )
     {
         /// <summary>
-        /// True if the parser should just ignore non-hex digits in the ICAO24 fields
-        /// of BaseStation format feeds.
+        /// Default ctor.
         /// </summary>
-        public bool Icao24CanHaveNonHexDigits { get; set; }
+        public BaseStationFeedDecoderOptions() : this(false)
+        {
+        }
     }
 }
