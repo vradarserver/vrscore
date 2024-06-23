@@ -16,14 +16,14 @@ namespace VirtualRadar.Feed.Recording
     /// <summary>
     /// A VRS connector whose source of feed messages is a recording.
     /// </summary>
-    public class RecordingPlaybackConnector : IReceiveConnector
+    class RecordingPlaybackConnector : IReceiveConnector, IOneTimeConfigurable<RecordingPlaybackConnectorOptions>
     {
         internal PlaybackConnectorState _State;
 
-        /// <summary>
-        /// The options used to create the connector.
-        /// </summary>
-        public RecordingPlaybackConnectorOptions Options { get; }
+        private readonly OneTimeConfigurableImplementer<RecordingPlaybackConnectorOptions> _OneTimeConfig = new(nameof(RecordingPlaybackConnector), new());
+
+        /// <inheritdoc/>
+        public RecordingPlaybackConnectorOptions Options => _OneTimeConfig.Options;
 
         /// <inheritdoc/>
         public string Description => $"{Options.RecordingFileName} x{Options.PlaybackSpeed}";
@@ -90,15 +90,6 @@ namespace VirtualRadar.Feed.Recording
             PacketReceived?.Invoke(this, packet);
         }
 
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="options"></param>
-        public RecordingPlaybackConnector(RecordingPlaybackConnectorOptions options)
-        {
-            Options = options;
-        }
-
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
@@ -113,28 +104,35 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
+        public void Configure(RecordingPlaybackConnectorOptions options) => _OneTimeConfig.Configure(options);
+
+        /// <inheritdoc/>
         public async Task OpenAsync(CancellationToken cancellationToken)
         {
+            _OneTimeConfig.AssertConfigured();
+
             if(ConnectionState != ConnectionState.Closed) {
-                throw new InvalidOperationException($"You cannot open a connection that is in the {ConnectionState} state");
+                throw new ConnectionAlreadyOpenException($"You cannot open a connection that is in the {ConnectionState} state");
             }
 
             PlaybackConnectorState state = null;
             try {
                 ConnectionState = ConnectionState.Opening;
 
-                state = new() {
-                    Parent = this,
+                state = new(this) {
                     PlaybackSync = new(Options.PlaybackSpeed),
                     Reader = new(),
                     FileStream = new FileStream(Options.RecordingFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 };
-                state.SetupCancellationTokens(cancellationToken);
+                state.SetupCancellation(cancellationToken);
 
                 await state.Reader.InitialiseStreamAsync(state.FileStream, leaveOpen: true);
 
-                _State = state;
-                _State.PumpTask = RunPacketPump(state);
+                if(!state.LinkedCancelToken.IsCancellationRequested) {
+                    _State = state;
+                    ConnectionState = ConnectionState.Open;
+                    _State.PumpTask = RunPacketPump(state);
+                }
             } catch(Exception ex) {
                 LastException = new(ex);
                 throw;
@@ -164,14 +162,14 @@ namespace VirtualRadar.Feed.Recording
         {
             try {
                 Parcel parcel = null;
-                while((parcel = await state.Reader.GetNextAsync(state.LinkedCancellationToken.Token)) != null) {
-                    if(state.LinkedCancellationToken.Token.IsCancellationRequested) {
+                while((parcel = await state.Reader.GetNextAsync(state.LinkedCancelToken.Token)) != null) {
+                    if(state.LinkedCancelToken.Token.IsCancellationRequested) {
                         break;
                     }
 
                     await state.PlaybackSync.WaitForEventAsync(
                         parcel.MillisecondReceived,
-                        state.LinkedCancellationToken.Token
+                        state.LinkedCancelToken.Token
                     );
 
                     OnPacketReceived(parcel.Packet);

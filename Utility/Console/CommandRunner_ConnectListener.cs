@@ -18,11 +18,13 @@ namespace VirtualRadar.Utility.CLIConsole
     {
         private Options _Options;
         private HeaderService _Header;
+        private IConnectorFactory _ConnectorFactory;
 
-        public CommandRunner_ConnectListener(Options options, HeaderService header)
+        public CommandRunner_ConnectListener(Options options, HeaderService header, IConnectorFactory connectorFactory)
         {
             _Options = options;
             _Header = header;
+            _ConnectorFactory = connectorFactory;
         }
 
         public override async Task<bool> Run()
@@ -43,9 +45,9 @@ namespace VirtualRadar.Utility.CLIConsole
             var cancelSource = new CancellationTokenSource();
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
-            var connector = new TcpPullConnector(new() {
-                Address = ipAddress,
-                Port = _Options.Port
+            var connector = _ConnectorFactory.Build<IPullConnector>(new TcpPullConnectorOptions() {
+                Address =   ipAddress,
+                Port =      _Options.Port
             });
 
             var hexDump = _Options.Show

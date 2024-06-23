@@ -34,6 +34,9 @@ namespace VirtualRadar.Utility.Terminal
                     case "-recording":
                         result.FileName = UseNextArg(arg, nextArg, ref i);
                         break;
+                    case "-speed":
+                        result.PlaybackSpeed = ParseDouble(UseNextArg(arg, nextArg, ref i));
+                        break;
                     default:
                         Usage($"Unrecognised parameter {arg}");
                         break;
@@ -79,6 +82,14 @@ namespace VirtualRadar.Utility.Terminal
         private static decimal ParseDecimal(string arg)
         {
             if(!decimal.TryParse(arg, out var result)) {
+                Usage($"{arg} is not a floating point number");
+            }
+            return result;
+        }
+
+        private static double ParseDouble(string arg)
+        {
+            if(!double.TryParse(arg, out var result)) {
                 Usage($"{arg} is not a floating point number");
             }
             return result;

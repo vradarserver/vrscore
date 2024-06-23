@@ -21,5 +21,7 @@ namespace VirtualRadar.Utility.Terminal
         public int Port { get; set; } = 30003;
 
         public string FileName { get; set; }
+
+        public double PlaybackSpeed { get; set; } = 1.0;
     }
 }

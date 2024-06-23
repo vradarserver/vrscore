@@ -8,7 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.IO;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
@@ -28,18 +27,21 @@ namespace VirtualRadar.Utility.Terminal
         IFeedFormatFactoryService       _FeedFormatFactory;
         IServiceProvider                _ServiceProvider;
         IAircraftOnlineLookupService    _AircraftLookupService;
+        IConnectorFactory                _ConnectorFactory;
 
         public TempRunner(
             Options options,
             IFeedFormatFactoryService feedFormatFactory,
             IAircraftOnlineLookupService aircraftLookupService,
-            IServiceProvider serviceProvider
+            IServiceProvider serviceProvider,
+            IConnectorFactory connectorFactory
         )
         {
             _Options = options;
             _FeedFormatFactory = feedFormatFactory;
             _AircraftLookupService = aircraftLookupService;
             _ServiceProvider = serviceProvider;
+            _ConnectorFactory = connectorFactory;
         }
 
         public async Task Run()
@@ -67,7 +69,7 @@ namespace VirtualRadar.Utility.Terminal
                     connector.LastExceptionChanged += (_,_) => aircraftListWindow.LastConnectorException = connector.LastException;
 
                     connector.PacketReceived += (_, packet) => {
-                        ++aircraftListWindow.CountChunksSeen;
+                        ++aircraftListWindow.CountPacketsSeen;
                         foreach(var message in translator.ConvertTo(packet)) {
                             var applyOutcome = aircraftList.ApplyMessage(message);
                             if(applyOutcome.AddedAircraft) {
@@ -100,7 +102,7 @@ namespace VirtualRadar.Utility.Terminal
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
 
-            return new TcpPullConnector(new() {
+            return _ConnectorFactory.Build<IReceiveConnector>(new TcpPullConnectorOptions() {
                 Address =   address,
                 Port =      _Options.Port,
             });
@@ -110,8 +112,9 @@ namespace VirtualRadar.Utility.Terminal
         {
             Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
 
-            return new RecordingPlaybackConnector(new() {
+            return _ConnectorFactory.Build<IReceiveConnector>(new RecordingPlaybackConnectorOptions() {
                 RecordingFileName = _Options.FileName,
+                PlaybackSpeed =     _Options.PlaybackSpeed,
             });
         }
     }

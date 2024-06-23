@@ -16,7 +16,12 @@ using VirtualRadar.Feed.Recording;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_RecordFeed(Options _Options, HeaderService _Header, IRecorder _FeedRecorder) : CommandRunner
+    class CommandRunner_RecordFeed(
+        Options _Options,
+        HeaderService _Header,
+        IConnectorFactory _ConnectorFactory,
+        IRecorder _FeedRecorder
+    ) : CommandRunner
     {
         public override async Task<bool> Run()
         {
@@ -38,7 +43,7 @@ namespace VirtualRadar.Utility.CLIConsole
             var cancelSource = new CancellationTokenSource();
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
-            var connector = new TcpPullConnector(new() {
+            var connector = _ConnectorFactory.Build<IPullConnector>(new TcpPullConnectorOptions() {
                 Address = ipAddress,
                 Port = _Options.Port,
             });

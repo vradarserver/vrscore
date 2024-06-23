@@ -41,7 +41,7 @@ namespace VirtualRadar.Utility.Terminal
         private Point _CountTrackedPoint;
         private Timer _Timer;
 
-        public long CountChunksSeen { get; set; }
+        public long CountPacketsSeen { get; set; }
 
         public string ConnectionState { get; set; }
 
@@ -116,7 +116,7 @@ namespace VirtualRadar.Utility.Terminal
                     ?? [];
 
                 Position = _CountTrackedPoint;
-                Write($"{set.Length:N0} from {CountChunksSeen:N0} chunks, connection is {ConnectionState?.ToLower()}, last exception: {LastConnectorException?.Exception.Message.TruncateAt(40) ?? "none"}");
+                Write($"{set.Length:N0} from {CountPacketsSeen:N0} packets, connection is {ConnectionState?.ToLower()}, last exception: {LastConnectorException?.Exception.Message.TruncateAt(40) ?? "none"}");
                 ClearToEndOfLine();
 
                 _AircraftTable.DrawBody(set, Console.WindowHeight - 5);

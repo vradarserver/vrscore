@@ -14,66 +14,45 @@ using VirtualRadar.Extensions;
 
 namespace VirtualRadar.Feed.Recording
 {
-    class PlaybackConnectorState
+    class PlaybackConnectorState(RecordingPlaybackConnector _Parent) : CancellableState
     {
-        public RecordingPlaybackConnector Parent;
-
         public FileStream FileStream;
 
         public RecordingReader Reader;
 
         public PlaybackTimeSync PlaybackSync;
 
-        public CancellationTokenSource PumpCancellationToken;
-
-        public CancellationTokenSource LinkedCancellationToken;
-
         public Task PumpTask;
 
-        public void SetupCancellationTokens(CancellationToken userCancellationToken)
-        {
-            PumpCancellationToken = new();
-            LinkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(
-                PumpCancellationToken.Token,
-                userCancellationToken
-            );
-            LinkedCancellationToken.Token.Register(TearDown);
-        }
-
-        public void TearDown()
+        protected override void TearDownState()
         {
             var exceptions = new List<Exception>();
 
-            if(Parent._State == this) {
-                exceptions.Capture(() => Parent.ConnectionState = ConnectionState.Closing);
+            if(_Parent._State == this) {
+                exceptions.Capture(() => _Parent.ConnectionState = ConnectionState.Closing);
             }
 
+            CancelEverything(exceptions);
+
             if(PumpTask != null) {
-                exceptions.Capture(() => {
-                    PumpCancellationToken.Cancel();
-                    PumpTask.Wait(5000);
-                });
+                exceptions.Capture(() => PumpTask.Wait(5000));
                 PumpTask = null;
             }
+
             if(Reader != null) {
                 exceptions.Capture(() => Reader.TearDownStream());
                 Reader = null;
             }
-            if(LinkedCancellationToken != null) {
-                exceptions.Capture(() => LinkedCancellationToken.Dispose());
-                LinkedCancellationToken = null;
-            }
-            if(PumpCancellationToken != null) {
-                exceptions.Capture(() => PumpCancellationToken.Dispose());
-                PumpCancellationToken = null;
-            }
+
             if(FileStream != null) {
                 exceptions.Capture(() => FileStream.Dispose());
                 FileStream = null;
             }
 
-            if(Parent._State == this) {
-                exceptions.Capture(() => Parent.ConnectionState = ConnectionState.Closed);
+            TearDownCancellationTokens(exceptions);
+
+            if(_Parent._State == this) {
+                exceptions.Capture(() => _Parent.ConnectionState = ConnectionState.Closed);
             }
 
             if(exceptions.Count > 0) {

@@ -19,7 +19,8 @@ namespace VirtualRadar.Connection
     /// <summary>
     /// A connector that actively connects to a remote TCP port and pulls a feed from it.
     /// </summary>
-    public class TcpPullConnector : IPullConnector
+    [Lifetime(Lifetime.Transient)]
+    class TcpPullConnector : IPullConnector, IOneTimeConfigurable<TcpPullConnectorOptions>
     {
         /// <summary>
         /// Collects together everything about a connection. Connections are self-consistent, the idea is that
@@ -27,101 +28,56 @@ namespace VirtualRadar.Connection
         /// the two connections interferring each other by sharing backing fields etc. on the parent connector.
         /// </summary>
         /// <param name="_Connector"></param>
-        class Connection(TcpPullConnector _Connector)
+        class Connection(TcpPullConnector _Connector) : CancellableState
         {
-            private bool _TearingDown;
+            public Socket           Socket;     // The socket that communication is running over
+            public NetworkStream    Stream;     // The network stream that we are reading
+            public Task             PumpTask;   // The background packet pump thread
 
-            public Socket                   Socket;             // The socket that communication is running over
-            public NetworkStream            Stream;             // The network stream that we are reading
-            public Task                     PumpTask;           // The background packet pump thread
-            public CancellationTokenSource  PumpCancelToken;    // Internal cancellation token that is never CancellationToken.None
-            public CancellationTokenSource  StreamCancelToken;  // Our ThreadCancelToken merged with the cancellation token (which could be None) passed to the OpenAsync call
-
-            public void SetupCancellation(CancellationToken userToken)
+            protected override void TearDownState()
             {
-                PumpCancelToken = new();
-                StreamCancelToken = CancellationTokenSource.CreateLinkedTokenSource(
-                    PumpCancelToken.Token,
-                    userToken
-                );
-                StreamCancelToken.Token.Register(TearDown);
-            }
+                var exceptions = new List<Exception>();
 
-            public void TearDown()
-            {
-                if(!_TearingDown) {
-                    _TearingDown = true;
+                CancelEverything(exceptions);
 
-                    try {
-                        var exceptions = new List<Exception>();
+                if(PumpTask != null) {
+                    exceptions.Capture(() => PumpTask.Wait(5000));
+                    PumpTask = null;
+                }
 
-                        if(PumpTask != null) {
-                            exceptions.Capture(() => {
-                                // We always have this - bear in mind that there are two reasons
-                                // why we might be here. First is that StreamCancelToken cancelled,
-                                // in which case this is redundant but harmless. Second is that
-                                // the connection is closing, in which case this is necessary.
-                                if(!PumpCancelToken.IsCancellationRequested) {
-                                    PumpCancelToken.Cancel();
-                                }
-                            });
+                if(Stream != null) {
+                    exceptions.Capture(() =>
+                        Stream.Dispose()
+                    );
+                    Stream = null;
+                }
 
-                            exceptions.Capture(() => {
-                                PumpTask.Wait(5000);
-                                PumpTask = null;
-                            });
-                        }
+                if(Socket != null) {
+                    exceptions.Capture(() =>
+                        Socket.Dispose()
+                    );
+                    Socket = null;
+                }
 
-                        if(PumpCancelToken != null) {
-                            exceptions.Capture(() =>
-                                PumpCancelToken.Dispose()
-                            );
-                            PumpCancelToken = null;
-                        }
+                TearDownCancellationTokens(exceptions);
 
-                        if(StreamCancelToken != null) {
-                            exceptions.Capture(() =>
-                                StreamCancelToken.Dispose()
-                            );
-                            StreamCancelToken = null;
-                        }
+                if(_Connector._Connection == this && _Connector.ConnectionState == ConnectionState.Open) {
+                    exceptions.Capture(() =>
+                        _Connector.ConnectionState = ConnectionState.Closed     // <-- can throw exceptions via the event handler
+                    );
+                }
 
-                        if(Stream != null) {
-                            exceptions.Capture(() =>
-                                Stream.Dispose()
-                            );
-                            Stream = null;
-                        }
-
-                        if(Socket != null) {
-                            exceptions.Capture(() =>
-                                Socket.Dispose()
-                            );
-                            Socket = null;
-                        }
-
-                        if(_Connector._Connection == this && _Connector.ConnectionState == ConnectionState.Open) {
-                            exceptions.Capture(() =>
-                                _Connector.ConnectionState = ConnectionState.Closed     // <-- can throw exceptions via the event handler
-                            );
-                        }
-
-                        if(exceptions.Count > 0) {
-                            throw new ConnectionTearDownException(exceptions);
-                        }
-                    } finally {
-                        _TearingDown = false;
-                    }
+                if(exceptions.Count > 0) {
+                    throw new ConnectionTearDownException(exceptions);
                 }
             }
         }
 
         private Connection _Connection;     // The current connection
+        private readonly OneTimeConfigurableImplementer<TcpPullConnectorOptions> _OneTimeConfig = new(nameof(TcpPullConnector), new());
 
-        /// <summary>
-        /// Gets the options that the connector's using.
-        /// </summary>
-        public TcpPullConnectorOptions Options { get; }
+        /// <inheritdoc/>
+        public TcpPullConnectorOptions Options => _OneTimeConfig.Options;
 
         /// <inheritdoc/>
         public string Description => $"tcp://{Options.Address}:{Options.Port}";
@@ -191,13 +147,8 @@ namespace VirtualRadar.Connection
             PacketReceived?.Invoke(this, packet);
         }
 
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        public TcpPullConnector(TcpPullConnectorOptions options)
-        {
-            Options = options;
-        }
+        /// <inheritdoc/>
+        public void Configure(TcpPullConnectorOptions options) => _OneTimeConfig.Configure(options);
 
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
@@ -218,6 +169,8 @@ namespace VirtualRadar.Connection
         /// <inheritdoc/>
         public async Task OpenAsync(CancellationToken cancellationToken)
         {
+            _OneTimeConfig.AssertConfigured();
+
             if(ConnectionState != ConnectionState.Closed) {
                 throw new ConnectionAlreadyOpenException($"Cannot open a connection that is in the {ConnectionState} state");
             }
@@ -241,7 +194,7 @@ namespace VirtualRadar.Connection
                     connection.Stream = new NetworkStream(connection.Socket, FileAccess.Read);
                     connection.SetupCancellation(cancellationToken);
 
-                    if(!connection.StreamCancelToken.IsCancellationRequested) {
+                    if(!connection.LinkedCancelToken.IsCancellationRequested) {
                         StartPacketPump(connection);
                         _Connection = connection;
                         ConnectionState = ConnectionState.Open;
@@ -326,7 +279,7 @@ namespace VirtualRadar.Connection
             var bufferLength = 0;
 
             try {
-                while(!connection.StreamCancelToken.IsCancellationRequested) {
+                while(!connection.LinkedCancelToken.IsCancellationRequested) {
                     var packetSize = Math.Max(1, Math.Min(PacketSize, 64 * 1024));
                     if(buffer == null || bufferLength != packetSize) {
                         buffer?.Dispose();
@@ -334,8 +287,8 @@ namespace VirtualRadar.Connection
                         buffer = MemoryPool<byte>.Shared.Rent(bufferLength);
                     }
 
-                    var bytesRead = await connection.Stream.ReadAsync(buffer.Memory, connection.StreamCancelToken.Token);
-                    if(!connection.StreamCancelToken.IsCancellationRequested) {
+                    var bytesRead = await connection.Stream.ReadAsync(buffer.Memory, connection.LinkedCancelToken.Token);
+                    if(!connection.LinkedCancelToken.IsCancellationRequested) {
                         if(bytesRead > 0) {
                             OnPacketReceived(buffer.Memory[..bytesRead]);
                         } else {

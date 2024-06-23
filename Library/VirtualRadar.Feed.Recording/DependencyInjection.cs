@@ -16,8 +16,11 @@ namespace VirtualRadar.Feed.Recording
     {
         public static IServiceCollection AddFeedRecordingGroup(this IServiceCollection services)
         {
-            services.AddTransient<IRecorder,        Recorder>();
-            services.AddTransient<IRecordingReader, RecordingReader>();
+            services.AddLifetime<IBootable, Bootable>();
+
+            services.AddTransient<IRecorder,                    Recorder>();
+            services.AddTransient<IRecordingReader,             RecordingReader>();
+            services.AddTransient<RecordingPlaybackConnector,   RecordingPlaybackConnector>();
 
             return services;
         }
