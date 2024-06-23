@@ -31,5 +31,9 @@ namespace VirtualRadar.Utility.CLIConsole
         public string Id { get; set; }
 
         public string LoadFileName { get; set; }
+
+        public bool ParseMessage { get; set; }
+
+        public string FeedFormat { get; set; } = "vrs-basestation";
     }
 }

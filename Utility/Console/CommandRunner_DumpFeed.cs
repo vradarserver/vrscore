@@ -9,11 +9,19 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.IO;
+using VirtualRadar.Feed;
 using VirtualRadar.Feed.Recording;
+using VirtualRadar.IO;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_DumpFeed(Options _Options, HeaderService _Header, IRecordingReader _Reader) : CommandRunner
+    class CommandRunner_DumpFeed(
+        Options _Options,
+        HeaderService _Header,
+        BootService _Booter,
+        IRecordingReader _Reader,
+        IFeedFormatFactoryService _FeedFactory
+    ) : CommandRunner
     {
         private readonly HexDump _HexDump = new() {
             EmitPartialRows = true,
@@ -24,14 +32,24 @@ namespace VirtualRadar.Utility.CLIConsole
             await _Header.OutputCopyright();
             await _Header.OutputTitle("Dump Feed");
             await _Header.OutputOptions(
-                ("FileName", _Options.LoadFileName),
-                ("Show",     _Options.Show.ToString())
+                ("Filename",        _Options.LoadFileName),
+                ("Show",            _Options.Show.ToString()),
+                ("Parse messages",  _Options.ParseMessage.ToString()),
+                ("Feed format",     _Options.FeedFormat)
             );
             await WriteLine();
 
             if(!File.Exists(_Options.LoadFileName)) {
                 OptionsParser.Usage($"{_Options.LoadFileName} does not exist");
             }
+
+            _Booter.Initialise();
+
+            var feedConfig = _Options.ParseMessage
+                ? _FeedFactory.GetConfig(_Options.FeedFormat)
+                : null;
+            var chunker = feedConfig?.CreateChunker();
+            IStreamChunkerState chunkerState = null;
 
             var countParcels = 0L;
 
@@ -49,6 +67,12 @@ namespace VirtualRadar.Utility.CLIConsole
                             await DumpHeader(_Reader.Header);
                         }
                         await DumpParcel(_Reader.Header, parcel, countParcels);
+
+                        if(chunker != null) {
+                            chunkerState = DumpMessages(chunker, parcel.Packet, chunkerState);
+                        }
+
+                        await WriteLine();
                     }
                 } while(parcel != null);
             }
@@ -89,8 +113,28 @@ namespace VirtualRadar.Utility.CLIConsole
                         await WriteLine($"      {line}");
                     }
                 }
-                await WriteLine();
             }
+        }
+
+        private IStreamChunkerState DumpMessages(StreamChunker chunker, byte[] packet, IStreamChunkerState chunkerState)
+        {
+            void chunkRead(object _, ReadOnlyMemory<byte> chunk)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"Message {chunker.CountChunksExtracted}");
+                foreach (var line in _HexDump.DumpBuffer(chunk)) {
+                    Console.WriteLine($"      {line}");
+                }
+            }
+
+            chunker.ChunkRead += chunkRead;
+            try {
+                chunkerState = chunker.ParseBlock(packet, chunkerState);
+            } finally {
+                chunker.ChunkRead -= chunkRead;
+            }
+
+            return chunkerState;
         }
     }
 }

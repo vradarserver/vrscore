@@ -35,6 +35,9 @@ namespace VirtualRadar.Utility.CLIConsole
                         result.Command = ParseCommand(result, Command.DumpFeed);
                         result.LoadFileName = UseNextArg(arg, nextArg, ref i);
                         break;
+                    case "-feedformat":
+                        result.FeedFormat = UseNextArg(arg, nextArg, ref i);
+                        break;
                     case "-id":
                         result.Id = UseNextArg(arg, nextArg, ref i);
                         break;
@@ -49,6 +52,9 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "open":
                         result.Command = ParseCommand(result, Command.Open);
                         result.OpenEntity = ParseEnum<OpenEntity>(UseNextArg(arg, nextArg, ref i));
+                        break;
+                    case "-parsemessage":
+                        result.ParseMessage = true;
                         break;
                     case "-port":
                         result.Port = ParseInteger(UseNextArg(arg, nextArg, ref i));
@@ -162,7 +168,9 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  -save    <filename> Filename to save to [{defaults.SaveFileName}]");
             Console.WriteLine();
             Console.WriteLine($"DUMP FEED OPTIONS");
-            Console.WriteLine($"  -show               Dump packet content");
+            Console.WriteLine($"  -show               Dump packet content [{defaults.Show}]");
+            Console.WriteLine($"  -parseMessage       Parse and display messages from feed [{defaults.ParseMessage}]");
+            Console.WriteLine($"  -feedFormat <name>  Feed format to use for parsing packet [{defaults.FeedFormat}]");
 
 
             if (!String.IsNullOrEmpty(message)) {
