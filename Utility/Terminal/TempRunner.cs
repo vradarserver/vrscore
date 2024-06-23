@@ -45,6 +45,8 @@ namespace VirtualRadar.Utility.Terminal
                     };
 
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
+                    aircraftListWindow.AircraftList = aircraftList;
+
                     var windowEventLoopTask = aircraftListWindow.EventLoop(cancelSource);
 
                     connector.ConnectionStateChanged += (_,_) => aircraftListWindow.ConnectionState = connector.ConnectionState.ToString();

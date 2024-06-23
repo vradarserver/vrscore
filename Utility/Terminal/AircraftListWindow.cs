@@ -36,23 +36,17 @@ namespace VirtualRadar.Utility.Terminal
             public string LookupAge { get; set; }
         }
 
-        private IAircraftList _AircraftList;
         private volatile Table<AircraftTableRow> _AircraftTable;
         private Point _CountTrackedPoint;
         private Timer _Timer;
+
+        public IAircraftList AircraftList { get; set; }
 
         public long CountPacketsSeen { get; set; }
 
         public string ConnectionState { get; set; }
 
         public TimestampedException LastConnectorException { get; set; }
-
-        public AircraftListWindow(
-            IAircraftList aircraftList
-        )
-        {
-            _AircraftList = aircraftList;
-        }
 
         protected override void Initialise()
         {
@@ -96,7 +90,7 @@ namespace VirtualRadar.Utility.Terminal
         protected override void DoRedraw()
         {
             if(!_CancellationToken.IsCancellationRequested) {
-                var set = _AircraftList
+                var set = AircraftList
                     ?.ToArray()
                     .OrderBy(r => r.Icao24)
                     .Select(r => new AircraftTableRow() {

@@ -13,10 +13,9 @@ using VirtualRadar.Message;
 namespace VirtualRadar
 {
     /// <summary>
-    /// The interface for all objects that can maintain a list of aircraft. Usually scoped
-    /// to a receiver instance.
+    /// The interface for all objects that can maintain a list of aircraft.
     /// </summary>
-    [Lifetime(Lifetime.Scoped)]
+    [Lifetime(Lifetime.Transient)]
     public interface IAircraftList
     {
         /// <summary>
