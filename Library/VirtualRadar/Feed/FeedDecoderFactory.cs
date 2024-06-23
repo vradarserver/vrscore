@@ -21,7 +21,7 @@ namespace VirtualRadar.Feed
 
         private IServiceProvider _ServiceProvider;
 
-        private Dictionary<Type, Func<object, IFeedDecoder>> _OptionsTypeToBuildFunctionMap = new();
+        private Dictionary<Type, Func<IFeedDecoderOptions, IFeedDecoder>> _OptionsTypeToBuildFunctionMap = new();
 
         /// <summary>
         /// Creates a new object.
@@ -34,6 +34,7 @@ namespace VirtualRadar.Feed
 
         /// <inheritdoc/>
         public void RegisterFeedDecoderByOptions<TOptions, TFeedDecoder>()
+            where TOptions: IFeedDecoderOptions
             where TFeedDecoder: IFeedDecoder, IOneTimeConfigurable<TOptions>
         {
             lock(_SyncLock) {
@@ -48,7 +49,7 @@ namespace VirtualRadar.Feed
         }
 
         /// <inheritdoc/>
-        public IFeedDecoder Build(object options)
+        public IFeedDecoder Build(IFeedDecoderOptions options)
         {
             ArgumentNullException.ThrowIfNull(options);
 
@@ -61,6 +62,6 @@ namespace VirtualRadar.Feed
         }
 
         /// <inheritdoc/>
-        public T Build<T>(object options) where T: IFeedDecoder => (T)Build(options);
+        public T Build<T>(IFeedDecoderOptions options) where T: IFeedDecoder => (T)Build(options);
     }
 }

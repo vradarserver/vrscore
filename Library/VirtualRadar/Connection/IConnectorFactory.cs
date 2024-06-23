@@ -25,6 +25,7 @@ namespace VirtualRadar.Connection
         /// <typeparam name="TConnector"></typeparam>
         /// <returns></returns>
         void RegisterConnectorByOptions<TOptions, TConnector>()
+            where TOptions: IConnectorOptions
             where TConnector : IConnector, IOneTimeConfigurable<TOptions>;
 
         /// <summary>
@@ -33,7 +34,7 @@ namespace VirtualRadar.Connection
         /// <param name="options"></param>
         /// <returns></returns>
         /// <exception cref="ConnectorNotRegisteredException"></exception>
-        IConnector Build(object options);
+        IConnector Build(IConnectorOptions options);
 
         /// <summary>
         /// Builds a new connector from the options passed across.
@@ -41,6 +42,6 @@ namespace VirtualRadar.Connection
         /// <typeparam name="T"></typeparam>
         /// <param name="options"></param>
         /// <returns></returns>
-        T Build<T>(object options) where T: IConnector;
+        T Build<T>(IConnectorOptions options) where T: IConnector;
     }
 }

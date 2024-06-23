@@ -21,7 +21,7 @@ namespace VirtualRadar.Connection
 
         private IServiceProvider _ServiceProvider;
 
-        private Dictionary<Type, Func<object, IConnector>> _OptionsTypeToBuildFunctionMap = new();
+        private Dictionary<Type, Func<IConnectorOptions, IConnector>> _OptionsTypeToBuildFunctionMap = new();
 
         /// <summary>
         /// Creates a new object.
@@ -40,6 +40,7 @@ namespace VirtualRadar.Connection
 
         /// <inheritdoc/>
         public void RegisterConnectorByOptions<TOptions, TConnector>()
+            where TOptions: IConnectorOptions
             where TConnector : IConnector, IOneTimeConfigurable<TOptions>
         {
             lock(_SyncLock) {
@@ -54,7 +55,7 @@ namespace VirtualRadar.Connection
         }
 
         /// <inheritdoc/>
-        public IConnector Build(object options)
+        public IConnector Build(IConnectorOptions options)
         {
             ArgumentNullException.ThrowIfNull(options);
 
@@ -67,6 +68,6 @@ namespace VirtualRadar.Connection
         }
 
         /// <inheritdoc/>
-        public T Build<T>(object options) where T: IConnector => (T)Build(options);
+        public T Build<T>(IConnectorOptions options) where T: IConnector => (T)Build(options);
     }
 }

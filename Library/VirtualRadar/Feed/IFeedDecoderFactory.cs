@@ -21,6 +21,7 @@ namespace VirtualRadar.Feed
         /// <typeparam name="TOptions"></typeparam>
         /// <typeparam name="TFeedDecoder"></typeparam>
         void RegisterFeedDecoderByOptions<TOptions, TFeedDecoder>()
+            where TOptions: IFeedDecoderOptions
             where TFeedDecoder: IFeedDecoder, IOneTimeConfigurable<TOptions>;
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace VirtualRadar.Feed
         /// <param name="options"></param>
         /// <returns></returns>
         /// <exception cref="FeedDecoderNotRegisteredException"></exception>
-        IFeedDecoder Build(object options);
+        IFeedDecoder Build(IFeedDecoderOptions options);
 
         /// <summary>
         /// Builds a new feed decoder from the options passed across.
@@ -38,6 +39,6 @@ namespace VirtualRadar.Feed
         /// <param name="options"></param>
         /// <returns></returns>
         /// <exception cref="FeedDecoderNotRegisteredException"></exception>
-        T Build<T>(object options) where T: IFeedDecoder;
+        T Build<T>(IFeedDecoderOptions options) where T: IFeedDecoder;
     }
 }
