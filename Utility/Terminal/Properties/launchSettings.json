@@ -2,7 +2,7 @@
   "profiles": {
     "Terminal": {
       "commandName": "Project",
-      "commandLineArgs": "-recording c:\\tmp\\recording.vrs"
+      "commandLineArgs": "-recording c:\\tmp\\recording.vrs -speed 0"
     }
   }
 }

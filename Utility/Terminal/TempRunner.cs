@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 using VirtualRadar.Feed.Recording;
+using VirtualRadar.IO;
 using VirtualRadar.Message;
 using WindowProcessor;
 
@@ -68,9 +69,14 @@ namespace VirtualRadar.Utility.Terminal
 
                     connector.LastExceptionChanged += (_,_) => aircraftListWindow.LastConnectorException = connector.LastException;
 
+                    IStreamChunkerState chunkerState = null;
                     connector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountPacketsSeen;
-                        foreach(var message in translator.ConvertTo(packet)) {
+                        chunkerState = chunker.ParseBlock(packet, chunkerState);
+                    };
+
+                    chunker.ChunkRead += (_, chunk) => {
+                        foreach(var message in translator.ConvertTo(chunk)) {
                             var applyOutcome = aircraftList.ApplyMessage(message);
                             if(applyOutcome.AddedAircraft) {
                                 _AircraftLookupService.Lookup(message.Icao24);
