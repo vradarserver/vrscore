@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_Open(Options _Options, WorkingFolder _WorkingFolder) : CommandRunner
+    class CommandRunner_Open(Options _Options, IWorkingFolder _WorkingFolder) : CommandRunner
     {
         public override async Task<bool> Run()
         {

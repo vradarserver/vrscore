@@ -8,13 +8,12 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar
+namespace VirtualRadar.Services
 {
     /// <summary>
     /// Manages the working folder.
     /// </summary>
-    [Lifetime(Lifetime.Singleton)]
-    public class WorkingFolder
+    class WorkingFolder : IWorkingFolder
     {
         private IFileSystem _FileSystem;
         private long _CountFolderAccessed;
@@ -24,9 +23,7 @@ namespace VirtualRadar
             "VirtualRadarCore"
         );
 
-        /// <summary>
-        /// Returns the working folder, creating it if it does not already exist.
-        /// </summary>
+        /// <inheritdoc/>
         public string Folder
         {
             get {
@@ -38,9 +35,7 @@ namespace VirtualRadar
             }
         }
 
-        /// <summary>
-        /// Returns the number of times <see cref="Folder"/> has been read.
-        /// </summary>
+        /// <inheritdoc/>
         public long CountFolderAccessed => _CountFolderAccessed;
 
         public WorkingFolder(IFileSystem fileSystem)
@@ -51,11 +46,7 @@ namespace VirtualRadar
         /// <inheritdoc/>
         public override string ToString() => _Folder ?? "";
 
-        /// <summary>
-        /// Changes <see cref="Folder"/>.
-        /// </summary>
-        /// <param name="newFolder"></param>
-        /// <returns>True if <see cref="Folder"/> has not yet been accessed.</returns>
+        /// <inheritdoc/>
         public bool ChangeFolder(string newFolder)
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(newFolder);

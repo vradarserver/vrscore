@@ -18,7 +18,7 @@ namespace VirtualRadar.Services
     /// </summary>
     class WebAddressManager : IWebAddressManager
     {
-        private WorkingFolder _WorkingFolder;
+        private IWorkingFolder _WorkingFolder;
         private IFileSystem _FileSystem;
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace VirtualRadar.Services
         /// </summary>
         public WebAddressManager(
             IFileSystem fileSystem,
-            WorkingFolder workingFolder
+            IWorkingFolder workingFolder
         )
         {
             _FileSystem = fileSystem;

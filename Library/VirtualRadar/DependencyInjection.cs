@@ -24,7 +24,7 @@ namespace VirtualRadar
             services.AddLifetime<IFileSystem,                       Services.FileSystem>();
             services.AddLifetime<IHttpClientService,                Services.HttpClientService>();
             services.AddLifetime<IWebAddressManager,                Services.WebAddressManager>();
-            services.AddLifetime<WorkingFolder,                     WorkingFolder>();
+            services.AddLifetime<IWorkingFolder,                    Services.WorkingFolder>();
 
             services.AddLifetime<Connection.IConnectorFactory,      Connection.ConnectorFactory>();
             services.AddLifetime<Connection.TcpPullConnector,       Connection.TcpPullConnector>();
