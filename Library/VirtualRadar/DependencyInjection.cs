@@ -32,6 +32,8 @@ namespace VirtualRadar
             services.AddLifetime<Feed.IFeedDecoderFactory,          Feed.FeedDecoderFactory>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
+            services.AddLifetime<StandingData.IStandingDataUpdater, StandingData.StandingDataUpdater>();
+
             return services;
         }
     }

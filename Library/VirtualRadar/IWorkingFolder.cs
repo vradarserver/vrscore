@@ -13,6 +13,7 @@ namespace VirtualRadar
     /// <summary>
     /// Manages the folder where configuration and state files are stored.
     /// </summary>
+    [Lifetime(Lifetime.Singleton)]
     public interface IWorkingFolder
     {
         /// <summary>

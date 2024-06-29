@@ -43,6 +43,7 @@ namespace VirtualRadar.Utility.CLIConsole
                         .AddTransient<CommandRunner_Open,               CommandRunner_Open>()
                         .AddTransient<CommandRunner_RecordFeed,         CommandRunner_RecordFeed>()
                         .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
+                        .AddTransient<CommandRunner_UpdateStandingData, CommandRunner_UpdateStandingData>()
                     ;
                 });
 
@@ -51,15 +52,16 @@ namespace VirtualRadar.Utility.CLIConsole
                         CommandRunner commandRunner = null;
                         var services = scope.ServiceProvider;
                         switch(options.Command) {
-                            case Command.ConnectListener:   commandRunner = services.GetRequiredService<CommandRunner_ConnectListener>(); break;
-                            case Command.DumpFeed:          commandRunner = services.GetRequiredService<CommandRunner_DumpFeed>(); break;
-                            case Command.List:              commandRunner = services.GetRequiredService<CommandRunner_List>(); break;
-                            case Command.Lookup:            commandRunner = services.GetRequiredService<CommandRunner_Lookup>(); break;
-                            case Command.Open:              commandRunner = services.GetRequiredService<CommandRunner_Open>(); break;
-                            case Command.RecordFeed:        commandRunner = services.GetRequiredService<CommandRunner_RecordFeed>(); break;
-                            case Command.ShowVersion:       commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
-                            case Command.None:              OptionsParser.Usage("Missing command"); break;
-                            default:                        throw new NotImplementedException();
+                            case Command.ConnectListener:       commandRunner = services.GetRequiredService<CommandRunner_ConnectListener>(); break;
+                            case Command.DumpFeed:              commandRunner = services.GetRequiredService<CommandRunner_DumpFeed>(); break;
+                            case Command.List:                  commandRunner = services.GetRequiredService<CommandRunner_List>(); break;
+                            case Command.Lookup:                commandRunner = services.GetRequiredService<CommandRunner_Lookup>(); break;
+                            case Command.Open:                  commandRunner = services.GetRequiredService<CommandRunner_Open>(); break;
+                            case Command.RecordFeed:            commandRunner = services.GetRequiredService<CommandRunner_RecordFeed>(); break;
+                            case Command.ShowVersion:           commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
+                            case Command.UpdateStandingData:    commandRunner = services.GetRequiredService<CommandRunner_UpdateStandingData>(); break;
+                            case Command.None:                  OptionsParser.Usage("Missing command"); break;
+                            default:                            throw new NotImplementedException();
                         }
 
                         exitCode = await commandRunner.Run()

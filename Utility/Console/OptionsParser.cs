@@ -68,6 +68,9 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "-show":
                         result.Show = true;
                         break;
+                    case "updatesdm":
+                        result.Command = ParseCommand(result, Command.UpdateStandingData);
+                        break;
                     case "version":
                         result.Command = ParseCommand(result, Command.ShowVersion);
                         break;
@@ -152,6 +155,7 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  connect             Connect to feed");
             Console.WriteLine($"  record              Record a feed for future playback");
             Console.WriteLine($"  dumpFeed <filename> Load and dump a recorded feed");
+            Console.WriteLine($"  updateSDM           Update standing data");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");

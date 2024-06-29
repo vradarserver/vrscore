@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2014 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,26 +8,43 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
+namespace VirtualRadar.StandingData
 {
-    enum Command
+    /// <summary>
+    /// Carries information about a callsign and its route for instances of
+    /// <see cref="ICallsignRouteFetcher"/>.
+    /// </summary>
+    public class CallsignRouteDetail
     {
-        None,
+        /// <summary>
+        /// Gets or sets the ICAO24 of the aircraft whose route has been fetched.
+        /// </summary>
+        public string Icao24 { get; set; }
 
-        ConnectListener,
+        /// <summary>
+        /// Gets or sets the callsign that the route was based on.
+        /// </summary>
+        public string Callsign { get; set; }
 
-        DumpFeed,
+        /// <summary>
+        /// Gets or sets the callsign that the route was actually found under.
+        /// </summary>
+        public string UsedCallsign { get; set; }
 
-        List,
+        /// <summary>
+        /// Gets or sets the route for the callsign. This will be null if no details could
+        /// be fetched for the callsign.
+        /// </summary>
+        public Route Route { get; set; }
 
-        Lookup,
+        /// <summary>
+        /// Gets or sets a value indicating that this is probably a positioning / ferry flight.
+        /// </summary>
+        public bool IsPositioningFlight { get; set; }
 
-        Open,
-
-        RecordFeed,
-
-        ShowVersion,
-
-        UpdateStandingData
+        /// <summary>
+        /// Gets or sets a value indicating that the this probably a charter flight.
+        /// </summary>
+        public bool IsCharterFlight { get; set; }
     }
 }
