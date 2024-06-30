@@ -20,6 +20,7 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
     ) : IStandingDataRepository
     {
         private readonly object _EFSingleThreadLock = new();
+        private Entities.CodeBlock[] _CodeBlockCache;
 
         /// <inheritdoc/>
         public AircraftType AircraftType_GetByCode(string code)
@@ -106,6 +107,50 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public CodeBlock CodeBlock_GetForIcao24(Icao24 icao24)
+        {
+            CodeBlock result = null;
+
+            if(icao24.IsValid) {
+                var codeBlocks = GetCodeBlocks();
+                foreach(var codeBlock in codeBlocks) {
+                    if((codeBlock.SignificantBitMask & icao24) == codeBlock.BitMask) {
+                        result = codeBlock.ToCodeBlock();
+                        break;
+                    }
+                }
+                result ??= new();
+            }
+
+            return result;
+        }
+
+        private Entities.CodeBlock[] GetCodeBlocks()
+        {
+            var result = _CodeBlockCache;
+            if(result == null) {
+                lock(_EFSingleThreadLock) {
+                    try {
+                        using(var context = CreateContext()) {
+                            result = context
+                                .CodeBlocks
+                                .Include(codeBlock => codeBlock.Country)
+                                .AsNoTracking()
+                                .OrderByDescending(codeBlock => codeBlock.SignificantBitMask)
+                                .ThenBy(codeBlock => codeBlock.IsMilitary ? 0 : 1)
+                                .ToArray();
+                            _CodeBlockCache = result;
+                        }
+                    } catch(FileNotFoundException) {
+                        ;
+                    }
+                }
+            }
+
+            return result ?? [];
         }
 
         private StandingDataContext CreateContext()

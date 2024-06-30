@@ -68,6 +68,14 @@ namespace VirtualRadar.Utility.CLIConsole
                         .Airport_GetByCode(_Options.Code)
                     ]);
                     break;
+                case StandingDataEntity.CodeBlock:
+                    if(!Icao24.TryParse(_Options.Code, out var icao24)) {
+                        OptionsParser.Usage($"{_Options.Code} is not a valid ICAO24");
+                    }
+                    await DumpCodeBlock(_StandingDataRepository
+                        .CodeBlock_GetForIcao24(icao24)
+                    );
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -117,6 +125,19 @@ namespace VirtualRadar.Utility.CLIConsole
                 (new("Altitude", 8, Alignment.Right),   row => row.AltitudeFeet?.ToString("N0")),
             ]);
             await table.Dump(airports);
+        }
+
+        private async Task DumpCodeBlock(CodeBlock codeBlock)
+        {
+            if(codeBlock == null) {
+                await WriteLine("None");
+            } else {
+                var table = new ConsoleTable<CodeBlock>([
+                    (new("Country", 30),                    row => row.Country),
+                    (new("Military", 8, Alignment.Centre),  row => row.IsMilitary ? "Yes" : "No"),
+                ]);
+                await table.Dump([ codeBlock ]);
+            }
         }
 
         private async Task Update()

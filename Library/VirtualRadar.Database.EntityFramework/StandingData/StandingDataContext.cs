@@ -20,6 +20,8 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
 
         public DbSet<Airport> Airports { get; set; }
 
+        public DbSet<CodeBlock> CodeBlocks { get; set; }
+
         public DbSet<Country> Countries { get; set; }
 
         public DbSet<DatabaseVersion> DatabaseVersions { get; set; }
@@ -59,11 +61,21 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
             modelBuilder.Entity<Airport>()
                 .ToTable("Airport");
 
-            modelBuilder.Entity<Country>()
-                .ToTable("Country")
+            modelBuilder.Entity<CodeBlock>()
+                .ToTable("CodeBlock")
+                .HasNoKey();
+
+            var country = modelBuilder.Entity<Country>()
+                .ToTable("Country");
+            country
                 .HasMany<Airport>()
                 .WithOne(airport => airport.Country)
                 .HasForeignKey(airport => airport.CountryId)
+                .IsRequired(true);
+            country
+                .HasMany<CodeBlock>()
+                .WithOne(codeBlock => codeBlock.Country)
+                .HasForeignKey(codeBlock => codeBlock.CountryId)
                 .IsRequired(true);
 
             modelBuilder.Entity<DatabaseVersion>()
