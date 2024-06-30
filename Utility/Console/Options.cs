@@ -28,6 +28,8 @@ namespace VirtualRadar.Utility.CLIConsole
 
         public OpenEntity OpenEntity { get; set; }
 
+        public StandingDataEntity StandingDataEntity { get; set; }
+
         public string Id { get; set; }
 
         public string LoadFileName { get; set; }
@@ -35,5 +37,11 @@ namespace VirtualRadar.Utility.CLIConsole
         public bool ParseMessage { get; set; }
 
         public string FeedFormat { get; set; } = "vrs-basestation";
+
+        public bool List { get; set; }
+
+        public bool Update { get; set; }
+
+        public string Code { get; set; }
     }
 }

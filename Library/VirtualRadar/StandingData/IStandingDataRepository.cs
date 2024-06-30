@@ -13,17 +13,9 @@ namespace VirtualRadar.StandingData
     /// <summary>
     /// The interface for a repository that can fetch standing data records.
     /// </summary>
-    [Lifetime(Lifetime.Scoped)]
+    [Lifetime(Lifetime.Singleton)]
     public interface IStandingDataRepository
     {
-        /// <summary>
-        /// Retrieves the aicraft type record for the ICAO8643 code passed across. Returns null if no such
-        /// aircraft type exists.
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        AircraftType AircraftType_GetByCode(string code);
-
         /// <summary>
         /// Retrieves the airlines matching the ICAO or IATA code passed across. Returns an empty collection
         /// if no such airlines exist.
@@ -31,6 +23,14 @@ namespace VirtualRadar.StandingData
         /// <param name="code"></param>
         /// <returns></returns>
         IReadOnlyList<Airline> Airlines_GetByCode(string code);
+    /*
+        /// <summary>
+        /// Retrieves the aicraft type record for the ICAO8643 code passed across. Returns null if no such
+        /// aircraft type exists.
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        AircraftType AircraftType_GetByCode(string code);
 
         /// <summary>
         /// Retrieves the airport matching the ICAO or IATA code passed across. Returns null if no such
@@ -60,5 +60,6 @@ namespace VirtualRadar.StandingData
         /// <param name="callsign"></param>
         /// <returns></returns>
         Route Route_GetForCallsign(string callsign);
+    */
     }
 }

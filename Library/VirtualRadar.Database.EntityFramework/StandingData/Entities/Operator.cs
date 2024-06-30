@@ -8,26 +8,39 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
+using System.ComponentModel.DataAnnotations;
+using VirtualRadar.StandingData;
+
+namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
 {
-    enum Command
+    class Operator
     {
-        None,
+        [Key]
+        public long OperatorId { get; set; }
 
-        ConnectListener,
+        [MaxLength(3)]
+        public string Icao { get; set; }
 
-        DumpFeed,
+        [MaxLength(2)]
+        public string Iata { get; set; }
 
-        List,
+        [MaxLength(80)]
+        public string Name { get; set; }
 
-        Lookup,
+        [MaxLength(50)]
+        public string PositioningFlightPattern { get; set; }
 
-        Open,
+        [MaxLength(50)]
+        public string CharterFlightPattern { get; set; }
 
-        RecordFeed,
+        public override string ToString() => $"[{OperatorId}] [{Icao}/{Iata}] {Name}";
 
-        ShowVersion,
-
-        StandingData,
+        public Airline ToAirline() => new() {
+            CharterFlightPattern =      CharterFlightPattern,
+            IataCode =                  Iata,
+            IcaoCode =                  Icao,
+            Name =                      Name,
+            PositioningFlightPattern =  PositioningFlightPattern,
+        };
     }
 }

@@ -8,26 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
+using System.IO;
+using Microsoft.EntityFrameworkCore;
+using VirtualRadar.Database.EntityFramework.StandingData.Entities;
+
+namespace VirtualRadar.Database.EntityFramework.StandingData
 {
-    enum Command
+    class StandingDataContext(IFileSystem _FileSystem, IWorkingFolder _WorkingFolder) : DbContext
     {
-        None,
+        public DbSet<DatabaseVersion> DatabaseVersions { get; set; }
 
-        ConnectListener,
+        public DbSet<Operator> Operators { get; set; }
 
-        DumpFeed,
+        public string FileName => _FileSystem.Combine(
+            _WorkingFolder.Folder,
+            "StandingData.sqb"
+        );
 
-        List,
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
 
-        Lookup,
+            var fileName = FileName;
 
-        Open,
+            if(!_FileSystem.FileExists(fileName)) {
+                throw new FileNotFoundException($"{fileName} does not exist");
+            }
 
-        RecordFeed,
+            optionsBuilder.UseSqlite($"Data Source={fileName}");
+        }
 
-        ShowVersion,
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        StandingData,
+            modelBuilder.Entity<DatabaseVersion>()
+                .ToTable("DatabaseVersion")
+                .HasNoKey();
+
+            modelBuilder.Entity<Operator>()
+                .ToTable("Operator");
+        }
     }
 }

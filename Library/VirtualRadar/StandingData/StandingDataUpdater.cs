@@ -106,7 +106,8 @@ namespace VirtualRadar.StandingData
         {
             var stateFilename =  StateFileFullyPathed;
 
-            var result = !_FileSystem.FileExists(stateFilename);
+            var result = !_FileSystem.FileExists(stateFilename)
+                      || !_FileSystem.FileExists(DatabaseFileFullyPathed);
             if(!result) {
                 var remoteContent = await DownloadLines(StateFileUrl, cancellationToken);
                 var localContent = _FileSystem.ReadAllLines(stateFilename);

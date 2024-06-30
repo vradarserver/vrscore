@@ -36,8 +36,8 @@ namespace VirtualRadar.Utility.Terminal
                         })
 
                         .AddVirtualRadarGroup()
-                        .AddBaseStationFeedGroup()
-                        .AddFeedRecordingGroup()
+                        .AddVirtualRadarBaseStationFeedGroup()
+                        .AddVirtualRadarFeedRecordingGroup()
 
                         .AddSingleton<Options>(options)
                         .AddScoped<AircraftListWindow, AircraftListWindow>()

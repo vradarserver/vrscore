@@ -10,7 +10,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using VirtualRadar.Configuration;
+using VirtualRadar.Database.EntityFramework;
 using VirtualRadar.Feed.BaseStation;
 using VirtualRadar.Feed.Recording;
 
@@ -30,8 +30,9 @@ namespace VirtualRadar.Utility.CLIConsole
                 builder.ConfigureServices((context, services) => {
                     services
                         .AddVirtualRadarGroup()
-                        .AddBaseStationFeedGroup()
-                        .AddFeedRecordingGroup()
+                        .AddVirtualRadarDatabaseEntityFrameworkGroup()
+                        .AddVirtualRadarBaseStationFeedGroup()
+                        .AddVirtualRadarFeedRecordingGroup()
 
                         .AddSingleton<Options>(options)
                         .AddSingleton<HeaderService, HeaderService>()
@@ -43,7 +44,7 @@ namespace VirtualRadar.Utility.CLIConsole
                         .AddTransient<CommandRunner_Open,               CommandRunner_Open>()
                         .AddTransient<CommandRunner_RecordFeed,         CommandRunner_RecordFeed>()
                         .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
-                        .AddTransient<CommandRunner_UpdateStandingData, CommandRunner_UpdateStandingData>()
+                        .AddTransient<CommandRunner_StandingData,       CommandRunner_StandingData>()
                     ;
                 });
 
@@ -59,7 +60,7 @@ namespace VirtualRadar.Utility.CLIConsole
                             case Command.Open:                  commandRunner = services.GetRequiredService<CommandRunner_Open>(); break;
                             case Command.RecordFeed:            commandRunner = services.GetRequiredService<CommandRunner_RecordFeed>(); break;
                             case Command.ShowVersion:           commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
-                            case Command.UpdateStandingData:    commandRunner = services.GetRequiredService<CommandRunner_UpdateStandingData>(); break;
+                            case Command.StandingData:          commandRunner = services.GetRequiredService<CommandRunner_StandingData>(); break;
                             case Command.None:                  OptionsParser.Usage("Missing command"); break;
                             default:                            throw new NotImplementedException();
                         }

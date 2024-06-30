@@ -28,6 +28,9 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "-address":
                         result.Address = UseNextArg(arg, nextArg, ref i);
                         break;
+                    case "-code":
+                        result.Code = UseNextArg(arg, nextArg, ref i);
+                        break;
                     case "connect":
                         result.Command = ParseCommand(result, Command.ConnectListener);
                         break;
@@ -42,8 +45,21 @@ namespace VirtualRadar.Utility.CLIConsole
                         result.Id = UseNextArg(arg, nextArg, ref i);
                         break;
                     case "list":
+                        // THIS IS THE LIST **COMMAND**
                         result.Command = ParseCommand(result, Command.List);
                         result.ListEntity = ParseEnum<ListEntity>(UseNextArg(arg, nextArg, ref i));
+                        break;
+                    case "-list":
+                        // THIS IS THE LIST **OPTION**
+                        result.List = true;
+                        switch(result.Command) {
+                            case Command.StandingData:
+                                result.StandingDataEntity = ParseEnum<StandingDataEntity>(UseNextArg(arg, nextArg, ref i));
+                                break;
+                            default:
+                                Usage($"The -list options cannot be used with the {result.Command} command");
+                                break;
+                        }
                         break;
                     case "lookup":
                         result.Command = ParseCommand(result, Command.Lookup);
@@ -68,8 +84,11 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "-show":
                         result.Show = true;
                         break;
-                    case "updatesdm":
-                        result.Command = ParseCommand(result, Command.UpdateStandingData);
+                    case "standingdata":
+                        result.Command = ParseCommand(result, Command.StandingData);
+                        break;
+                    case "-update":
+                        result.Update = true;
                         break;
                     case "version":
                         result.Command = ParseCommand(result, Command.ShowVersion);
@@ -155,7 +174,7 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  connect             Connect to feed");
             Console.WriteLine($"  record              Record a feed for future playback");
             Console.WriteLine($"  dumpFeed <filename> Load and dump a recorded feed");
-            Console.WriteLine($"  updateSDM           Update standing data");
+            Console.WriteLine($"  standingdata        Download and dump standing data");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");
@@ -175,7 +194,11 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  -show               Dump packet content [{defaults.Show}]");
             Console.WriteLine($"  -parseMessage       Parse and display messages from feed [{defaults.ParseMessage}]");
             Console.WriteLine($"  -feedFormat <name>  Feed format to use for parsing packet [{defaults.FeedFormat}]");
-
+            Console.WriteLine();
+            Console.WriteLine($"STANDING DATA OPTIONS");
+            Console.WriteLine($"  -update             Update standing data [{defaults.Update}]");
+            Console.WriteLine($"  -list entity        List contents of: {String.Join(", ", Enum.GetNames<StandingDataEntity>())} [{defaults.List}]");
+            Console.WriteLine($"  -code <string>      The code to pass to -list calls that need it [{defaults.Code}]");
 
             if (!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();

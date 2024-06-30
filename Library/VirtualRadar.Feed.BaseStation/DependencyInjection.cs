@@ -14,7 +14,7 @@ namespace VirtualRadar.Feed.BaseStation
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddBaseStationFeedGroup(this IServiceCollection services)
+        public static IServiceCollection AddVirtualRadarBaseStationFeedGroup(this IServiceCollection services)
         {
             services.AddLifetime<IBootable, Bootable>();
 

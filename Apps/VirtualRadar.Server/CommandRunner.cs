@@ -27,7 +27,7 @@ namespace VirtualRadar.Server
         protected void AddVirtualRadarServerGroups(IServiceCollection services)
         {
             services.AddVirtualRadarGroup();
-            services.AddBaseStationFeedGroup();
+            services.AddVirtualRadarBaseStationFeedGroup();
         }
 
         protected void BootVirtualRadarServer(IHost host)

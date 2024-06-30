@@ -14,7 +14,7 @@ namespace VirtualRadar.Feed.Recording
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddFeedRecordingGroup(this IServiceCollection services)
+        public static IServiceCollection AddVirtualRadarFeedRecordingGroup(this IServiceCollection services)
         {
             services.AddLifetime<IBootable, Bootable>();
 
