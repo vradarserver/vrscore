@@ -10,7 +10,6 @@
 
 using System.IO;
 using Microsoft.EntityFrameworkCore;
-using VirtualRadar.Database.EntityFramework.StandingData.Entities;
 using VirtualRadar.StandingData;
 
 namespace VirtualRadar.Database.EntityFramework.StandingData
@@ -22,6 +21,7 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
     {
         private readonly object _EFSingleThreadLock = new();
 
+        /// <inheritdoc/>
         public IReadOnlyList<Airline> Airlines_GetByCode(string code)
         {
             Airline[] result = null;
@@ -30,7 +30,7 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
                 lock(_EFSingleThreadLock) {
                     try {
                         using(var context = CreateContext()) {
-                            IQueryable<Operator> set = context.Operators;
+                            IQueryable<Entities.Operator> set = context.Operators;
 
                             if(code.Length == 2) {
                                 set = set.Where(op => op.Iata == code);
@@ -50,6 +50,38 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
             }
 
             return result ?? [];
+        }
+
+        /// <inheritdoc/>
+        public Airport Airport_GetByCode(string code)
+        {
+            Airport result = null;
+
+            if(!String.IsNullOrEmpty(code) && code.Length >= 3 && code.Length <= 4) {
+                lock(_EFSingleThreadLock) {
+                    try {
+                        using(var context = CreateContext()) {
+                            IQueryable<Entities.Airport> set = context.Airports;
+
+                            if(code.Length == 3) {
+                                set = set.Where(airport => airport.Iata == code);
+                            } else {
+                                set = set.Where(airport => airport.Icao == code);
+                            }
+
+                            result = set
+                                .Include(airport => airport.Country)
+                                .AsNoTracking()
+                                .Select(airport => airport.ToAirport())
+                                .FirstOrDefault();
+                        }
+                    } catch(FileNotFoundException) {
+                        ;
+                    }
+                }
+            }
+
+            return result;
         }
 
         private StandingDataContext CreateContext()

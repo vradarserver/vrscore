@@ -16,6 +16,10 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
 {
     class StandingDataContext(IFileSystem _FileSystem, IWorkingFolder _WorkingFolder) : DbContext
     {
+        public DbSet<Airport> Airports { get; set; }
+
+        public DbSet<Country> Countries { get; set; }
+
         public DbSet<DatabaseVersion> DatabaseVersions { get; set; }
 
         public DbSet<Operator> Operators { get; set; }
@@ -41,6 +45,16 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Airport>()
+                .ToTable("Airport");
+
+            modelBuilder.Entity<Country>()
+                .ToTable("Country")
+                .HasMany<Airport>()
+                .WithOne(airport => airport.Country)
+                .HasForeignKey(airport => airport.CountryId)
+                .IsRequired(true);
 
             modelBuilder.Entity<DatabaseVersion>()
                 .ToTable("DatabaseVersion")

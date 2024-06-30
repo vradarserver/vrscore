@@ -56,7 +56,7 @@ namespace VirtualRadar.Utility.CLIConsole
 
         public async Task DumpBody(IEnumerable<T> rows)
         {
-            foreach(var row in rows) {
+            foreach(var row in rows.Where(row => row != null)) {
                 for(var idx = 0;idx < Columns.Length;++idx) {
                     if(idx > 0) {
                         await Console.Out.WriteAsync(' ');

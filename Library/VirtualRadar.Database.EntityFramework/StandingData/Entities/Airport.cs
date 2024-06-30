@@ -8,12 +8,45 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
-{
-    enum StandingDataEntity
-    {
-        Airline,
+using System.ComponentModel.DataAnnotations;
 
-        Airport,
+namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
+{
+    class Airport
+    {
+        [Key]
+        public long AirportId { get; set; }
+
+        [MaxLength(4)]
+        public string Icao { get; set; }
+
+        [MaxLength(3)]
+        public string Iata { get; set; }
+
+        [MaxLength(80)]
+        public string Name { get; set; }
+
+        [MaxLength(80)]
+        public string Location { get; set; }
+
+        public long CountryId { get; set; }
+
+        public Country Country { get; set; }
+
+        public double? Latitude { get; set; }
+
+        public double? Longitude { get; set; }
+
+        public int? Altitude { get; set; }
+
+        public VirtualRadar.StandingData.Airport ToAirport() => new() {
+            AltitudeFeet =      Altitude,
+            Country =           Country?.Name ?? "",
+            IataCode =          Iata,
+            IcaoCode =          Icao,
+            Latitude =          Latitude,
+            Longitude =         Longitude,
+            Name =              Name,
+        };
     }
 }

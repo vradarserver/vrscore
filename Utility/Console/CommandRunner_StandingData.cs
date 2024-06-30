@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using VirtualRadar.StandingData;
+using WindowProcessor;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
@@ -45,15 +46,21 @@ namespace VirtualRadar.Utility.CLIConsole
             );
             await WriteLine();
 
+            if(String.IsNullOrWhiteSpace(_Options.Code)) {
+                OptionsParser.Usage("Missing code");
+            }
+
             switch(_Options.StandingDataEntity) {
                 case StandingDataEntity.Airline:
-                    if(String.IsNullOrWhiteSpace(_Options.Code)) {
-                        OptionsParser.Usage("Missing code");
-                    }
                     await DumpAirlines(_StandingDataRepository
                         .Airlines_GetByCode(_Options.Code)
                         .OrderBy(r => r.Name)
                     );
+                    break;
+                case StandingDataEntity.Airport:
+                    await DumpAirports([ _StandingDataRepository
+                        .Airport_GetByCode(_Options.Code)
+                    ]);
                     break;
                 default:
                     throw new NotImplementedException();
@@ -70,6 +77,20 @@ namespace VirtualRadar.Utility.CLIConsole
                 (new("Posn", 20),       row => row.PositioningFlightPattern)
             ]);
             await table.Dump(airlines);
+        }
+
+        private async Task DumpAirports(IEnumerable<Airport> airports)
+        {
+            var table = new ConsoleTable<Airport>([
+                (new("ICAO", 4),                        row => row.IcaoCode),
+                (new("IATA", 4),                        row => row.IataCode),
+                (new("Name", 50),                       row => row.Name),
+                (new("Country", 30),                    row => row.Country),
+                (new("Latitude", 11, Alignment.Right),  row => row.Latitude?.ToString("N6")),
+                (new("Longitude", 11, Alignment.Right), row => row.Longitude?.ToString("N6")),
+                (new("Altitude", 8, Alignment.Right),   row => row.AltitudeFeet?.ToString("N0")),
+            ]);
+            await table.Dump(airports);
         }
 
         private async Task Update()

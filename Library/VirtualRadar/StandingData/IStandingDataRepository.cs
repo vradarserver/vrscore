@@ -23,14 +23,6 @@ namespace VirtualRadar.StandingData
         /// <param name="code"></param>
         /// <returns></returns>
         IReadOnlyList<Airline> Airlines_GetByCode(string code);
-    /*
-        /// <summary>
-        /// Retrieves the aicraft type record for the ICAO8643 code passed across. Returns null if no such
-        /// aircraft type exists.
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        AircraftType AircraftType_GetByCode(string code);
 
         /// <summary>
         /// Retrieves the airport matching the ICAO or IATA code passed across. Returns null if no such
@@ -39,6 +31,14 @@ namespace VirtualRadar.StandingData
         /// <param name="code"></param>
         /// <returns></returns>
         Airport Airport_GetByCode(string code);
+    /*
+        /// <summary>
+        /// Retrieves the aicraft type record for the ICAO8643 code passed across. Returns null if no such
+        /// aircraft type exists.
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        AircraftType AircraftType_GetByCode(string code);
 
         /// <summary>
         /// Retrieves an unsorted collection of all code blocks.
