@@ -54,5 +54,16 @@ namespace VirtualRadar.StandingData
         /// <param name="callsign"></param>
         /// <returns></returns>
         Route Route_GetForCallsign(string callsign);
+
+        /// <summary>
+        /// Blocks while current calls are satisfied and then blocks all other calls while the action
+        /// is executed. This is a recipe for deadlocks, be careful.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <remarks>
+        /// Used by <see cref="IStandingDataUpdater"/> to suppress fetches from the repository while
+        /// a new version of the database is being copied in.
+        /// </remarks>
+        void PauseWhile(Action action);
     }
 }

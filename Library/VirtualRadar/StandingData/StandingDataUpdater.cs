@@ -19,6 +19,7 @@ namespace VirtualRadar.StandingData
         IWorkingFolder _WorkingFolder;
         IFileSystem _FileSystem;
         IHttpClientService _HttpClientService;
+        IStandingDataRepository _StandingDataRepository;
 
         /// <summary>
         /// Non-zero if <see cref="Update"/> is running on a thread somewhere.
@@ -88,17 +89,20 @@ namespace VirtualRadar.StandingData
         /// <param name="workingFolder"></param>
         /// <param name="fileSystem"></param>
         /// <param name="httpClientService"></param>
+        /// <param name="standingDataRepository"></param>
         public StandingDataUpdater(
             IWebAddressManager webAddressManager,
             IWorkingFolder workingFolder,
             IFileSystem fileSystem,
-            IHttpClientService httpClientService
+            IHttpClientService httpClientService,
+            IStandingDataRepository standingDataRepository
         )
         {
             _WebAddressManager = webAddressManager;
             _WorkingFolder = workingFolder;
             _FileSystem = fileSystem;
             _HttpClientService = httpClientService;
+            _StandingDataRepository = standingDataRepository;
         }
 
         /// <inheritdoc/>
@@ -156,10 +160,12 @@ namespace VirtualRadar.StandingData
                     if(updateState) {
                         await DownloadAndDecompressFile(DatabaseUrl, databaseTempName, cancellationToken);
                         if(!cancellationToken.IsCancellationRequested) {
-                            _FileSystem.MoveFile(
-                                databaseTempName,
-                                databaseFileName,
-                                overwrite: true
+                            _StandingDataRepository.PauseWhile(() => 
+                                _FileSystem.MoveFile(
+                                    databaseTempName,
+                                    databaseFileName,
+                                    overwrite: true
+                                )
                             );
 
                             _FileSystem.WriteAllLines(stateFileName, stateLines);

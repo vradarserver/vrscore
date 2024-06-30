@@ -186,6 +186,14 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
             return result;
         }
 
+        /// <inheritdoc/>
+        public void PauseWhile(Action action)
+        {
+            lock(_EFSingleThreadLock) {
+                action();
+            }
+        }
+
         private StandingDataContext CreateContext()
         {
             return new StandingDataContext(_FileSystem, _WorkingFolder);
