@@ -16,6 +16,8 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
 {
     class StandingDataContext(IFileSystem _FileSystem, IWorkingFolder _WorkingFolder) : DbContext
     {
+        public DbSet<AircraftTypeNoEnumsView> AircraftTypeNoEnumsViews { get; set; }
+
         public DbSet<Airport> Airports { get; set; }
 
         public DbSet<Country> Countries { get; set; }
@@ -45,6 +47,14 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<AircraftTypeNoEnumsView>()
+                .ToTable("AircraftTypeNoEnumsView")
+                .HasKey(
+                    nameof(AircraftTypeNoEnumsView.AircraftTypeId),
+                    nameof(AircraftTypeNoEnumsView.ModelId),
+                    nameof(AircraftTypeNoEnumsView.ManufacturerId)
+                );
 
             modelBuilder.Entity<Airport>()
                 .ToTable("Airport");

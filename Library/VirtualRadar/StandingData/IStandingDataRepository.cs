@@ -17,6 +17,14 @@ namespace VirtualRadar.StandingData
     public interface IStandingDataRepository
     {
         /// <summary>
+        /// Retrieves the aicraft type record for the ICAO8643 code passed across. Returns null if no such
+        /// aircraft type exists.
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        AircraftType AircraftType_GetByCode(string code);
+
+        /// <summary>
         /// Retrieves the airlines matching the ICAO or IATA code passed across. Returns an empty collection
         /// if no such airlines exist.
         /// </summary>

@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Extensions;
 using VirtualRadar.StandingData;
 using WindowProcessor;
 
@@ -51,6 +52,11 @@ namespace VirtualRadar.Utility.CLIConsole
             }
 
             switch(_Options.StandingDataEntity) {
+                case StandingDataEntity.AircraftType:
+                    await DumpAircraftType(_StandingDataRepository
+                        .AircraftType_GetByCode(_Options.Code)
+                    );
+                    break;
                 case StandingDataEntity.Airline:
                     await DumpAirlines(_StandingDataRepository
                         .Airlines_GetByCode(_Options.Code)
@@ -64,6 +70,26 @@ namespace VirtualRadar.Utility.CLIConsole
                     break;
                 default:
                     throw new NotImplementedException();
+            }
+        }
+
+        private async Task DumpAircraftType(AircraftType aircraftType)
+        {
+            if(aircraftType == null) {
+                await WriteLine("None");
+            } else {
+                await WriteLine(
+                    $"Type [{aircraftType.Type}] Species [{aircraftType.Species}] WTC [{aircraftType.WakeTurbulenceCategory}] " +
+                    $"Engines [{aircraftType.Engines} × {aircraftType.EngineType}] Placement [{aircraftType.EnginePlacement}]"
+                );
+                await WriteLine();
+                await WriteLine($"{"Manufacturer",-40} {"Model",-40}");
+                await WriteLine($"{new String('-',40)} {new String('-',40)}");
+                for(var idx = 0;idx < aircraftType.Manufacturers.Count;++idx) {
+                    var manufacturer = aircraftType.Manufacturers[idx];
+                    var model = idx < aircraftType.Models.Count ? aircraftType.Models[idx] : "";
+                    await WriteLine($"{manufacturer.TruncateAt(40),-40} {model.TruncateAt(40),-40}");
+                }
             }
         }
 

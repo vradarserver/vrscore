@@ -22,6 +22,30 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         private readonly object _EFSingleThreadLock = new();
 
         /// <inheritdoc/>
+        public AircraftType AircraftType_GetByCode(string code)
+        {
+            AircraftType result = null;
+
+            if(!String.IsNullOrEmpty(code)) {
+                lock(_EFSingleThreadLock) {
+                    try {
+                        using(var context = CreateContext()) {
+                            var records = context
+                                .AircraftTypeNoEnumsViews
+                                .Where(view => view.Icao == code)
+                                .AsNoTracking();
+                            result = Entities.AircraftTypeNoEnumsView.ToAircraftType(records);
+                        }
+                    } catch(FileNotFoundException) {
+                        ;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public IReadOnlyList<Airline> Airlines_GetByCode(string code)
         {
             Airline[] result = null;
