@@ -153,6 +153,39 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
             return result ?? [];
         }
 
+        /// <inheritdoc/>
+        public Route Route_GetForCallsign(string callsign)
+        {
+            Route result = null;
+
+            if(!String.IsNullOrWhiteSpace(callsign)) {
+                lock(_EFSingleThreadLock) {
+                    try {
+                        using(var context = CreateContext()) {
+                            result = context
+                                .Routes
+                                .AsNoTracking()
+                                //.AsSplitQuery()
+                                .Where(route => route.Callsign == callsign)
+                                .Include(route => route.FromAirport)
+                                .ThenInclude(airport => airport.Country)
+                                .Include(route => route.ToAirport)
+                                .ThenInclude(airport => airport.Country)
+                                .Include(route => route.RouteStops)
+                                .ThenInclude(stop => stop.Airport)
+                                .ThenInclude(airport => airport.Country)
+                                .Select(route => route.ToRoute())
+                                .FirstOrDefault();
+                        }
+                    } catch(FileNotFoundException) {
+                        ;
+                    }
+                }
+            }
+
+            return result;
+        }
+
         private StandingDataContext CreateContext()
         {
             return new StandingDataContext(_FileSystem, _WorkingFolder);

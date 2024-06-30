@@ -8,18 +8,43 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
+using System.ComponentModel.DataAnnotations;
+
+namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
 {
-    enum StandingDataEntity
+    class Route
     {
-        AircraftType,
+        [Key]
+        public long RouteId { get; set; }
 
-        Airline,
+        public string Callsign { get; set; }
 
-        Airport,
+        public long OperatorId { get; set; }
 
-        CodeBlock,
+        public Operator Operator { get; set; }
 
-        Route,
+        public string FlightNumber { get; set; }
+
+        public long FromAirportId { get; set; }
+
+        public Airport FromAirport { get; set; }
+
+        public long ToAirportId { get; set; }
+
+        public Airport ToAirport { get; set; }
+
+        public List<RouteStop> RouteStops { get; } = new();
+
+        public VirtualRadar.StandingData.Route ToRoute()
+        {
+            var result = new VirtualRadar.StandingData.Route() {
+                From =      FromAirport?.ToAirport(),
+                To =        ToAirport?.ToAirport(),
+            };
+            result.Stopovers.AddRange(
+                RouteStops.Select(stop => stop.Airport?.ToAirport())
+            );
+            return result;
+        }
     }
 }

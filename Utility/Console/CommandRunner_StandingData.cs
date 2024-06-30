@@ -76,6 +76,11 @@ namespace VirtualRadar.Utility.CLIConsole
                         .CodeBlock_GetForIcao24(icao24)
                     );
                     break;
+                case StandingDataEntity.Route:
+                    await DumpRoute(_StandingDataRepository
+                        .Route_GetForCallsign(_Options.Code)
+                    );
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -137,6 +142,18 @@ namespace VirtualRadar.Utility.CLIConsole
                     (new("Military", 8, Alignment.Centre),  row => row.IsMilitary ? "Yes" : "No"),
                 ]);
                 await table.Dump([ codeBlock ]);
+            }
+        }
+
+        private async Task DumpRoute(Route route)
+        {
+            if(route == null) {
+                await WriteLine("None");
+            } else {
+                await DumpAirports(new Airport[] { route.From }
+                    .Concat(route.Stopovers)
+                    .Concat(new Airport[] { route.To })
+                );
             }
         }
 

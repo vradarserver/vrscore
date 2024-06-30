@@ -28,6 +28,10 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
 
         public DbSet<Operator> Operators { get; set; }
 
+        public DbSet<Route> Routes { get; set; }
+
+        public DbSet<RouteStop> RouteStops { get; set; }
+
         public string FileName => _FileSystem.Combine(
             _WorkingFolder.Folder,
             "StandingData.sqb"
@@ -58,8 +62,16 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
                     nameof(AircraftTypeNoEnumsView.ManufacturerId)
                 );
 
-            modelBuilder.Entity<Airport>()
+            var airport = modelBuilder.Entity<Airport>()
                 .ToTable("Airport");
+            airport.HasMany<Route>()
+                .WithOne(route => route.FromAirport)
+                .HasForeignKey(route => route.FromAirportId)
+                .IsRequired(true);
+            airport.HasMany<Route>()
+                .WithOne(route => route.ToAirport)
+                .HasForeignKey(route => route.ToAirportId)
+                .IsRequired(true);
 
             modelBuilder.Entity<CodeBlock>()
                 .ToTable("CodeBlock")
@@ -84,6 +96,17 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
 
             modelBuilder.Entity<Operator>()
                 .ToTable("Operator");
+
+            var route = modelBuilder.Entity<Route>()
+                .ToTable("Route");
+            route
+                .HasMany(route => route.RouteStops)
+                .WithOne()
+                .HasForeignKey(routeStop => routeStop.RouteId)
+                .IsRequired(true);
+
+            modelBuilder.Entity<RouteStop>()
+                .ToTable("RouteStop");
         }
     }
 }

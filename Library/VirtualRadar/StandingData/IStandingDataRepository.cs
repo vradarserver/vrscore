@@ -47,13 +47,12 @@ namespace VirtualRadar.StandingData
         /// <param name="icao24"></param>
         /// <returns></returns>
         CodeBlock CodeBlock_GetForIcao24(Icao24 icao24);
-    /*
+
         /// <summary>
         /// Retrieves the route stored against the callsign or null if no such route exists.
         /// </summary>
         /// <param name="callsign"></param>
         /// <returns></returns>
         Route Route_GetForCallsign(string callsign);
-    */
     }
 }
