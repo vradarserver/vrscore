@@ -8,49 +8,23 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Extensions
+namespace VirtualRadar.StandingData
 {
-    /// <summary>
-    /// Extensions to the string type.
-    /// </summary>
-    public static class StringExtensions
+    [Lifetime(Lifetime.Singleton)]
+    public interface IStandingDataOverridesRepository
     {
         /// <summary>
-        /// A collection of all acceptable line endings.
+        /// Load the overrides. All lookup calls will block until this either completes
+        /// or is cancelled.
         /// </summary>
-        public static readonly string[] AllLineEndings = [ "\r\n", "\n", ];
-
-        /// <summary>
-        /// Both ASCII whitespace characters.
-        /// </summary>
-        public static readonly char[] AllAsciiWhiteSpace = [ ' ', '\t', ];
-
-        /// <summary>
-        /// Truncates the string to the length passed across.
-        /// </summary>
-        /// <param name="text"></param>
-        /// <param name="length"></param>
         /// <returns></returns>
-        public static string TruncateAt(this string text, int length)
-        {
-            return text?.Length > length
-                ? text[..length]
-                : text;
-        }
+        void Load();
 
         /// <summary>
-        /// Returns the string split into lines using either Windows or Unix line endings.
+        /// Returns the custom code block for the ICAO24 passed across.
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="lineEndings">The acceptable line endings. Defaults to <see cref="AllLineEndings"/>.</param>
-        /// <param name="options"></param>
+        /// <param name="icao24"></param>
         /// <returns></returns>
-        public static string[] SplitIntoLines(this string text, string[] lineEndings = null, StringSplitOptions options = StringSplitOptions.None)
-        {
-            return (text ?? "").Split(
-                lineEndings ?? AllLineEndings,
-                options
-            );
-        }
+        CodeBlock CodeBlockOverrideFor(Icao24 icao24);
     }
 }

@@ -16,23 +16,24 @@ namespace VirtualRadar
     {
         public static IServiceCollection AddVirtualRadarGroup(this IServiceCollection services)
         {
-            services.AddLifetime<BootService,                       BootService>();
-            services.AddLifetime<IAircraftList,                     AircraftList>();
-            services.AddLifetime<IAircraftOnlineLookupCache,        Services.AircraftOnlineLookup.Cache>();
-            services.AddLifetime<IAircraftOnlineLookupProvider,     Services.AircraftOnlineLookup.LookupProvider>();
-            services.AddLifetime<IAircraftOnlineLookupService,      Services.AircraftOnlineLookup.LookupService>();
-            services.AddLifetime<IFileSystem,                       Services.FileSystem>();
-            services.AddLifetime<IHttpClientService,                Services.HttpClientService>();
-            services.AddLifetime<IWebAddressManager,                Services.WebAddressManager>();
-            services.AddLifetime<IWorkingFolder,                    Services.WorkingFolder>();
+            services.AddLifetime<BootService,                   BootService>();
+            services.AddLifetime<IAircraftList,                 AircraftList>();
+            services.AddLifetime<IAircraftOnlineLookupCache,    Services.AircraftOnlineLookup.Cache>();
+            services.AddLifetime<IAircraftOnlineLookupProvider, Services.AircraftOnlineLookup.LookupProvider>();
+            services.AddLifetime<IAircraftOnlineLookupService,  Services.AircraftOnlineLookup.LookupService>();
+            services.AddLifetime<IFileSystem,                   Services.FileSystem>();
+            services.AddLifetime<IHttpClientService,            Services.HttpClientService>();
+            services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
+            services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
-            services.AddLifetime<Connection.IConnectorFactory,      Connection.ConnectorFactory>();
-            services.AddLifetime<Connection.TcpPullConnector,       Connection.TcpPullConnector>();
+            services.AddLifetime<Connection.IConnectorFactory,  Connection.ConnectorFactory>();
+            services.AddLifetime<Connection.TcpPullConnector,   Connection.TcpPullConnector>();
 
             services.AddLifetime<Feed.IFeedDecoderFactory,          Feed.FeedDecoderFactory>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
-            services.AddLifetime<StandingData.IStandingDataUpdater, StandingData.StandingDataUpdater>();
+            services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();
+            services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
 
             return services;
         }

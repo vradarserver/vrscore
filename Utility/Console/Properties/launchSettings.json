@@ -2,7 +2,7 @@
   "profiles": {
     "Console": {
       "commandName": "Project",
-      "commandLineArgs": "dumpfeed c:\\tmp\\recording-basestation.vrsr"
+      "commandLineArgs": "standingdata -list codeblock -code 432123"
     }
   }
 }

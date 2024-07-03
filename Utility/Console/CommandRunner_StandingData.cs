@@ -15,11 +15,12 @@ using WindowProcessor;
 namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_StandingData(
-        Options                 _Options,
-        HeaderService           _Header,
-        IStandingDataUpdater    _StandingDataUpdater,
-        IWorkingFolder          _WorkingFolder,
-        IStandingDataRepository _StandingDataRepository
+        Options                             _Options,
+        HeaderService                       _Header,
+        IStandingDataUpdater                _StandingDataUpdater,
+        IWorkingFolder                      _WorkingFolder,
+        IStandingDataRepository             _StandingDataRepository,
+        IStandingDataOverridesRepository    _StandingDataOverridesRepository
     ) : CommandRunner
     {
         public async override Task<bool> Run()
@@ -72,8 +73,12 @@ namespace VirtualRadar.Utility.CLIConsole
                     if(!Icao24.TryParse(_Options.Code, out var icao24)) {
                         OptionsParser.Usage($"{_Options.Code} is not a valid ICAO24");
                     }
-                    await DumpCodeBlock(_StandingDataRepository
-                        .CodeBlock_GetForIcao24(icao24)
+
+                    _StandingDataOverridesRepository.Load();
+
+                    await DumpCodeBlockAndOverride(
+                        _StandingDataRepository.CodeBlock_GetForIcao24(icao24),
+                        _StandingDataOverridesRepository.CodeBlockOverrideFor(icao24)
                     );
                     break;
                 case StandingDataEntity.Route:
@@ -132,16 +137,24 @@ namespace VirtualRadar.Utility.CLIConsole
             await table.Dump(airports);
         }
 
-        private async Task DumpCodeBlock(CodeBlock codeBlock)
+        private async Task DumpCodeBlockAndOverride(CodeBlock codeBlock, CodeBlock overrideCodeBlock)
         {
+            var table = new ConsoleTable<CodeBlock>([
+                (new("Country", 30),                    row => row.Country),
+                (new("Military", 8, Alignment.Centre),  row => row.IsMilitary ? "Yes" : "No"),
+            ]);
+
             if(codeBlock == null) {
                 await WriteLine("None");
             } else {
-                var table = new ConsoleTable<CodeBlock>([
-                    (new("Country", 30),                    row => row.Country),
-                    (new("Military", 8, Alignment.Centre),  row => row.IsMilitary ? "Yes" : "No"),
-                ]);
                 await table.Dump([ codeBlock ]);
+            }
+
+            if(overrideCodeBlock != null) {
+                await WriteLine();
+                await WriteLine("Overridden by local code block:");
+                await WriteLine();
+                await table.Dump([ overrideCodeBlock ]);
             }
         }
 
