@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2010 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -11,65 +11,50 @@
 namespace VirtualRadar.StandingData
 {
     /// <summary>
-    /// The interface for a repository that can fetch standing data records.
+    /// The interface for objects that bring together all of the different sources of standing data and
+    /// present them through a single interface.
     /// </summary>
     [Lifetime(Lifetime.Singleton)]
-    public interface IStandingDataRepository
+    public interface IStandingDataManager
     {
         /// <summary>
-        /// Retrieves the aicraft type record for the ICAO8643 code passed across. Returns null if no such
-        /// aircraft type exists.
+        /// Returns status information about the current route files.
+        /// </summary>
+        string RouteStatus { get; }
+
+        /// <summary>
+        /// Returns the route that the aircraft using the callsign passed across is most likely following.
+        /// </summary>
+        /// <param name="callSign"></param>
+        /// <returns></returns>
+        Route FindRoute(string callsign);
+
+        /// <summary>
+        /// Returns the ICAO8643 type information for the aircraft type passed across.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        AircraftType FindAircraftType(string type);
+
+        /// <summary>
+        /// Returns the airlines that have the IATA or ICAO code passed across.
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        AircraftType AircraftType_GetByCode(string code);
+        IReadOnlyList<Airline> FindAirlinesForCode(string code);
 
         /// <summary>
-        /// Retrieves the airlines matching the ICAO or IATA code passed across. Returns an empty collection
-        /// if no such airlines exist.
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        IReadOnlyList<Airline> Airlines_GetByCode(string code);
-
-        /// <summary>
-        /// Retrieves the airport matching the ICAO or IATA code passed across. Returns null if no such
-        /// airport exists.
-        /// </summary>
-        /// <param name="code"></param>
-        /// <returns></returns>
-        Airport Airport_GetByCode(string code);
-
-        /// <summary>
-        /// Retrieves the code block matching the ICAO24 passed across. Returns the code block for unknown
-        /// codes if the ICAO24 is not within a block known to be allocated by ICAO.
+        /// Returns the code block for the ICAO24 aircraft identifier passed across.
         /// </summary>
         /// <param name="icao24"></param>
         /// <returns></returns>
-        CodeBlock CodeBlock_GetForIcao24(Icao24 icao24);
+        CodeBlock FindCodeBlock(Icao24 icao24);
 
         /// <summary>
-        /// Retrieves the route stored against the callsign or null if no such route exists.
+        /// Returns the airport that has the ICAO or IATA code passed across.
         /// </summary>
-        /// <param name="callsign"></param>
+        /// <param name="code"></param>
         /// <returns></returns>
-        Route Route_GetForCallsign(string callsign);
-
-        /// <summary>
-        /// Returns a description of the route status.
-        /// </summary>
-        /// <returns></returns>
-        string Route_GetStatus();
-
-        /// <summary>
-        /// Blocks while current calls are satisfied and then blocks all other calls while the action
-        /// is executed. This is a recipe for deadlocks, be careful.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <remarks>
-        /// Used by <see cref="IStandingDataUpdater"/> to suppress fetches from the repository while
-        /// a new version of the database is being copied in.
-        /// </remarks>
-        void PauseWhile(Action action);
+        Airport FindAirportForCode(string code);
     }
 }

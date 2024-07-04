@@ -187,6 +187,32 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         }
 
         /// <inheritdoc/>
+        public string Route_GetStatus()
+        {
+            var result = "Not downloaded";
+
+            var stateFileName = _FileSystem.Combine(_WorkingFolder.Folder, "FlightNumberCoverage.csv");
+            if(_FileSystem.FileExists(stateFileName)) {
+                result = "Invalid";
+
+                var lines = _FileSystem.ReadAllLines(stateFileName);
+                if(lines.Length >= 2) {
+                    var chunks = lines[1].Split(new char[] { ',' });
+                    if(chunks.Length > 2) {
+                        if(   DateTime.TryParseExact(chunks[0], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var startDate)
+                           && DateTime.TryParseExact(chunks[1], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var endDate)
+                           && int.TryParse(chunks[2], out var countRoutes)
+                        ) {
+                            result = $"Loaded {countRoutes:N0} routes for the period {startDate:dd-MMM-yyyy} to {endDate:dd-MMM-yyyy}";
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public void PauseWhile(Action action)
         {
             lock(_EFSingleThreadLock) {
