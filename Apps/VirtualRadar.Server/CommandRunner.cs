@@ -10,6 +10,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VirtualRadar.Database.EntityFramework;
 using VirtualRadar.Feed.BaseStation;
 
 namespace VirtualRadar.Server
@@ -28,6 +29,7 @@ namespace VirtualRadar.Server
         {
             services.AddVirtualRadarGroup();
             services.AddVirtualRadarBaseStationFeedGroup();
+            services.AddVirtualRadarDatabaseEntityFrameworkGroup();
         }
 
         protected void BootVirtualRadarServer(IHost host)

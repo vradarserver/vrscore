@@ -34,6 +34,12 @@ namespace VirtualRadar.Server
                     case "-nobrowser":
                         result.SuppressBrowser = true;
                         break;
+                    case "-nohttp":
+                        result.NoHttp = true;
+                        break;
+                    case "-nohttps":
+                        result.NoHttps = true;
+                        break;
                     case "-showlog":
                         result.ShowLog = true;
                         break;
@@ -117,6 +123,8 @@ namespace VirtualRadar.Server
             Console.WriteLine($"  -http    <port>     HTTP port [{defaults.HttpPort}]");
             Console.WriteLine($"  -https   <port>     HTTPS port [{defaults.HttpsPort}]");
             Console.WriteLine($"  -noBrowser          Do not open browser [{defaults.SuppressBrowser}]");
+            Console.WriteLine($"  -noHTTP             Do not accept HTTP requests [{defaults.NoHttp}]");
+            Console.WriteLine($"  -noHTTPS            Do not accept HTTPS requests [{defaults.NoHttps}]");
             Console.WriteLine($"  -showLog            Show server log on screen [{defaults.ShowLog}]");
 
             if (!String.IsNullOrEmpty(message)) {

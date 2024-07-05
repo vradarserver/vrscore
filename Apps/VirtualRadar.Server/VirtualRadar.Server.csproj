@@ -13,14 +13,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
-      <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
-      <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
+        <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
+        <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
+        <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
-      <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
+        <ProjectReference Include="..\..\Library\VirtualRadar.Database.EntityFramework\VirtualRadar.Database.EntityFramework.csproj" />
+        <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
+        <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>
 
 </Project>

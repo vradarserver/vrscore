@@ -16,7 +16,11 @@ namespace VirtualRadar.Server
 
         public int HttpPort { get; set; } = 5001;
 
+        public bool NoHttp { get; set; }
+
         public int HttpsPort { get; set; } = 6001;
+
+        public bool NoHttps { get; set; }
 
         public bool ShowLog { get; set; }
 

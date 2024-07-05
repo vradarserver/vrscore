@@ -23,6 +23,10 @@ namespace VirtualRadar.Server
     {
         public override async Task<bool> Run()
         {
+            if(Options.NoHttp && Options.NoHttps) {
+                OptionsParser.Usage("The server needs to listen to accept at least one of either HTTP or HTTPS");
+            }
+
             // Trying to get the .NET 8 web application to path from the application folder
             // instead of CWD is a pain in the backside... so I'm just going with the flow
             var currentDirectory = Environment.CurrentDirectory;
@@ -48,13 +52,17 @@ namespace VirtualRadar.Server
                 }
 
                 builder.WebHost.ConfigureKestrel((context, options) => {
-                    Console.WriteLine($"Listening on http://localhost:{Options.HttpPort}");
-                    options.ListenLocalhost(Options.HttpPort);
-                
-                    Console.WriteLine($"Listening on https://localhost:{Options.HttpsPort}");
-                    options.ListenLocalhost(Options.HttpsPort, listenOptions => {
-                        listenOptions.UseHttps();               // TODO: Need a *bunch* more stuff here
-                    });
+                    if(!Options.NoHttp) {
+                        Console.WriteLine($"Listening on http://localhost:{Options.HttpPort}");
+                        options.ListenLocalhost(Options.HttpPort);
+                    }
+
+                    if(!Options.NoHttps) {
+                        Console.WriteLine($"Listening on https://localhost:{Options.HttpsPort}");
+                        options.ListenLocalhost(Options.HttpsPort, listenOptions => {
+                            listenOptions.UseHttps();               // TODO: Need a *bunch* more stuff here
+                        });
+                    }
                 });
 
                 var app = builder.Build();
@@ -70,16 +78,16 @@ namespace VirtualRadar.Server
                 app.MapRazorComponents<VirtualRadar.Server.Components.App>()        // <-- VS2022 intellisense thinks this namespace does not exist, it will remove it and then fail to compile if you have it as a using and then CTRL+R+G
                    .AddInteractiveServerRenderMode();
 
-                var cancellationSource = new CancellationTokenSource();
+                var serverCancel = new CancellationTokenSource();
 
                 await WriteLine("Booting VRS");
                 BootVirtualRadarServer(app);
 
                 Console.WriteLine($"Starting server");
-                var serverTask = app.StartAsync(cancellationSource.Token);
+                var serverTask = app.StartAsync(serverCancel.Token);
 
                 if(!Options.SuppressBrowser) {
-                    var url = $"http://localhost:{Options.HttpPort}";
+                    var url = $"http://localhost:{Options.HttpPort}/admin";
                     try {
                         await WriteLine($"Opening {url} in default browser");
                         ProcessStarter.OpenUrlInDefaultBrowser(url);
@@ -90,16 +98,16 @@ namespace VirtualRadar.Server
 
                 Console.TreatControlCAsInput = true;
                 await WriteLine("Press Q to shut down");
-                var waitForKeyTask = CancelIfKeyPressed(cancellationSource, ConsoleKey.Q);
+                var waitForKeyTask = CancelIfKeyPressed(serverCancel, ConsoleKey.Q);
 
                 await serverTask;
 
-                if(cancellationSource.IsCancellationRequested) {
+                if(serverCancel.IsCancellationRequested) {
                     await WriteLine($"Shutting down");
                 }
 
                 await waitForKeyTask;
-                cancellationSource.Cancel();
+                serverCancel.Cancel();
 
                 return true;
             } finally {
