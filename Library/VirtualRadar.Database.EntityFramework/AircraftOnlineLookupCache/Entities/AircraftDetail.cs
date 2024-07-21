@@ -58,7 +58,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
         public void CopyFrom(LookupOutcome lookupOutcome, DateTime utcNow)
         {
             Icao =          lookupOutcome.Icao24.ToString();
-            IsMissing =     lookupOutcome.Success;
+            IsMissing =     !lookupOutcome.Success;
             Registration =  lookupOutcome.Registration;
             Country =       lookupOutcome.Country;
             Manufacturer =  lookupOutcome.Manufacturer;
