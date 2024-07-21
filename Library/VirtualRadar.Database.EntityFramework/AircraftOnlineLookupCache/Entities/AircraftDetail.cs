@@ -80,7 +80,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
             var result = new LookupOutcome() {
                 Icao24 =        Icao24.Parse(Icao),
                 Success =       !IsMissing,
-                SourceAgeUtc =  UpdatedUtc,
+                SourceAgeUtc =  DateTime.SpecifyKind(UpdatedUtc, DateTimeKind.Utc),
             };
             if(result.Success) {
                 result.Country =            Country;
