@@ -2,7 +2,7 @@
   "profiles": {
     "Terminal": {
       "commandName": "Project",
-      "commandLineArgs": "-recording c:\\tmp\\recording.vrs -speed 0"
+      "commandLineArgs": "-address 172.20.10.20 -port 33002"
     }
   }
 }

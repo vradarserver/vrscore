@@ -11,6 +11,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VirtualRadar.Configuration;
+using VirtualRadar.Database.EntityFramework;
 using VirtualRadar.Feed.BaseStation;
 using VirtualRadar.Feed.Recording;
 
@@ -37,6 +38,7 @@ namespace VirtualRadar.Utility.Terminal
 
                         .AddVirtualRadarGroup()
                         .AddVirtualRadarBaseStationFeedGroup()
+                        .AddVirtualRadarDatabaseEntityFrameworkGroup()
                         .AddVirtualRadarFeedRecordingGroup()
 
                         .AddSingleton<Options>(options)

@@ -17,7 +17,8 @@ namespace VirtualRadar.Database.EntityFramework
     {
         public static IServiceCollection AddVirtualRadarDatabaseEntityFrameworkGroup(this IServiceCollection services)
         {
-            services.AddLifetime<IStandingDataRepository, StandingData.StandingDataRepository>();
+            services.AddLifetime<IAircraftOnlineLookupCache,    AircraftOnlineLookupCache.LookupCacheRepository>();
+            services.AddLifetime<IStandingDataRepository,       StandingData.StandingDataRepository>();
 
             return services;
         }

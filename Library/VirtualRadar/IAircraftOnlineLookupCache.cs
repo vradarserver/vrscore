@@ -32,9 +32,9 @@ namespace VirtualRadar
     public interface IAircraftOnlineLookupCache
     {
         /// <summary>
-        /// Gets a flag indicating that the cache is enabled.
+        /// Gets or sets a flag indicating that the cache is enabled.
         /// </summary>
-        bool Enabled { get; }
+        bool Enabled { get; set; }
 
         /// <summary>
         /// Gets a value indicating the priority to assign to this cache. Higher priorities (which can be negative) are
