@@ -30,6 +30,11 @@ namespace VirtualRadar.Utility.Terminal
                 options = OptionsParser.Parse(args);
 
                 var builder = Host.CreateDefaultBuilder();
+
+                builder.ConfigureAppConfiguration(configurationBuilder => {
+                    .ConfigureVirtualRadarGroup()
+                });
+
                 builder.ConfigureServices((context, services) => {
                     services
                         .Configure<AircraftOnlineLookupServiceOptions>(opt => {
