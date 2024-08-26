@@ -11,25 +11,20 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// Configures values for <see cref="IAircraftOnlineLookupService"/> implementations. Note that the
-    /// default URL for the service is not configured here, it is managed by <see cref="IWebAddressManager"/>
-    /// and can be overridden by editing its JSON file in the working folder.
+    /// Configures values for <see cref="IAircraftOnlineLookupService"/> implementations.
     /// </summary>
-    public record AircraftOnlineLookupServiceOptions
+    /// <param name="LookupUrl">
+    /// The address to send GET requests to when fetching batches of aircraft by ICAO.
+    /// </param>
+    /// <param name="ExpireQueueAfterMinutes">
+    /// How many minutes of lookup failures are to be endured before the service gives up and reports the ICAO
+    /// missing (without caching it as a miss).
+    /// </param>
+    [Settings("AircraftOnlineLookupService")]
+    public record AircraftOnlineLookupServiceOptions(
+        string LookupUrl = "https://sdm.virtualradarserver.co.uk/Aircraft/GetAircraftLookupSettings?language={language}",
+        int ExpireQueueAfterMinutes = 30
+    )
     {
-        /// <summary>
-        /// How many minutes of lookup failures are to be endured before the service gives
-        /// up and reports the ICAO missing (without caching it as a miss).
-        /// </summary>
-        public int ExpireQueueAfterMinutes { get; set; }
-
-        public AircraftOnlineLookupServiceOptions(int expireQueueAfterMinutes)
-        {
-            ExpireQueueAfterMinutes = expireQueueAfterMinutes;
-        }
-
-        public AircraftOnlineLookupServiceOptions() : this(30)
-        {
-        }
     }
 }

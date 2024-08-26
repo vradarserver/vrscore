@@ -13,34 +13,19 @@ namespace VirtualRadar.Configuration
     /// <summary>
     /// The configuration for the default online lookup cache.
     /// </summary>
-    public record AircraftOnlineLookupCacheOptions
+    /// <param name="MissLifetimeHours">
+    /// If the online lookup cannot find the details for an ICAO then the cache records the miss and the
+    /// lookup service will not look it up again for this many hours.
+    /// </param>
+    /// <param name="HitLifetimeDays">
+    /// If the online lookup finds the details for an ICAO then the cache records the hit and the lookup
+    /// service will not look it up again for this many days.
+    /// </param>
+    [Settings("AircraftOnlineLookupCache")]
+    public record AircraftOnlineLookupCacheOptions(
+        int MissLifetimeHours = 24,
+        int HitLifetimeDays = 28
+    )
     {
-        /// <summary>
-        /// If the online lookup cannot find the details for an ICAO then the cache records
-        /// the miss and the lookup service will not look it up again for this many hours.
-        /// </summary>
-        public int MissLifetimeHours { get; set; }
-
-        /// <summary>
-        /// If the online lookup finds the details for an ICAO then the cache records the
-        /// hit and the lookup service will not look it up again for this many days.
-        /// </summary>
-        public int HitLifetimeDays { get; set; }
-
-        public AircraftOnlineLookupCacheOptions(
-            int missLifetimeHours,
-            int hitLifetimeDays
-        )
-        {
-            MissLifetimeHours = missLifetimeHours;
-            HitLifetimeDays =   hitLifetimeDays;
-        }
-
-        public AircraftOnlineLookupCacheOptions() : this(
-            missLifetimeHours:  24,
-            hitLifetimeDays:    28
-        )
-        {
-        }
     }
 }

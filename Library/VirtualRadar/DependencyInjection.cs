@@ -27,7 +27,7 @@ namespace VirtualRadar
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
-            services.AddLifetime<Configuration.IProviderMap,    Configuration.ProviderMap>();
+            services.AddLifetime<Configuration.ISettingsStorage,       Configuration.SettingsStorage>();
 
             services.AddLifetime<Connection.IConnectorFactory,  Connection.ConnectorFactory>();
             services.AddLifetime<Connection.TcpPullConnector,   Connection.TcpPullConnector>();
@@ -39,7 +39,14 @@ namespace VirtualRadar
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
             services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();
 
+            DoOtherRegistrations(services);
+
             return services;
+        }
+
+        private static void DoOtherRegistrations(IServiceCollection services)
+        {
+            Configuration.ConfigurationConfig.RegisterAssemblySettingObjects(services);
         }
     }
 }

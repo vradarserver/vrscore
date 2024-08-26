@@ -18,7 +18,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
     class LookupCacheRepository(
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder,
-        IOptions<AircraftOnlineLookupCacheOptions> _Options
+        ISettings<AircraftOnlineLookupCacheOptions> _Settings
     ) : IAircraftOnlineLookupCache
     {
         private static bool _CreatedInThisSession;
@@ -47,9 +47,10 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
 
             if(icaos?.Any() ?? false) {
                 lock(_EFSingleThreadLock) {
+                    var settings = _Settings.LatestValue;
                     var utcNow = DateTime.UtcNow;
-                    var hitThreshold = utcNow.AddDays(-_Options.Value.HitLifetimeDays);
-                    var missThreshold = utcNow.AddHours(-_Options.Value.MissLifetimeHours);
+                    var hitThreshold = utcNow.AddDays(-settings.HitLifetimeDays);
+                    var missThreshold = utcNow.AddHours(-settings.MissLifetimeHours);
 
                     using(var context = CreateContext()) {
                         foreach(var icao24 in icaos) {

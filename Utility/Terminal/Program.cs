@@ -10,7 +10,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using VirtualRadar.Configuration;
 using VirtualRadar.Database.EntityFramework;
 using VirtualRadar.Feed.BaseStation;
 using VirtualRadar.Feed.Recording;
@@ -31,16 +30,8 @@ namespace VirtualRadar.Utility.Terminal
 
                 var builder = Host.CreateDefaultBuilder();
 
-                builder.ConfigureAppConfiguration(configurationBuilder => {
-                    .ConfigureVirtualRadarGroup()
-                });
-
                 builder.ConfigureServices((context, services) => {
                     services
-                        .Configure<AircraftOnlineLookupServiceOptions>(opt => {
-                            opt.ExpireQueueAfterMinutes = 1;
-                        })
-
                         .AddVirtualRadarGroup()
                         .AddVirtualRadarBaseStationFeedGroup()
                         .AddVirtualRadarDatabaseEntityFrameworkGroup()
