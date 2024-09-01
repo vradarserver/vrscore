@@ -3,7 +3,7 @@
     /// <summary>
     /// Describes the configuration of a receiver.
     /// </summary>
-    public class ReceiverOptions
+    public class ReceiverSettings
     {
         public string Name { get; set; }
 

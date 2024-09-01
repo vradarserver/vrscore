@@ -18,7 +18,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
     class LookupCacheRepository(
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder,
-        ISettings<AircraftOnlineLookupCacheOptions> _Settings
+        ISettings<AircraftOnlineLookupCacheSettings> _Settings
     ) : IAircraftOnlineLookupCache
     {
         private static bool _CreatedInThisSession;

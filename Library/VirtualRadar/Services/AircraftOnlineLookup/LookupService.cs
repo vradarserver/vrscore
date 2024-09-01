@@ -17,7 +17,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     class LookupService : IAircraftOnlineLookupService
     {
         private readonly object _SyncLock = new();
-        private readonly ISettings<AircraftOnlineLookupServiceOptions> _Settings;
+        private readonly ISettings<AircraftOnlineLookupServiceSettings> _Settings;
         private readonly IAircraftOnlineLookupProvider _Provider;
         private readonly Dictionary<Icao24, DateTime> _LookupMap = new();       // <-- value is the time at UTC when the lookup was added
         private readonly IAircraftOnlineLookupCache[] _Caches;
@@ -49,7 +49,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public LookupService(
             IAircraftOnlineLookupProvider provider,
             IEnumerable<IAircraftOnlineLookupCache> caches,
-            ISettings<AircraftOnlineLookupServiceOptions> settings
+            ISettings<AircraftOnlineLookupServiceSettings> settings
         )
         {
             _Provider = provider;

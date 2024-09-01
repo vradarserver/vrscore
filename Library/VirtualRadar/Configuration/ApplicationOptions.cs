@@ -6,7 +6,7 @@ namespace VirtualRadar.Configuration
     /// A settings object that the application is expected to provide when initialising
     /// the library.
     /// </summary>
-    public class ApplicationSettings
+    public class ApplicationOptions
     {
         /// <summary>
         /// The application's name.
@@ -36,7 +36,7 @@ namespace VirtualRadar.Configuration
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        public ApplicationSettings() : this(Assembly.GetEntryAssembly())
+        public ApplicationOptions() : this(Assembly.GetEntryAssembly())
         {
         }
 
@@ -44,7 +44,7 @@ namespace VirtualRadar.Configuration
         /// Creates a new object.
         /// </summary>
         /// <param name="assembly">The assembly to extract all information from.</param>
-        public ApplicationSettings(Assembly assembly)
+        public ApplicationOptions(Assembly assembly)
         {
             InformationalVersion.TryParse(
                 assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,

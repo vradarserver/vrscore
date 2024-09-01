@@ -15,9 +15,9 @@ namespace VirtualRadar.Feed.BaseStation
 {
     public class BaseStationMessageParser
     {
-        private ApplicationSettings _ApplicationSettings;
+        private ApplicationOptions _ApplicationSettings;
 
-        public BaseStationMessageParser(IOptions<ApplicationSettings> applicationSettings)
+        public BaseStationMessageParser(IOptions<ApplicationOptions> applicationSettings)
         {
             _ApplicationSettings = applicationSettings.Value;
         }

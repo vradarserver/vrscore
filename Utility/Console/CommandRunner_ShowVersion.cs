@@ -15,7 +15,7 @@ namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_ShowVersion(
         HeaderService _Header,
-        IOptions<ApplicationSettings> _ApplicationSettings,
+        IOptions<ApplicationOptions> _ApplicationSettings,
         IWorkingFolder _WorkingFolder
     ) : CommandRunner
     {

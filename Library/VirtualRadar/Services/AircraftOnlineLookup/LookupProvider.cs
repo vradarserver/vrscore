@@ -18,7 +18,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     {
         private readonly object _SyncLock = new();
         private readonly IHttpClientService _HttpClient;
-        private readonly ISettings<AircraftOnlineLookupServiceOptions> _LookupSettings;
+        private readonly ISettings<AircraftOnlineLookupServiceSettings> _LookupSettings;
         private ServerSettings _ServerSettings;
         private DateTime _ServerSettingsFetchedUtcNow;
 
@@ -48,7 +48,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public LookupProvider(
             IWebAddressManager webAddresses,
             IHttpClientService httpClientService,
-            ISettings<AircraftOnlineLookupServiceOptions> lookupSettings
+            ISettings<AircraftOnlineLookupServiceSettings> lookupSettings
         )
         {
             _HttpClient = httpClientService;
