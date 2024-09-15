@@ -89,7 +89,7 @@ namespace VirtualRadar.Utility.Terminal
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
 
-            return _ConnectorFactory.Build<IReceiveConnector>(new TcpPullConnectorOptions() {
+            return _ConnectorFactory.Build<IReceiveConnector>(new TcpPullConnectorSettings() {
                 Address =   address,
                 Port =      _Options.Port,
             });

@@ -35,7 +35,7 @@ namespace VirtualRadar.Connection
 
         private void RegisterBuiltInConnectors()
         {
-            RegisterConnectorByOptions<TcpPullConnectorOptions, TcpPullConnector>();
+            RegisterConnectorByOptions<TcpPullConnectorSettings, TcpPullConnector>();
         }
 
         /// <inheritdoc/>

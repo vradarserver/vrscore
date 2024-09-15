@@ -6,8 +6,8 @@
     public interface ISettingsProvider
     {
         /// <summary>
-        /// Gets or sets the name of the provider that can decode this configuration object.
+        /// The name of the provider that can decode this configuration object.
         /// </summary>
-        string SettingsProvider { get; set; }
+        string SettingsProvider { get; }
     }
 }

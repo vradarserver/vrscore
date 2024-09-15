@@ -21,7 +21,7 @@ namespace VirtualRadar.Connection
     /// <param name="Port">
     /// The port to connect to.
     /// </param>
-    public record TcpPullConnectorOptions(
+    public record TcpPullConnectorSettings(
         IPAddress Address,
         int Port
     ) : IConnectorOptions
@@ -29,7 +29,7 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Default ctor.
         /// </summary>
-        public TcpPullConnectorOptions() : this(IPAddress.None, 0)
+        public TcpPullConnectorSettings() : this(IPAddress.None, 0)
         {
         }
 

@@ -20,7 +20,7 @@ namespace VirtualRadar.Connection
     /// A connector that actively connects to a remote TCP port and pulls a feed from it.
     /// </summary>
     [Lifetime(Lifetime.Transient)]
-    class TcpPullConnector : IPullConnector, IOneTimeConfigurable<TcpPullConnectorOptions>
+    class TcpPullConnector : IPullConnector, IOneTimeConfigurable<TcpPullConnectorSettings>
     {
         /// <summary>
         /// Collects together everything about a connection. Connections are self-consistent, the idea is that
@@ -74,10 +74,10 @@ namespace VirtualRadar.Connection
         }
 
         private Connection _Connection;     // The current connection
-        private readonly OneTimeConfigurableImplementer<TcpPullConnectorOptions> _OneTimeConfig = new(nameof(TcpPullConnector), new());
+        private readonly OneTimeConfigurableImplementer<TcpPullConnectorSettings> _OneTimeConfig = new(nameof(TcpPullConnector), new());
 
         /// <inheritdoc/>
-        public TcpPullConnectorOptions Options => _OneTimeConfig.Options;
+        public TcpPullConnectorSettings Options => _OneTimeConfig.Options;
 
         /// <inheritdoc/>
         public string Description => $"tcp://{Options.Address}:{Options.Port}";
@@ -148,7 +148,7 @@ namespace VirtualRadar.Connection
         }
 
         /// <inheritdoc/>
-        public void Configure(TcpPullConnectorOptions options) => _OneTimeConfig.Configure(options);
+        public void Configure(TcpPullConnectorSettings options) => _OneTimeConfig.Configure(options);
 
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
