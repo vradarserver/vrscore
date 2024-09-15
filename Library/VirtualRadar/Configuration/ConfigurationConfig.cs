@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VirtualRadar.Collections;
 using VirtualRadar.Extensions;
+using VirtualRadar.Reflection;
 
 namespace VirtualRadar.Configuration
 {
@@ -140,10 +141,14 @@ namespace VirtualRadar.Configuration
         public static void RegisterAssemblySettingObjects(IServiceCollection addToServices, Assembly assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
-            foreach(var type in assembly.GetTypes().Where(t => t.GetCustomAttribute<SettingsAttribute>() != null)) {
-                var attr = type.GetCustomAttribute<SettingsAttribute>();
-                var defaultValue = type.CreateDefaultInstance();
-                RegisterKey(attr.SettingsKey, type, defaultValue, addToServices);
+            foreach(var typeAttr in AttributeTags.TaggedTypes<SettingsAttribute>(assembly)) {
+                var defaultValue = typeAttr.Type.CreateDefaultInstance();
+                RegisterKey(
+                    typeAttr.Attribute.SettingsKey,
+                    typeAttr.Type,
+                    defaultValue,
+                    addToServices
+                );
             }
         }
 

@@ -11,7 +11,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace VirtualRadar
+namespace VirtualRadar.Reflection
 {
     public static class ExpressionHelper
     {
