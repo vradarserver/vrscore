@@ -13,8 +13,16 @@ using System.Reflection;
 
 namespace VirtualRadar.Reflection
 {
+    /// <summary>
+    /// Extracts information out of expressions.
+    /// </summary>
     public static class ExpressionHelper
     {
+        /// <summary>
+        /// Returns the target of a property expression.
+        /// </summary>
+        /// <param name="propertyExpression"></param>
+        /// <returns></returns>
         public static PropertyInfo ExtractPropertyInfo(Expression propertyExpression)
         {
             var lambdaExpression = (LambdaExpression)propertyExpression;
@@ -26,8 +34,18 @@ namespace VirtualRadar.Reflection
             return memberExpression?.Member as PropertyInfo;
         }
 
+        /// <summary>
+        /// Returns the name of the target of a property expression.
+        /// </summary>
+        /// <param name="propertyExpression"></param>
+        /// <returns></returns>
         public static string ExtractNameOfProperty(Expression propertyExpression) => ExtractPropertyInfo(propertyExpression)?.Name;
 
+        /// <summary>
+        /// Returns the type of the target of a property expression.
+        /// </summary>
+        /// <param name="propertyExpression"></param>
+        /// <returns></returns>
         public static Type ExtractTypeOfProperty(Expression propertyExpression) => ExtractPropertyInfo(propertyExpression)?.PropertyType;
     }
 }
