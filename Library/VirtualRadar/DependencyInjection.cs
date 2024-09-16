@@ -11,11 +11,34 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Extensions;
+using VirtualRadar.Reflection;
 
 namespace VirtualRadar
 {
     public static class DependencyInjection
     {
+        /// <summary>
+        /// Loads all of the Virtual Radar modules and plugins and then calls their RegisterServices
+        /// implementation in order of priority.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddVirtualRadarServer(this IServiceCollection services)
+        {
+            VirtualRadarModuleFactory.DiscoverModules();
+            VirtualRadarModuleFactory.CallLoadedModules(
+                module => module.ModuleInstance.RegisterServices(services),
+                ignoreExceptions: false
+            );
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds the VirtualRadar.dll services. Do not call this if you have called <see cref="AddVirtualRadarServer"/>.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static IServiceCollection AddVirtualRadarGroup(this IServiceCollection services)
         {
             services.AddLifetime<BootService,                   BootService>();
@@ -24,6 +47,7 @@ namespace VirtualRadar
             services.AddLifetime<IAircraftOnlineLookupService,  Services.AircraftOnlineLookup.LookupService>();
             services.AddLifetime<IFileSystem,                   Services.FileSystem>();
             services.AddLifetime<IHttpClientService,            Services.HttpClientService>();
+            services.AddLifetime<IModuleInformationService,     Services.ModuleInformationService>();
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 

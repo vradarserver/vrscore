@@ -8,28 +8,24 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
+using VirtualRadar.Reflection;
+
+namespace VirtualRadar
 {
-    enum Command
+    /// <summary>
+    /// Exposes information about the modules and plugins loaded by VRS.
+    /// </summary>
+    [Lifetime(Lifetime.Singleton)]
+    public interface IModuleInformationService
     {
-        None,
+        /// <summary>
+        /// Returns a collection of all loaded modules in ascending order of priority.
+        /// </summary>
+        VirtualRadarModuleInfo[] LoadedModules { get; }
 
-        ConnectListener,
-
-        DumpFeed,
-
-        List,
-
-        Lookup,
-
-        Open,
-
-        RecordFeed,
-
-        ShowModules,
-
-        ShowVersion,
-
-        StandingData,
+        /// <summary>
+        /// Returns a collection of all rejected modules in order of filename (case insensitive).
+        /// </summary>
+        VirtualRadarModuleReject[] RejectedModules { get; }
     }
 }

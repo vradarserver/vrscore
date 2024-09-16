@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace VirtualRadar.Configuration
@@ -51,6 +52,13 @@ namespace VirtualRadar.Configuration
         static Regex _ParseRegex = new Regex(
             @"(?<major>\d+).(?<minor>\d+).(?<patch>\d+)(-(?<revisionType>alpha|beta)-(?<revision>\d+))?(\+(?<commitHash>.+))?",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
+        );
+
+        /// <summary>
+        /// Gets the version of the VirtualRadar.dll library. This is distinct to the application's version.
+        /// </summary>
+        public static InformationalVersion VirtualRadarVersion { get; } = FromAssembly(
+            Assembly.GetExecutingAssembly()
         );
 
         /// <summary>
@@ -115,6 +123,21 @@ namespace VirtualRadar.Configuration
             var result = (other.ReleaseType != ReleaseType.Alpha || allowUpdateToAlpha)
                       && (other.ReleaseType != ReleaseType.Beta  || allowUpdateToBeta)
                       && CompareTo(other) < 0;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Reads an InformationalVersion attribute from the assembly passed across.
+        /// </summary>
+        /// <param name="assembly">The assembly to extract an informational version from.</param>
+        /// <returns>The informational version or null if the assembly has not been tagged.</returns>
+        public static InformationalVersion FromAssembly(Assembly assembly)
+        {
+            var versionText = assembly
+                ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion;
+            TryParse(versionText, out var result);
 
             return result;
         }

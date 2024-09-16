@@ -174,6 +174,7 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  connect             Connect to feed");
             Console.WriteLine($"  record              Record a feed for future playback");
             Console.WriteLine($"  dumpFeed <filename> Load and dump a recorded feed");
+            Console.WriteLine($"  showModules         Show loaded module information");
             Console.WriteLine($"  standingdata        Download and dump standing data");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");

@@ -28,7 +28,7 @@ namespace VirtualRadar.Utility.Terminal
             try {
                 options = OptionsParser.Parse(args);
 
-                var builder = Host.CreateDefaultBuilder();
+                var builder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder();
 
                 builder.ConfigureServices((context, services) => {
                     services

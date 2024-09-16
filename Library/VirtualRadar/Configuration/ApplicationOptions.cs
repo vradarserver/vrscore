@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using VirtualRadar.Reflection;
 
 namespace VirtualRadar.Configuration
 {
@@ -46,13 +47,8 @@ namespace VirtualRadar.Configuration
         /// <param name="assembly">The assembly to extract all information from.</param>
         public ApplicationOptions(Assembly assembly)
         {
-            InformationalVersion.TryParse(
-                assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
-                out var version
-            );
-
             ApplicationName =       assembly?.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "No name configured";
-            InformationalVersion =  version;
+            InformationalVersion =  InformationalVersion.FromAssembly(assembly);
             BuildDate =             assembly == null ? default : PEHeader.ExtractBuildDate(assembly);
             CultureInfo =           CultureInfo.CurrentCulture;
             LocalTimeZone =         TimeZoneInfo.Local;
