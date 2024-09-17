@@ -37,6 +37,8 @@ set RUNARGS=
     goto :NEXTARG
     
 :ENDARGS
+set "COMBIN=%BATDIR%bin\%CONFIG%\net8.0"
+
 if "%TARGET%"=="CONSOLE"    goto :CONSOLE
 if "%TARGET%"=="SERVER"     goto :SERVER
 if "%TARGET%"=="TERMINAL"   goto :TERMINAL
@@ -96,7 +98,7 @@ rem ## Build targets
     set "PROJ=%BATDIR%Utility\Console\Console.csproj"
     call :BUILD
     if ERRORLEVEL 1 goto :EOF
-    if "%RUN%"=="YES" "%BATDIR%Utility\Console\bin\%CONFIG%\net8.0\Console.exe" %RUNARGS%
+    if "%RUN%"=="YES" "%COMBIN%\Console.exe" %RUNARGS%
     goto :EOF
 
 :SERVER
@@ -119,5 +121,5 @@ rem ## Build targets
     set "PROJ=%BATDIR%Utility\Terminal\Terminal.csproj"
     call :BUILD
     if ERRORLEVEL 1 goto :EOF
-    if "%RUN%"=="YES" "%BATDIR%Utility\Terminal\bin\%CONFIG%\net8.0\Terminal.exe" %RUNARGS%
+    if "%RUN%"=="YES" "%COMBIN%\Terminal.exe" %RUNARGS%
     goto :EOF

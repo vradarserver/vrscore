@@ -12,22 +12,24 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace VirtualRadar
 {
-    /// <summary>
-    /// The implementation of <see cref="IVirtualRadarModule"/> for VirtualRadar.dll
-    /// </summary>
+    /// <inheritdoc/>
     public class VirtualRadarModule : IVirtualRadarModule
     {
-        public int Priority => 0;
+        /// <inheritdoc/>
+        public int Priority => -1;
 
+        /// <inheritdoc/>
         public void RegisterServices(IServiceCollection services)
         {
             DependencyInjection.AddVirtualRadarGroup(services);
         }
 
+        /// <inheritdoc/>
         public void Start()
         {
         }
 
+        /// <inheritdoc/>
         public void Stop()
         {
         }

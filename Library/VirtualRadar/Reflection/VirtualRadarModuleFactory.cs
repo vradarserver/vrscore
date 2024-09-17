@@ -93,7 +93,7 @@ namespace VirtualRadar.Reflection
                                 StringComparer.InvariantCultureIgnoreCase
                             );
 
-                        void loadDll(string dllFileName)
+                        void loadDll(string dllFileName, bool isApplicationModule)
                         {
                             var fullyPathedFileName = Path.GetFullPath(dllFileName);
                             if(processedFiles.Add(fullyPathedFileName)) {
@@ -102,6 +102,8 @@ namespace VirtualRadar.Reflection
                                     VirtualRadarModuleManifest manifest;
                                     if(currentAssemblies.TryGetValue(fullyPathedFileName, out var loadedAssembly)) {
                                         manifest = VirtualRadarModuleManifest.CreateForPreLoadedModule(loadedAssembly);
+                                    } else if(isApplicationModule) {
+                                        manifest = null;
                                     } else {
                                         manifest = LoadManifest(dllFileName, ref rejectionReason);
                                     }
@@ -113,6 +115,14 @@ namespace VirtualRadar.Reflection
                                         if(loadedAssembly == null) {
                                             loadedAssembly = Assembly.LoadFrom(fullyPathedFileName);
                                         }
+                                        if(manifest == null) {
+                                            manifest = VirtualRadarModuleManifest.CreateForPreLoadedModule(loadedAssembly);
+                                            if(!manifest.IsForThisVersion()) {
+                                                rejectionReason = $"Only works with versions {manifest.MinVersion} to {manifest.MaxVersion}, VirtualRadar.dll is version {InformationalVersion.VirtualRadarVersion}";
+                                            }
+                                        }
+                                    }
+                                    if(rejectionReason == "") {
                                         var instanceModule = CreateModuleInstance(loadedAssembly, ref rejectionReason);
                                         if(instanceModule != null) {
                                             loadedModules.Add(new(fullyPathedFileName, manifest, instanceModule));
@@ -128,14 +138,14 @@ namespace VirtualRadar.Reflection
                             }
                         }
 
-                        loadDll(Assembly.GetExecutingAssembly().Location);  // <-- VirtualRadar.dll
+                        loadDll(Assembly.GetExecutingAssembly().Location, isApplicationModule: true);
 
                         foreach(var fileName in Directory.GetFiles(_ModuleFolder, "VirtualRadar.*.dll", SearchOption.TopDirectoryOnly)) {
-                            loadDll(fileName);
+                            loadDll(fileName, isApplicationModule: true);
                         }
                         if(Directory.Exists(_PluginsFolder)) {
                             foreach(var fileName in Directory.GetFiles(_PluginsFolder, "Plugin.VirtualRadar.*.dll", SearchOption.AllDirectories)) {
-                                loadDll(fileName);
+                                loadDll(fileName, isApplicationModule: false);
                             }
                         }
 

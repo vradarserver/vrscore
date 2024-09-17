@@ -10,49 +10,28 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace VirtualRadar.Utility.Terminal
+namespace VirtualRadar.Database.EntityFramework
 {
-    class Program
+    /// <inheritdoc/>
+    public class VirtualRadarModule : IVirtualRadarModule
     {
-        static async Task Main(string[] args)
+        /// <inheritdoc/>
+        public int Priority => 0;
+
+        /// <inheritdoc/>
+        public void RegisterServices(IServiceCollection services)
         {
-            var exitCode = 0;
-            Options options = null;
+            DependencyInjection.AddVirtualRadarDatabaseEntityFrameworkGroup(services);
+        }
 
-            Console.OutputEncoding = Encoding.UTF8;
+        /// <inheritdoc/>
+        public void Start()
+        {
+        }
 
-            try {
-                options = OptionsParser.Parse(args);
-
-                var builder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder();
-
-                builder.ConfigureServices((context, services) => {
-                    services
-                        .AddVirtualRadarServer()
-
-                        .AddSingleton<Options>(options)
-                        .AddScoped<AircraftListWindow, AircraftListWindow>()
-
-                        // This will do for now, I just want to see it working (or not)...
-                        .AddScoped<TempRunner, TempRunner>()
-                    ;
-                });
-
-                using(var host = builder.Build()) {
-                    using(var scope = host.Services.CreateScope()) {
-                        var bootService = scope.ServiceProvider.GetRequiredService<BootService>();
-                        bootService.Start();
-
-                        var tempRunner = scope.ServiceProvider.GetRequiredService<TempRunner>();
-                        await tempRunner.Run();
-                    }
-                }
-            } catch(Exception ex) {
-                Console.WriteLine($"Caught exception during processing: {ex}");
-                exitCode = 2;
-            }
-
-            Environment.Exit(exitCode);
+        /// <inheritdoc/>
+        public void Stop()
+        {
         }
     }
 }

@@ -14,8 +14,6 @@ using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 using VirtualRadar.Feed.BaseStation;
 using VirtualRadar.Feed.Recording;
-using VirtualRadar.IO;
-using VirtualRadar.Message;
 using WindowProcessor;
 
 namespace VirtualRadar.Utility.Terminal
@@ -28,7 +26,7 @@ namespace VirtualRadar.Utility.Terminal
         IFeedDecoderFactory             _FeedDecoderFactory,
         IServiceProvider                _ServiceProvider,
         IAircraftOnlineLookupService    _AircraftLookupService,
-        IConnectorFactory                _ConnectorFactory
+        IConnectorFactory               _ConnectorFactory
     )
     {
         public async Task Run()

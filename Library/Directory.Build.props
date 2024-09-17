@@ -12,7 +12,7 @@
 
     <Target Name="CopyToCommonBin" AfterTargets="Build" >
         <MakeDir Directories="$(CommonBinPath)" />
-        <Copy SourceFiles="@(LinkerOutput)" DestinationFolder="$(CommonBinPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+        <Copy SourceFiles="@(LinkerOutput)" DestinationFolder="$(CommonBinPath)\%(LinkerOutput.RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
         <Message Text="Copied binaries to $(CommonBinPath)" Importance="high" />
     </Target>
 
