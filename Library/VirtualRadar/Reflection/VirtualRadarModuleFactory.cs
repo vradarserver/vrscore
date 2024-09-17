@@ -52,7 +52,9 @@ namespace VirtualRadar.Reflection
         /// </summary>
         static VirtualRadarModuleFactory()
         {
-            _ModuleFolder = Assembly.GetExecutingAssembly().Location;
+            _ModuleFolder = Path.GetDirectoryName(
+                Assembly.GetExecutingAssembly().Location
+            );
             _PluginsFolder = Path.Combine(_ModuleFolder, "Plugins");
         }
 
@@ -66,61 +68,67 @@ namespace VirtualRadar.Reflection
                     if(!_DiscoveryDone) {
                         _DiscoveryDone = true;
 
+                        var processedFiles = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
                         var loadedModules = new List<VirtualRadarModuleInfo>();
                         var rejectedModules = new List<VirtualRadarModuleReject>();
                         var currentAssemblies = AppDomain
                             .CurrentDomain
                             .GetAssemblies()
-                            .Where(assembly => {
-                                var hasLocation = false;
+                            .Select(assembly => {
+                                var fullPath = "";
                                 try {
-                                    hasLocation = Directory.Exists(
-                                        Path.GetFullPath(assembly.Location)
-                                    );
+                                    fullPath = Path.GetFullPath(assembly.Location);
+                                    if(!File.Exists(fullPath)) {
+                                        fullPath = "";
+                                    }
                                 } catch {
-                                    hasLocation = false;
+                                    fullPath = "";
                                 }
-                                return hasLocation;
+                                return (assembly, fullPath);
                             })
+                            .Where(processed => processed.fullPath != "")
                             .ToDictionary(
-                                assembly => Path.GetFullPath(assembly.Location),
-                                assembly => assembly,
+                                processed => processed.fullPath,
+                                processed => processed.assembly,
                                 StringComparer.InvariantCultureIgnoreCase
                             );
 
                         void loadDll(string dllFileName)
                         {
                             var fullyPathedFileName = Path.GetFullPath(dllFileName);
-
-                            var rejectionReason = "";
-                            try {
-                                VirtualRadarModuleManifest manifest;
-                                if(currentAssemblies.TryGetValue(fullyPathedFileName, out var loadedAssembly)) {
-                                    manifest = VirtualRadarModuleManifest.CreateForPreLoadedModule(loadedAssembly);
-                                } else {
-                                    manifest = LoadManifest(dllFileName, ref rejectionReason);
-                                }
-                                if(manifest != null && !manifest.IsForThisVersion()) {
-                                    rejectionReason = $"Only works with versions {manifest.MinVersion} to {manifest.MaxVersion}, VirtualRadar.dll is version {InformationalVersion.VirtualRadarVersion}";
-                                }
-
-                                if(rejectionReason == "") {
-                                    if(loadedAssembly == null) {
-                                        loadedAssembly = Assembly.LoadFrom(fullyPathedFileName);
+                            if(processedFiles.Add(fullyPathedFileName)) {
+                                var rejectionReason = "";
+                                try {
+                                    VirtualRadarModuleManifest manifest;
+                                    if(currentAssemblies.TryGetValue(fullyPathedFileName, out var loadedAssembly)) {
+                                        manifest = VirtualRadarModuleManifest.CreateForPreLoadedModule(loadedAssembly);
+                                    } else {
+                                        manifest = LoadManifest(dllFileName, ref rejectionReason);
                                     }
-                                    var instanceModule = CreateModuleInstance(loadedAssembly, ref rejectionReason);
-                                    if(instanceModule != null) {
-                                        loadedModules.Add(new(fullyPathedFileName, manifest, instanceModule));
+                                    if(manifest != null && !manifest.IsForThisVersion()) {
+                                        rejectionReason = $"Only works with versions {manifest.MinVersion} to {manifest.MaxVersion}, VirtualRadar.dll is version {InformationalVersion.VirtualRadarVersion}";
                                     }
-                                }
-                            } catch(Exception ex) {
-                                rejectionReason = $"Caught exception during load: {ex}";
-                            }
 
-                            if(rejectionReason != "") {
-                                rejectedModules.Add(new(fullyPathedFileName, rejectionReason));
+                                    if(rejectionReason == "") {
+                                        if(loadedAssembly == null) {
+                                            loadedAssembly = Assembly.LoadFrom(fullyPathedFileName);
+                                        }
+                                        var instanceModule = CreateModuleInstance(loadedAssembly, ref rejectionReason);
+                                        if(instanceModule != null) {
+                                            loadedModules.Add(new(fullyPathedFileName, manifest, instanceModule));
+                                        }
+                                    }
+                                } catch(Exception ex) {
+                                    rejectionReason = $"Caught exception during load: {ex}";
+                                }
+
+                                if(rejectionReason != "") {
+                                    rejectedModules.Add(new(fullyPathedFileName, rejectionReason));
+                                }
                             }
                         }
+
+                        loadDll(Assembly.GetExecutingAssembly().Location);  // <-- VirtualRadar.dll
 
                         foreach(var fileName in Directory.GetFiles(_ModuleFolder, "VirtualRadar.*.dll", SearchOption.TopDirectoryOnly)) {
                             loadDll(fileName);

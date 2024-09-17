@@ -84,6 +84,9 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "-show":
                         result.Show = true;
                         break;
+                    case "showmodules":
+                        result.Command = ParseCommand(result, Command.ShowModules);
+                        break;
                     case "standingdata":
                         result.Command = ParseCommand(result, Command.StandingData);
                         break;

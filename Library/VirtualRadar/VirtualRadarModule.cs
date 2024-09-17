@@ -15,11 +15,14 @@ namespace VirtualRadar
     /// <summary>
     /// The implementation of <see cref="IVirtualRadarModule"/> for VirtualRadar.dll
     /// </summary>
-    class VirtualRadarModule : IVirtualRadarModule
+    public class VirtualRadarModule : IVirtualRadarModule
     {
         public int Priority => 0;
 
-        public void RegisterServices(IServiceCollection services) => DependencyInjection.AddVirtualRadarGroup(services);
+        public void RegisterServices(IServiceCollection services)
+        {
+            DependencyInjection.AddVirtualRadarGroup(services);
+        }
 
         public void Start()
         {

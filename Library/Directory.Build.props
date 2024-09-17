@@ -10,4 +10,14 @@
         <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
     </PropertyGroup>
 
+    <Target Name="CopyToCommonBin" AfterTargets="Build" >
+        <MakeDir Directories="$(CommonBinPath)" />
+        <Copy SourceFiles="@(LinkerOutput)" DestinationFolder="$(CommonBinPath)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+        <Message Text="Copied binaries to $(CommonBinPath)" Importance="high" />
+    </Target>
+
+    <ItemGroup>
+        <LinkerOutput Include="$(OutputPath)**\*.*" />
+    </ItemGroup>
+
 </Project>
