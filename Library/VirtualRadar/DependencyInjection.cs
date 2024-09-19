@@ -10,6 +10,7 @@
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using VirtualRadar.Extensions;
 using VirtualRadar.Reflection;
 
@@ -35,13 +36,50 @@ namespace VirtualRadar
         }
 
         /// <summary>
+        /// Starts up Virtual Radar Server's background services. Always pair this with a call to <see
+        /// cref="StopVirtualRadarServer"/>.
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static IHost StartVirtualRadarServer(this IHost host)
+        {
+            VirtualRadarModuleFactory.CallLoadedModules(
+                module => host.Services.InjectServices(module.ModuleInstance),
+                ignoreExceptions: false
+            );
+
+            VirtualRadarModuleFactory.CallLoadedModules(
+                module => module.ModuleInstance.Start(),
+                ignoreExceptions: false
+            );
+
+            return host;
+        }
+
+        /// <summary>
+        /// Stops Virtual Radar Server's background services. Do not call this unless <see
+        /// cref="StartVirtualRadarServer"/> has been called previously.
+        /// </summary>
+        /// <param name="host"></param>
+        /// <returns></returns>
+        public static IHost StopVirtualRadarServer(this IHost host)
+        {
+            VirtualRadarModuleFactory.CallLoadedModules(
+                module => module.ModuleInstance.Stop(),
+                ignoreExceptions: true,
+                inReverseOrder: true
+            );
+
+            return host;
+        }
+
+        /// <summary>
         /// Adds the VirtualRadar.dll services. Do not call this if you have called <see cref="AddVirtualRadarServer"/>.
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
         public static IServiceCollection AddVirtualRadarGroup(this IServiceCollection services)
         {
-            services.AddLifetime<BootService,                   BootService>();
             services.AddLifetime<IAircraftList,                 AircraftList>();
             services.AddLifetime<IAircraftOnlineLookupProvider, Services.AircraftOnlineLookup.LookupProvider>();
             services.AddLifetime<IAircraftOnlineLookupService,  Services.AircraftOnlineLookup.LookupService>();

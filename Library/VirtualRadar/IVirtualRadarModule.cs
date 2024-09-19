@@ -15,6 +15,12 @@ namespace VirtualRadar
     /// <summary>
     /// The interface that all entry points to a Virtual Radar Server module must implement.
     /// </summary>
+    /// <remarks>
+    /// Implementations can tag DI services with the <see cref="InjectedService"/> attribute but be warned
+    /// that none of the services are injected until after <see cref="RegisterServices"/> is called. Do not
+    /// put DI services into the ctor, there is no operational DI when implementations of this class are
+    /// instantiated.
+    /// </remarks>
     public interface IVirtualRadarModule
     {
         /// <summary>

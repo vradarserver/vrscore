@@ -25,12 +25,6 @@ namespace VirtualRadar.Server
 
         protected async Task WriteLine(string message) => await Console.Out.WriteLineAsync(message);
 
-        protected void BootVirtualRadarServer(IHost host)
-        {
-            var bootService = host.Services.GetRequiredService<BootService>();
-            bootService.Start();
-        }
-
         protected async Task CancelIfKeyPressed(CancellationTokenSource cancellationTokenSource, ConsoleKey waitForKey = ConsoleKey.None)
         {
             await Task.Run(() => {

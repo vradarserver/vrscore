@@ -13,7 +13,7 @@ using VirtualRadar.IO;
 namespace VirtualRadar.Feed.BaseStation
 {
     /// <inheritdoc/>
-    class FormatConfig() : FeedFormatConfig
+    public class FormatConfig() : FeedFormatConfig
     {
         /// <inheritdoc/>
         public override string Id => $"{InternalIdPrefix}basestation";

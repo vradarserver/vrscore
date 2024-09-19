@@ -40,11 +40,13 @@ namespace VirtualRadar.Utility.Terminal
 
                 using(var host = builder.Build()) {
                     using(var scope = host.Services.CreateScope()) {
-                        var bootService = scope.ServiceProvider.GetRequiredService<BootService>();
-                        bootService.Start();
-
-                        var tempRunner = scope.ServiceProvider.GetRequiredService<TempRunner>();
-                        await tempRunner.Run();
+                        host.StartVirtualRadarServer();
+                        try {
+                            var tempRunner = scope.ServiceProvider.GetRequiredService<TempRunner>();
+                            await tempRunner.Run();
+                        } finally {
+                            host.StopVirtualRadarServer();
+                        }
                     }
                 }
             } catch(Exception ex) {

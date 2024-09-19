@@ -81,34 +81,37 @@ namespace VirtualRadar.Server
                 var serverCancel = new CancellationTokenSource();
 
                 await WriteLine("Booting VRS");
-                BootVirtualRadarServer(app);
+                app.StartVirtualRadarServer();
 
-                Console.WriteLine($"Starting server");
-                var serverTask = app.StartAsync(serverCancel.Token);
+                try {
+                    Console.WriteLine($"Starting server");
+                    var serverTask = app.StartAsync(serverCancel.Token);
 
-                if(!Options.SuppressBrowser) {
-                    var url = $"http://localhost:{Options.HttpPort}/admin";
-                    try {
-                        await WriteLine($"Opening {url} in default browser");
-                        ProcessStarter.OpenUrlInDefaultBrowser(url);
-                    } catch(Exception ex) {
-                        await WriteLine($"Could not open {url}: {ex.Message}");
+                    if(!Options.SuppressBrowser) {
+                        var url = $"http://localhost:{Options.HttpPort}/admin";
+                        try {
+                            await WriteLine($"Opening {url} in default browser");
+                            ProcessStarter.OpenUrlInDefaultBrowser(url);
+                        } catch(Exception ex) {
+                            await WriteLine($"Could not open {url}: {ex.Message}");
+                        }
                     }
+
+                    Console.TreatControlCAsInput = true;
+                    await WriteLine("Press Q to shut down");
+                    var waitForKeyTask = CancelIfKeyPressed(serverCancel, ConsoleKey.Q);
+
+                    await serverTask;
+
+                    if(serverCancel.IsCancellationRequested) {
+                        await WriteLine($"Shutting down");
+                    }
+
+                    await waitForKeyTask;
+                    serverCancel.Cancel();
+                } finally {
+                    app.StopVirtualRadarServer();
                 }
-
-                Console.TreatControlCAsInput = true;
-                await WriteLine("Press Q to shut down");
-                var waitForKeyTask = CancelIfKeyPressed(serverCancel, ConsoleKey.Q);
-
-                await serverTask;
-
-                if(serverCancel.IsCancellationRequested) {
-                    await WriteLine($"Shutting down");
-                }
-
-                await waitForKeyTask;
-                serverCancel.Cancel();
-
                 return true;
             } finally {
                 Environment.CurrentDirectory = currentDirectory;

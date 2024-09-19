@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.IO;
+using Microsoft.Extensions.Hosting;
 using VirtualRadar.Feed;
 using VirtualRadar.Feed.Recording;
 using VirtualRadar.IO;
@@ -18,9 +19,9 @@ namespace VirtualRadar.Utility.CLIConsole
     class CommandRunner_DumpFeed(
         Options _Options,
         HeaderService _Header,
-        BootService _Booter,
         IRecordingReader _Reader,
-        IFeedFormatFactoryService _FeedFactory
+        IFeedFormatFactoryService _FeedFactory,
+        IHost _Host
     ) : CommandRunner
     {
         private readonly HexDump _HexDump = new() {
@@ -43,38 +44,41 @@ namespace VirtualRadar.Utility.CLIConsole
                 OptionsParser.Usage($"{_Options.LoadFileName} does not exist");
             }
 
-            _Booter.Initialise();
+            _Host.StartVirtualRadarServer();
+            try {
+                var feedConfig = _Options.ParseMessage
+                    ? _FeedFactory.GetConfig(_Options.FeedFormat)
+                    : null;
+                var chunker = feedConfig?.CreateChunker();
+                IStreamChunkerState chunkerState = null;
 
-            var feedConfig = _Options.ParseMessage
-                ? _FeedFactory.GetConfig(_Options.FeedFormat)
-                : null;
-            var chunker = feedConfig?.CreateChunker();
-            IStreamChunkerState chunkerState = null;
+                var countParcels = 0L;
 
-            var countParcels = 0L;
+                await WriteLine($"Opening {_Options.LoadFileName}");
+                using (var stream = new FileStream(_Options.LoadFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                    await WriteLine($"Initialising feed reader with stream");
+                    await _Reader.InitialiseStreamAsync(stream, leaveOpen: true);
+                    await WriteLine();
 
-            await WriteLine($"Opening {_Options.LoadFileName}");
-            using (var stream = new FileStream(_Options.LoadFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-                await WriteLine($"Initialising feed reader with stream");
-                await _Reader.InitialiseStreamAsync(stream, leaveOpen: true);
-                await WriteLine();
+                    Parcel parcel;
+                    do {
+                        parcel = await _Reader.GetNextAsync(CancellationToken.None);
+                        if(parcel != null) {
+                            if(countParcels++ == 0) {
+                                await DumpHeader(_Reader.Header);
+                            }
+                            await DumpParcel(_Reader.Header, parcel, countParcels);
 
-                Parcel parcel;
-                do {
-                    parcel = await _Reader.GetNextAsync(CancellationToken.None);
-                    if(parcel != null) {
-                        if(countParcels++ == 0) {
-                            await DumpHeader(_Reader.Header);
+                            if(chunker != null) {
+                                chunkerState = DumpMessages(chunker, parcel.Packet, chunkerState);
+                            }
+
+                            await WriteLine();
                         }
-                        await DumpParcel(_Reader.Header, parcel, countParcels);
-
-                        if(chunker != null) {
-                            chunkerState = DumpMessages(chunker, parcel.Packet, chunkerState);
-                        }
-
-                        await WriteLine();
-                    }
-                } while(parcel != null);
+                    } while(parcel != null);
+                }
+            } finally {
+                _Host.StopVirtualRadarServer();
             }
 
             return true;

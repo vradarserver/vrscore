@@ -8,25 +8,18 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Microsoft.Extensions.Hosting;
 using VirtualRadar.Feed;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_List : CommandRunner
+    class CommandRunner_List(
+        IHost _Host,
+        Options _Options,
+        HeaderService _Header,
+        IFeedFormatFactoryService _FeedFormatService
+    ) : CommandRunner
     {
-        private Options _Options;
-        private HeaderService _Header;
-        private BootService _BootService;
-        private IFeedFormatFactoryService _FeedFormatService;
-
-        public CommandRunner_List(Options options, HeaderService header, BootService bootService, IFeedFormatFactoryService feedFormatService)
-        {
-            _Options = options;
-            _Header = header;
-            _BootService = bootService;
-            _FeedFormatService = feedFormatService;
-        }
-
         public override async Task<bool> Run()
         {
             await _Header.OutputCopyright();
@@ -46,10 +39,13 @@ namespace VirtualRadar.Utility.CLIConsole
 
         private void DumpFeedFormats()
         {
-            _BootService.Initialise();
-
-            foreach(var config in _FeedFormatService.GetAllConfigs().OrderBy(r => r.Name(CultureInfo.CurrentCulture))) {
-                Console.WriteLine($"Id [{config.Id}] Invariant Name [{config.Name(CultureInfo.InvariantCulture)}] Local Name [{config.Name(CultureInfo.CurrentCulture)}]");
+            _Host.StartVirtualRadarServer();
+            try {
+                foreach(var config in _FeedFormatService.GetAllConfigs().OrderBy(r => r.Name(CultureInfo.CurrentCulture))) {
+                    Console.WriteLine($"Id [{config.Id}] Invariant Name [{config.Name(CultureInfo.InvariantCulture)}] Local Name [{config.Name(CultureInfo.CurrentCulture)}]");
+                }
+            } finally {
+                _Host.StopVirtualRadarServer();
             }
         }
     }
