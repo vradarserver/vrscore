@@ -87,15 +87,15 @@ done
 case $TARGET in
     console)
         BUILD_DOTNET "$SHDIR/Utility/Console/Console.csproj"
-        RUN_DOTNET "$SHDIR/Utility/Console/bin/$CONFIG/net8.0/Console.dll"
+        RUN_DOTNET "$SHDIR/bin/$CONFIG/net8.0/Console.dll"
         ;;
     restore)
         dotnet restore "$SHDIR/VirtualRadar.sln"
         ;;
     server)
         BUILD_DOTNET   "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
-        PUBLISH_DOTNET "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
-        RUN_DOTNET     "$SHDIR/Apps/VirtualRadar.Server/bin/Release/net8.0/publish/VirtualRadar.Server.dll"
+        #PUBLISH_DOTNET "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
+        RUN_DOTNET     "$SHDIR/bin/$CONFIG/net8.0/VirtualRadar.Server.dll"
         ;;
     solution)
         BUILD_DOTNET "$SHDIR/VirtualRadar.sln"
@@ -104,7 +104,7 @@ case $TARGET in
         ;;
     terminal)
         BUILD_DOTNET "$SHDIR/Utility/Terminal/Terminal.csproj"
-        RUN_DOTNET "$SHDIR/Utility/Terminal/bin/$CONFIG/net8.0/Terminal.dll"
+        RUN_DOTNET "$SHDIR/bin/$CONFIG/net8.0/Terminal.dll"
         ;;
     *)
         SHOW_USAGE
