@@ -25,13 +25,6 @@ namespace VirtualRadar.Server
 
         protected async Task WriteLine(string message) => await Console.Out.WriteLineAsync(message);
 
-        protected void AddVirtualRadarServerGroups(IServiceCollection services)
-        {
-            services.AddVirtualRadarGroup();
-            services.AddVirtualRadarBaseStationFeedGroup();
-            services.AddVirtualRadarDatabaseEntityFrameworkGroup();
-        }
-
         protected void BootVirtualRadarServer(IHost host)
         {
             var bootService = host.Services.GetRequiredService<BootService>();

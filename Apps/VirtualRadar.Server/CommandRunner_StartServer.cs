@@ -35,7 +35,7 @@ namespace VirtualRadar.Server
             try {
                 var builder = WebApplication.CreateBuilder();
 
-                AddVirtualRadarServerGroups(builder.Services);
+                builder.Services.AddVirtualRadarServer();
 
                 builder.Services.AddMvc(options => {
                     options.EnableEndpointRouting = false;          // <-- need this for web API
