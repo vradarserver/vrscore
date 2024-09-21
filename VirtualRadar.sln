@@ -62,7 +62,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{318077F8-4
 		Apps\Directory.Build.props = Apps\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Server", "Apps\VirtualRadar.Server\VirtualRadar.Server.csproj", "{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Apps\Server\Server.csproj", "{7953DD43-8C7D-45F7-8DA9-11F5EB0FD0F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.Database.EntityFramework", "Library\VirtualRadar.Database.EntityFramework\VirtualRadar.Database.EntityFramework.csproj", "{B0DAF86C-BB07-4AF6-921E-8633E44F0E34}"
 EndProject

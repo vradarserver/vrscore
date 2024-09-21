@@ -102,7 +102,7 @@ rem ## Build targets
     goto :EOF
 
 :SERVER
-    set "PROJ=%BATDIR%Apps\VirtualRadar.Server\VirtualRadar.Server.csproj"
+    set "PROJ=%BATDIR%Apps\Server\Server.csproj"
     call :BUILD
     if ERRORLEVEL 1 goto :EOF
     rem At the moment the csproj has a publish step at the end of it, but leaving
@@ -110,7 +110,7 @@ rem ## Build targets
     rem separate publish step...
     rem call :PUBLISH
     rem if ERRORLEVEL 1 goto :EOF
-    if "%RUN%"=="YES" "%COMBIN%\VirtualRadar.Server.exe" %RUNARGS%
+    if "%RUN%"=="YES" "%COMBIN%\Server.exe" %RUNARGS%
     goto :EOF
 
 :SLN

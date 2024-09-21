@@ -93,9 +93,9 @@ case $TARGET in
         dotnet restore "$SHDIR/VirtualRadar.sln"
         ;;
     server)
-        BUILD_DOTNET   "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
-        #PUBLISH_DOTNET "$SHDIR/Apps/VirtualRadar.Server/VirtualRadar.Server.csproj"
-        RUN_DOTNET     "$SHDIR/bin/$CONFIG/net8.0/VirtualRadar.Server.dll"
+        BUILD_DOTNET   "$SHDIR/Apps/Server/Server.csproj"
+        #PUBLISH_DOTNET "$SHDIR/Apps/Server/Server.csproj"
+        RUN_DOTNET     "$SHDIR/bin/$CONFIG/net8.0/Server.dll"
         ;;
     solution)
         BUILD_DOTNET "$SHDIR/VirtualRadar.sln"
