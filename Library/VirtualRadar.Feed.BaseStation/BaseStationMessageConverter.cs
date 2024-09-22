@@ -15,7 +15,7 @@ namespace VirtualRadar.Feed.BaseStation
     /// <summary>
     /// Converts between <see cref="BaseStationMessage"/>s and <see cref="TransponderMessage"/>s.
     /// </summary>
-    class BaseStationMessageConverter(
+    public class BaseStationMessageConverter(
         BaseStationMessageParser _Parser
     ) : ITransponderMessageConverter, IOneTimeConfigurable<BaseStationMessageConverterOptions>
     {

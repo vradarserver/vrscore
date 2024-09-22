@@ -15,9 +15,14 @@ namespace VirtualRadar
     /// <inheritdoc/>
     class AircraftList : IAircraftList
     {
+        private readonly AircraftListOptions _Options;
         private readonly object _SyncLock = new();
-
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = new();
+
+        public AircraftList(AircraftListOptions options = null)
+        {
+            _Options = options ?? new();
+        }
 
         /// <inheritdoc/>
         public (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message)

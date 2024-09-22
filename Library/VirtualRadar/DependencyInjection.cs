@@ -101,14 +101,9 @@ namespace VirtualRadar
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
             services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();
 
-            DoOtherRegistrations(services);
+            Configuration.ConfigurationConfig.RegisterAssembly(services);
 
             return services;
-        }
-
-        private static void DoOtherRegistrations(IServiceCollection services)
-        {
-            Configuration.ConfigurationConfig.RegisterAssemblySettingObjects(services);
         }
     }
 }

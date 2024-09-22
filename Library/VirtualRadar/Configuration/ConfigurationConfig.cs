@@ -19,6 +19,19 @@ namespace VirtualRadar.Configuration
         private static readonly Dictionary<Type, string> _SettingTypeToKeyMap = [];
 
         /// <summary>
+        /// Calls the various automatic registration functions on the assembly passed across, or the
+        /// calling assembly if null is passed.
+        /// </summary>
+        /// <param name="addToServices"></param>
+        /// <param name="assembly"></param>
+        public static void RegisterAssembly(IServiceCollection addToServices, Assembly assembly = null)
+        {
+            assembly ??= Assembly.GetCallingAssembly();
+            RegisterSettingProviders(assembly);
+            RegisterAssemblySettingObjects(addToServices, assembly);
+        }
+
+        /// <summary>
         /// Registers a configuration type with a provider name. If more than one registration is made for the
         /// same provider name then the last one wins.
         /// </summary>
@@ -28,16 +41,20 @@ namespace VirtualRadar.Configuration
         /// </param>
         public static void RegisterProvider(string providerName, Type configurationType)
         {
-            ArgumentNullException.ThrowIfNullOrWhiteSpace(providerName);
-            ArgumentOutOfRangeException.ThrowIfEqual(
-                false,
-                configurationType.IsAssignableFrom(typeof(
-                    ISettingsProvider
-                ))
-            );
+            try {
+                ArgumentNullException.ThrowIfNullOrWhiteSpace(providerName);
+                ArgumentOutOfRangeException.ThrowIfEqual(
+                    false,
+                    typeof(ISettingsProvider).IsAssignableFrom(configurationType)
+                );
 
-            lock(_SyncLock) {
-                _ProviderNameToConfigurationTypeMap[providerName] = configurationType;
+                lock(_SyncLock) {
+                    _ProviderNameToConfigurationTypeMap[providerName] = configurationType;
+                }
+            } catch(Exception ex) {
+                ex.AddStringData("ProviderName",        () => providerName);
+                ex.AddStringData("ConfigurationType",   () => configurationType?.FullName);
+                throw;
             }
         }
 
@@ -50,6 +67,24 @@ namespace VirtualRadar.Configuration
         public static void RegisterProvider<TConfig>(string providerName) where TConfig : ISettingsProvider
         {
             RegisterProvider(providerName, typeof(TConfig));
+        }
+
+        /// <summary>
+        /// Calls <see cref="RegisterProvider"/> on all public types that implement <see cref="ISettingsProvider"/>
+        /// in the assembly passed across.
+        /// </summary>
+        /// <param name="assembly">The optional assembly, defaults to the calling assembly if not supplied.</param>
+        public static void RegisterSettingProviders(Assembly assembly = null)
+        {
+            assembly ??= Assembly.GetCallingAssembly();
+            try {
+                foreach(var typeAttr in AttributeTags.TaggedTypes<SettingsProviderAttribute>(assembly)) {
+                    RegisterProvider(typeAttr.Attribute.Provider, typeAttr.Type);
+                }
+            } catch(Exception ex) {
+                ex.AddStringData("Assembly", () => assembly.FullName);
+                throw;
+            }
         }
 
         /// <summary>
@@ -86,29 +121,35 @@ namespace VirtualRadar.Configuration
         /// <param name="addToServices"></param>
         public static void RegisterKey(string key, Type optionsType, object defaultValue, IServiceCollection addToServices)
         {
-            ArgumentNullException.ThrowIfNullOrWhiteSpace(key);
-            ArgumentNullException.ThrowIfNull(optionsType);
-            ArgumentNullException.ThrowIfNull(defaultValue);
-            ArgumentOutOfRangeException.ThrowIfEqual(false, defaultValue.GetType().IsAssignableTo(optionsType), nameof(defaultValue));
+            try {
+                ArgumentNullException.ThrowIfNullOrWhiteSpace(key);
+                ArgumentNullException.ThrowIfNull(optionsType);
+                ArgumentNullException.ThrowIfNull(defaultValue);
+                ArgumentOutOfRangeException.ThrowIfEqual(false, defaultValue.GetType().IsAssignableTo(optionsType), nameof(defaultValue));
 
-            var defaultJObject = JObject.FromObject(defaultValue);
-            lock(_SyncLock) {
-                if(_SettingKeyToDefaultsMap.TryGetValue(key, out var mergedObject)) {
-                    mergedObject.Merge(defaultJObject, new() {
-                        MergeArrayHandling = MergeArrayHandling.Replace,
-                        MergeNullValueHandling = MergeNullValueHandling.Merge,
-                    });
-                    defaultJObject = mergedObject;
-                }
-                _SettingKeyToDefaultsMap[key] = defaultJObject;
-                _SettingTypeToKeyMap[optionsType] = key;
+                var defaultJObject = JObject.FromObject(defaultValue);
+                lock(_SyncLock) {
+                    if(_SettingKeyToDefaultsMap.TryGetValue(key, out var mergedObject)) {
+                        mergedObject.Merge(defaultJObject, new() {
+                            MergeArrayHandling = MergeArrayHandling.Replace,
+                            MergeNullValueHandling = MergeNullValueHandling.Merge,
+                        });
+                        defaultJObject = mergedObject;
+                    }
+                    _SettingKeyToDefaultsMap[key] = defaultJObject;
+                    _SettingTypeToKeyMap[optionsType] = key;
 
-                if(addToServices != null) {
-                    Type[] genericParameters = [ optionsType ];
-                    var serviceType = typeof(ISettings<>).MakeGenericType(genericParameters);
-                    var implementationType = typeof(Settings<>).MakeGenericType(genericParameters);
-                    addToServices.AddLifetime(serviceType, implementationType);
+                    if(addToServices != null) {
+                        Type[] genericParameters = [ optionsType ];
+                        var serviceType = typeof(ISettings<>).MakeGenericType(genericParameters);
+                        var implementationType = typeof(Settings<>).MakeGenericType(genericParameters);
+                        addToServices.AddLifetime(serviceType, implementationType);
+                    }
                 }
+            } catch(Exception ex) {
+                ex.AddStringData("SettingKey",  () => key);
+                ex.AddStringData("OptionsType", () => optionsType?.FullName);
+                throw;
             }
         }
 
@@ -141,14 +182,19 @@ namespace VirtualRadar.Configuration
         public static void RegisterAssemblySettingObjects(IServiceCollection addToServices, Assembly assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
-            foreach(var typeAttr in AttributeTags.TaggedTypes<SettingsAttribute>(assembly)) {
-                var defaultValue = typeAttr.Type.CreateDefaultInstance();
-                RegisterKey(
-                    typeAttr.Attribute.SettingsKey,
-                    typeAttr.Type,
-                    defaultValue,
-                    addToServices
-                );
+            try {
+                foreach(var typeAttr in AttributeTags.TaggedTypes<SettingsAttribute>(assembly)) {
+                    var defaultValue = typeAttr.Type.CreateDefaultInstance();
+                    RegisterKey(
+                        typeAttr.Attribute.SettingsKey,
+                        typeAttr.Type,
+                        defaultValue,
+                        addToServices
+                    );
+                }
+            } catch(Exception ex) {
+                ex.AddStringData("Assembly", () => assembly?.FullName);
+                throw;
             }
         }
 

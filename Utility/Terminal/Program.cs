@@ -50,8 +50,20 @@ namespace VirtualRadar.Utility.Terminal
                     }
                 }
             } catch(Exception ex) {
-                Console.WriteLine($"Caught exception during processing: {ex}");
                 exitCode = 2;
+                Console.WriteLine($"Caught exception during processing: {ex}");
+                if(ex.Data.Count > 0) {
+                    Console.WriteLine("Exception Data:");
+                    foreach(var key in ex.Data.Keys) {
+                        try {
+                            var keyText = key.ToString();
+                            var value = ex.Data[key]?.ToString();
+                            Console.WriteLine($"{keyText}: {value}");
+                        } catch {
+                            ;
+                        }
+                    }
+                }
             }
 
             Environment.Exit(exitCode);
