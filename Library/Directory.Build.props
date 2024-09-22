@@ -10,16 +10,4 @@
         <PackageOutputPath>$(SolutionDir)/DevOps/Distributables/$(Configuration)</PackageOutputPath>
     </PropertyGroup>
 
-    <Target Name="CopyToCommonBin" AfterTargets="Build" >
-        <MakeDir Directories="$(CommonBinPath)" />
-        <PropertyGroup>
-            <BinariesFolder>$(MSBuildProjectDirectory)\$(OutputPath)</BinariesFolder>
-        </PropertyGroup>
-        <ItemGroup>
-            <LinkerOutput Include="$(BinariesFolder)**\*.*" />
-        </ItemGroup>
-        <Copy SourceFiles="@(LinkerOutput)" DestinationFolder="$(CommonBinPath)\%(LinkerOutput.RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
-        <Message Text="Copied binaries from $(BinariesFolder) to $(CommonBinPath)" Importance="high" />
-    </Target>
-
 </Project>

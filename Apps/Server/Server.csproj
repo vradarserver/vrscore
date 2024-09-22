@@ -24,11 +24,5 @@
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>
-    
-    <Target Name="PublishToCommonBin" AfterTargets="Build">
-        <MakeDir Directories="$(CommonBinPath)" />
-        <Exec Command="dotnet publish --no-build -c $(Configuration) -o $(CommonBinPath)" />
-        <Message Text="Published Server to $(CommonBinPath)" Importance="high" />
-    </Target>
 
 </Project>

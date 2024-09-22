@@ -1,5 +1,6 @@
 #!/bin/bash
 SHDIR="$(cd "$(dirname "$0")" && pwd)"
+RID=$(dotnet --info | grep -i "RID" | awk '{print $2}')
 
 SHOW_USAGE() {
     echo "Usage: build.sh command options"
@@ -13,24 +14,15 @@ SHOW_USAGE() {
     echo "-nobuild     Skip the build phase"
     echo "-release     Use Release configuration"
     echo "-run         Run the target after compilation"
+    echo
+    echo "Build machine RuntimeIdentifier is $RID"
 }
 
-BUILD_DOTNET() {
+BUILDPUB_DOTNET() {
     if [ "$BUILD" = "YES" ]; then
         echo
-        echo dotnet build --configuration $CONFIG "$1" /p:"SolutionDir=$SHDIR"
-             dotnet build --configuration $CONFIG "$1" /p:"SolutionDir=$SHDIR"
-        if [ $? -ne 0 ]; then
-            exit 1
-        fi
-    fi
-}
-
-PUBLISH_DOTNET() {
-    if [ "$BUILD" = "YES" ]; then
-        echo
-        echo dotnet publish "$1" /p:"SolutionDir=$SHDIR"
-             dotnet publish "$1" /p:"SolutionDir=$SHDIR"
+        echo dotnet publish "$1" -r $RID -c $CONFIG -o "$COMBIN" /p:"SolutionDir=$SHDIR"
+             dotnet publish "$1" -r $RID -c $CONFIG -o "$COMBIN" /p:"SolutionDir=$SHDIR"
         if [ $? -ne 0 ]; then
             exit 1
         fi
@@ -84,27 +76,28 @@ do
     fi
 done
 
+COMBIN="$SHDIR/bin/$CONFIG/net8.0/$RID"
+
 case $TARGET in
     console)
-        BUILD_DOTNET "$SHDIR/Utility/Console/Console.csproj"
-        RUN_DOTNET "$SHDIR/bin/$CONFIG/net8.0/Console.dll"
+        BUILDPUB_DOTNET "$SHDIR/Utility/Console/Console.csproj"
+        RUN_DOTNET "$COMBIN/Console.dll"
         ;;
     restore)
         dotnet restore "$SHDIR/VirtualRadar.sln"
         ;;
     server)
-        BUILD_DOTNET   "$SHDIR/Apps/Server/Server.csproj"
-        #PUBLISH_DOTNET "$SHDIR/Apps/Server/Server.csproj"
-        RUN_DOTNET     "$SHDIR/bin/$CONFIG/net8.0/Server.dll"
+        BUILDPUB_DOTNET   "$SHDIR/Apps/Server/Server.csproj"
+        RUN_DOTNET     "$COMBIN/Server.dll"
         ;;
     solution)
-        BUILD_DOTNET "$SHDIR/VirtualRadar.sln"
+        BUILDPUB_DOTNET "$SHDIR/VirtualRadar.sln"
         RUNARGS="The run option makes no sense for the solution, ignoring it"
         RUN_PROGRAM "echo"
         ;;
     terminal)
-        BUILD_DOTNET "$SHDIR/Utility/Terminal/Terminal.csproj"
-        RUN_DOTNET "$SHDIR/bin/$CONFIG/net8.0/Terminal.dll"
+        BUILDPUB_DOTNET "$SHDIR/Utility/Terminal/Terminal.csproj"
+        RUN_DOTNET "$COMBIN/Terminal.dll"
         ;;
     *)
         SHOW_USAGE

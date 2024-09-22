@@ -22,6 +22,10 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <RuntimeIdentifiers>win-x64;win-x86;win-arm64;linux-x64;linux-musl-x64;linux-musl-arm64;linux-arm;linux-arm64;linux-bionic-arm64;osx-x64;osx-arm64;ios-arm64;android-arm64</RuntimeIdentifiers>
+    </PropertyGroup>
+
+    <PropertyGroup>
         <CommonBinPath>$(SolutionDir)/bin/$(Configuration)/$(TargetFramework)</CommonBinPath>
     </PropertyGroup>
 
@@ -44,5 +48,5 @@
         <Using Include="System.Threading" />
         <Using Include="System.Threading.Tasks" />
     </ItemGroup>
-    
+
 </Project>

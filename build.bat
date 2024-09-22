@@ -37,13 +37,14 @@ set RUNARGS=
     goto :NEXTARG
     
 :ENDARGS
-set "COMBIN=%BATDIR%bin\%CONFIG%\net8.0"
+    for /f "tokens=2 delims=: " %%i in ('dotnet --info ^| findstr /i "RID"') do set RID=%%i
+    set "COMBIN=%BATDIR%bin\%CONFIG%\net8.0\%RID%"
 
-if "%TARGET%"=="CONSOLE"    goto :CONSOLE
-if "%TARGET%"=="SERVER"     goto :SERVER
-if "%TARGET%"=="TERMINAL"   goto :TERMINAL
-if "%TARGET%"=="RESTORE"    goto :RESTORE
-if "%TARGET%"=="SLN"        goto :SLN
+    if "%TARGET%"=="CONSOLE"    goto :CONSOLE
+    if "%TARGET%"=="SERVER"     goto :SERVER
+    if "%TARGET%"=="TERMINAL"   goto :TERMINAL
+    if "%TARGET%"=="RESTORE"    goto :RESTORE
+    if "%TARGET%"=="SLN"        goto :SLN
 
 :USAGE
 
@@ -58,6 +59,8 @@ echo -debug        Use Debug configuration (default)
 echo -nobuild      Skip the build phase
 echo -release      Use Release configuration
 echo -run          Run the target after compilation
+echo.
+echo Build machine RuntimeIdentifier is '%RID%'
 
 if %BADARG%==OK goto :EOF
 echo.
@@ -67,21 +70,13 @@ goto :EOF
 rem ##################################################
 rem ## Common actions
 
-:BUILD
+:BUILDPUB
     if %BUILD%==NO goto :NOBUILD
     echo.
-    echo dotnet build --configuration %CONFIG% "%PROJ%" /p:"SolutionDir=%BATDIR%"
-    dotnet build --configuration %CONFIG% "%PROJ%" /p:"SolutionDir=%BATDIR%"
+    echo dotnet publish "%PROJ%" -r %RID% -c %CONFIG% -o "%COMBIN%" /p:"SolutionDir=%BATDIR%"
+         dotnet publish "%PROJ%" -r %RID% -c %CONFIG% -o "%COMBIN%" /p:"SolutionDir=%BATDIR%"
     if ERRORLEVEL 1 goto :EOF
 :NOBUILD
-    exit /b 0
-
-:PUBLISH
-    IF %BUILD%==NO goto :NOBUILD
-    echo.
-    echo dotnet publish "%PROJ%" /p:"SolutionDir=%BATDIR%"
-    dotnet publish "%PROJ%" /p:"SolutionDir=%BATDIR%"
-    if ERRORLEVEL 1 goto :EOF
     exit /b 0
 
 rem ##################################################
@@ -96,33 +91,28 @@ rem ## Build targets
 
 :CONSOLE
     set "PROJ=%BATDIR%Utility\Console\Console.csproj"
-    call :BUILD
+    call :BUILDPUB
     if ERRORLEVEL 1 goto :EOF
     if "%RUN%"=="YES" "%COMBIN%\Console.exe" %RUNARGS%
     goto :EOF
 
 :SERVER
     set "PROJ=%BATDIR%Apps\Server\Server.csproj"
-    call :BUILD
+    call :BUILDPUB
     if ERRORLEVEL 1 goto :EOF
-    rem At the moment the csproj has a publish step at the end of it, but leaving
-    rem this here just in case that causes trouble and we need to go back to a
-    rem separate publish step...
-    rem call :PUBLISH
-    rem if ERRORLEVEL 1 goto :EOF
     if "%RUN%"=="YES" "%COMBIN%\Server.exe" %RUNARGS%
     goto :EOF
 
 :SLN
     set "PROJ=%BATDIR%VirtualRadar.sln"
-    call :BUILD
+    call :BUILDPUB
     if ERRORLEVEL 1 goto :EOF
     if "%RUN%"=="YES" echo "The run option doesn't make sense for the solution, ignoring it"
     goto :EOF
 
 :TERMINAL
     set "PROJ=%BATDIR%Utility\Terminal\Terminal.csproj"
-    call :BUILD
+    call :BUILDPUB
     if ERRORLEVEL 1 goto :EOF
     if "%RUN%"=="YES" "%COMBIN%\Terminal.exe" %RUNARGS%
     goto :EOF
