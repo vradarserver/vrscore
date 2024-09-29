@@ -32,41 +32,49 @@ namespace VirtualRadar.Utility.Terminal
         public async Task Run()
         {
             using(var scope = _ServiceProvider.CreateScope()) {
-                var aircraftList = scope.ServiceProvider.GetRequiredService<IAircraftList>();
                 var receiver = OpenReceiver(scope.ServiceProvider);
-                var connector = receiver?.Connector ?? OpenConnector(scope.ServiceProvider);
-                var feedDecoder = receiver?.FeedDecoder ?? CreateFeedDecoder(scope.ServiceProvider);
+                var connector = receiver != null ? null : OpenConnector(scope.ServiceProvider);
+                var feedDecoder = receiver != null ? null : CreateFeedDecoder(scope.ServiceProvider);
+                var aircraftList = receiver != null ? null : scope.ServiceProvider.GetRequiredService<IAircraftList>();
                 var cancelSource = new CancellationTokenSource();
 
                 try {
-                    _AircraftLookupService.LookupCompleted += (_,batchOutcome) => {
-                        aircraftList.ApplyLookup(batchOutcome);
-                    };
+                    if(receiver == null) {
+                        _AircraftLookupService.LookupCompleted += (_,batchOutcome) => {
+                            aircraftList.ApplyLookup(batchOutcome);
+                        };
+                    }
 
                     var aircraftListWindow = scope.ServiceProvider.GetRequiredService<AircraftListWindow>();
-                    aircraftListWindow.AircraftList = aircraftList;
+                    aircraftListWindow.AircraftList = receiver?.AircraftList ?? aircraftList;
 
                     var windowEventLoopTask = aircraftListWindow.EventLoop(cancelSource);
 
-                    connector.ConnectionStateChanged += (_,_) => aircraftListWindow.ConnectionState = connector.ConnectionState.ToString();
+                    var receiverOrConnector = receiver?.Connector ?? connector;
 
-                    connector.LastExceptionChanged += (_,_) => aircraftListWindow.LastConnectorException = connector.LastException;
+                    receiverOrConnector.ConnectionStateChanged += (_,_) => aircraftListWindow.ConnectionState = receiverOrConnector.ConnectionState.ToString();
 
-                    connector.PacketReceived += (_, packet) => {
+                    receiverOrConnector.LastExceptionChanged += (_,_) => aircraftListWindow.LastConnectorException = receiverOrConnector.LastException;
+
+                    receiverOrConnector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountPacketsSeen;
-                        feedDecoder.ParseFeedPacket(packet);
-                    };
-
-                    feedDecoder.MessageReceived += (_, message) => {
-                        var applyOutcome = aircraftList.ApplyMessage(message);
-                        if(applyOutcome.AddedAircraft) {
-                            _AircraftLookupService.Lookup(message.Icao24);
+                        if(receiver == null) {
+                            feedDecoder.ParseFeedPacket(packet);
                         }
                     };
 
+                    if(receiver == null) {
+                        feedDecoder.MessageReceived += (_, message) => {
+                            var applyOutcome = aircraftList.ApplyMessage(message);
+                            if(applyOutcome.AddedAircraft) {
+                                _AircraftLookupService.Lookup(message.Icao24);
+                            }
+                        };
+                    }
+
                     ControlC.SuppressCancelBehaviour = true;
 
-                    await connector.OpenAsync(cancelSource.Token);
+                    await receiverOrConnector.OpenAsync(cancelSource.Token);
                     await windowEventLoopTask;
                 } catch(OperationCanceledException) {
                     Console.Clear();

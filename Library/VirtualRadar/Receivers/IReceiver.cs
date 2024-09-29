@@ -28,6 +28,12 @@ namespace VirtualRadar.Receivers
 
         IFeedDecoder FeedDecoder { get; }
 
+        IAircraftList AircraftList { get; }
+
+        long CountPacketsReceived { get; }
+
+        long CountMessagesReceived { get; }
+
         bool MatchesOptions(ReceiverOptions other) => Options.Equals(other);
     }
 }
