@@ -2,7 +2,7 @@
   "profiles": {
     "Terminal": {
       "commandName": "Project",
-      "commandLineArgs": "-address 172.20.10.20 -port 33002"
+      "commandLineArgs": "-receiver sbs-3"
     }
   }
 }

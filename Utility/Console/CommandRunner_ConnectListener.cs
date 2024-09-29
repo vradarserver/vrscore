@@ -46,7 +46,7 @@ namespace VirtualRadar.Utility.CLIConsole
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
             var connector = _ConnectorFactory.Build<IPullConnector>(new TcpPullConnectorSettings() {
-                Address =   ipAddress,
+                Address =   ipAddress.ToString(),
                 Port =      _Options.Port
             });
 

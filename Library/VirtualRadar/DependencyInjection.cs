@@ -89,13 +89,15 @@ namespace VirtualRadar
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
-            services.AddLifetime<Configuration.ISettingsStorage,       Configuration.SettingsStorage>();
+            services.AddLifetime<Configuration.ISettingsStorage, Configuration.SettingsStorage>();
 
             services.AddLifetime<Connection.IConnectorFactory,  Connection.ConnectorFactory>();
             services.AddLifetime<Connection.TcpPullConnector,   Connection.TcpPullConnector>();
 
             services.AddLifetime<Feed.IFeedDecoderFactory,          Feed.FeedDecoderFactory>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
+
+            services.AddLifetime<Receivers.IReceiverFactory, Receivers.ReceiverFactory>();
 
             services.AddLifetime<StandingData.IStandingDataManager,             StandingData.StandingDataManager>();
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();

@@ -8,22 +8,33 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Configuration;
 using VirtualRadar.Connection;
 
-namespace VirtualRadar.Utility.Terminal
+namespace VirtualRadar.Receivers
 {
-    class Options
+    class ReceiverFactory(
+        IConnectorFactory _ConnectorFactory,
+        ISettingsStorage _Settings
+    ) : IReceiverFactory
     {
-        public Command Command { get; set; }
+        public ReceiverOptions FindOptionsFor(string receiverName)
+        {
+            var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
+            return messageSources
+                .Receivers
+                .FirstOrDefault(receiver => String.Equals(receiver.Name, receiverName, StringComparison.InvariantCultureIgnoreCase));
+        }
 
-        public string Address { get; set; } = "127.0.0.1";
+        public IReceiver Build(ReceiverOptions options)
+        {
+            IReceiver result = null;
 
-        public int Port { get; set; } = 30003;
+            if(options != null) {
+                var connector = _ConnectorFactory.Build(options.Connector);
+            }
 
-        public string FileName { get; set; }
-
-        public double PlaybackSpeed { get; set; } = 1.0;
-
-        public string ReceiverName { get; set; }
+            return result;
+        }
     }
 }

@@ -15,14 +15,12 @@ namespace VirtualRadar
     /// <inheritdoc/>
     class AircraftList : IAircraftList
     {
-        private readonly AircraftListOptions _Options;
         private readonly object _SyncLock = new();
-        private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = new();
+        private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = [];
+        private long _Stamp = 0L;
 
-        public AircraftList(AircraftListOptions options = null)
-        {
-            _Options = options ?? new();
-        }
+        /// <inheritdoc/>
+        public long Stamp => _Stamp;
 
         /// <inheritdoc/>
         public (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message)
@@ -40,6 +38,7 @@ namespace VirtualRadar
                     }
 
                     changed = aircraft.CopyFromMessage(message) || changed;
+                    _Stamp = Math.Max(_Stamp, aircraft.Stamp);
                 }
             }
 
@@ -55,6 +54,7 @@ namespace VirtualRadar
                 lock(_SyncLock) {
                     if(_AircraftByIcao24.TryGetValue(lookup.Icao24, out var aircraft)) {
                         changed = aircraft.CopyFromLookup(lookup);
+                        _Stamp = Math.Max(_Stamp, aircraft.Stamp);
                     }
                 }
             }

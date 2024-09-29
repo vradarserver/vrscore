@@ -14,6 +14,7 @@ using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 using VirtualRadar.Feed.BaseStation;
 using VirtualRadar.Feed.Recording;
+using VirtualRadar.Receivers;
 using WindowProcessor;
 
 namespace VirtualRadar.Utility.Terminal
@@ -26,7 +27,8 @@ namespace VirtualRadar.Utility.Terminal
         IFeedDecoderFactory             _FeedDecoderFactory,
         IServiceProvider                _ServiceProvider,
         IAircraftOnlineLookupService    _AircraftLookupService,
-        IConnectorFactory               _ConnectorFactory
+        IConnectorFactory               _ConnectorFactory,
+        IReceiverFactory                _ReceiverFactory
     )
     {
         public async Task Run()
@@ -82,13 +84,19 @@ namespace VirtualRadar.Utility.Terminal
 
         private IReceiveConnector OpenNetworkConnector()
         {
+            if(_Options.ReceiverName != null) {
+                var receiverOptions = _ReceiverFactory.FindOptionsFor(_Options.ReceiverName.Trim());
+                var receiver = _ReceiverFactory.Build(receiverOptions);
+                throw new NotImplementedException();
+            }
+
             Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
             if(!IPAddress.TryParse(_Options.Address, out var address)) {
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
 
             return _ConnectorFactory.Build<IReceiveConnector>(new TcpPullConnectorSettings() {
-                Address =   address,
+                Address =   address.ToString(),
                 Port =      _Options.Port,
             });
         }

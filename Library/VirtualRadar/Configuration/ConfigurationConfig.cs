@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VirtualRadar.Collections;
 using VirtualRadar.Extensions;

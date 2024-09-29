@@ -4,10 +4,7 @@ using Newtonsoft.Json.Linq;
 namespace VirtualRadar.Configuration
 {
     /// <inheritdoc/>
-    class SettingsStorage(
-        IFileSystem _FileSystem,
-        IWorkingFolder _WorkingFolder
-    ) : ISettingsStorage
+    class SettingsStorage : ISettingsStorage
     {
         class ParsedContent
         {
@@ -20,13 +17,34 @@ namespace VirtualRadar.Configuration
         private const string Schema_Original = "1";
         private const string Schema_Current = Schema_Original;
 
+        private IFileSystem _FileSystem;
+        private IWorkingFolder _WorkingFolder;
+
         private readonly object _SyncLock = new();
         private Dictionary<string, JObject> _Content;
         private long _ContentVersion;
         private readonly Dictionary<string, ParsedContent> _ParsedContent = [];
         private string _ContentFileName;
+        private JsonSerializerSettings _JsonDeserialiserSettings;
 
         private static string ParsedContentKey(string key, Type parsedType) => $"{key}-{parsedType.Name}";
+
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="fileSystem"></param>
+        /// <param name="workingFolder"></param>
+        public SettingsStorage(
+            IFileSystem fileSystem,
+            IWorkingFolder workingFolder
+        )
+        {
+            _FileSystem = fileSystem;
+            _WorkingFolder = workingFolder;
+
+            _JsonDeserialiserSettings = new();
+            _JsonDeserialiserSettings.Converters.Add(new SettingsProviderJsonConverter());
+        }
 
         /// <inheritdoc/>
         public object LatestValue(Type optionType)
@@ -47,7 +65,11 @@ namespace VirtualRadar.Configuration
                             $"There is no default and no content stored for the \"{contentKey}\" key assigned to options of type {optionType.Name}"
                         );
                     }
-                    var deserialised = JsonConvert.DeserializeObject(content.ToString(), optionType);
+                    var deserialised = JsonConvert.DeserializeObject(
+                        content.ToString(),
+                        optionType,
+                        _JsonDeserialiserSettings
+                    );
 
                     if(Object.Equals(parsedContent?.ParsedValue, deserialised)) {
                         parsedContent.ParsedFromContentVersion = _ContentVersion;

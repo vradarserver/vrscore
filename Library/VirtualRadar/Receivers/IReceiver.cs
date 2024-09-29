@@ -8,33 +8,26 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Connection;
+using VirtualRadar.Feed;
+
 namespace VirtualRadar.Receivers
 {
     /// <summary>
-    /// Brings together a connection to a feed source and an aircraft list to record the current state of
-    /// aircraft on the feed.
+    /// The interface for a receiver.
     /// </summary>
     public interface IReceiver
     {
-        /// <summary>
-        /// Gets the unique identifier of the receiver.
-        /// </summary>
-        Guid Id { get; }
+        ReceiverOptions Options { get; }
 
-        /// <summary>
-        /// Gets or sets the name of the feed.
-        /// </summary>
-        string Name { get; set; }
+        string Name => Options.Name;
 
-        /// <summary>
-        /// Gets or sets a value indicating that <see cref="AircraftList"/> is being updated with messages
-        /// from the feed.
-        /// </summary>
-        bool Enabled { get; set; }
+        bool Enabled => Options.Enabled;
 
-        /// <summary>
-        /// Gets the aircraft list that represents the current state of the aircraft on the feed.
-        /// </summary>
-        IAircraftList AircraftList { get; }
+        IConnector Connector { get; }
+
+        IFeedDecoder FeedDecoder { get; }
+
+        bool MatchesOptions(ReceiverOptions other) => Options.Equals(other);
     }
 }

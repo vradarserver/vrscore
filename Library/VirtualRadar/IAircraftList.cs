@@ -19,6 +19,13 @@ namespace VirtualRadar
     public interface IAircraftList
     {
         /// <summary>
+        /// Gets the highest stamp seen on any aircraft. See <see cref="PostOffice"/> for rules regarding
+        /// stamps. If the stamp remains constant then the list has not changed since the last time you
+        /// looked.
+        /// </summary>
+        long Stamp { get; }
+
+        /// <summary>
         /// Applies the content of a single transponder message to the state held for the
         /// aircraft in the list. Adds the aircraft if it does not already exist.
         /// </summary>

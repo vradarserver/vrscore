@@ -181,13 +181,13 @@ namespace VirtualRadar.Connection
             try {
                 connection = new(this) {
                     Socket = new Socket(
-                        Options.Address.AddressFamily,
+                        Options.ParsedAddress.AddressFamily,
                         SocketType.Stream,
                         ProtocolType.Tcp
                     )
                 };
 
-                var ipEndPoint = new IPEndPoint(Options.Address, Options.Port);
+                var ipEndPoint = new IPEndPoint(Options.ParsedAddress, Options.Port);
                 await connection.Socket.ConnectAsync(ipEndPoint, cancellationToken);
 
                 if(!cancellationToken.IsCancellationRequested) {

@@ -8,64 +8,58 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Net;
 using Newtonsoft.Json;
-using VirtualRadar.Configuration;
-using VirtualRadar.Receivers;
+using Newtonsoft.Json.Linq;
 
-namespace VirtualRadar.Connection
+namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// Carries options for a <see cref="TcpPullConnector"/>.
+    /// A Newtonsoft JSON.NET converter that can read the provider name out of an <see
+    /// cref="ISettingsProvider"/> serialised object, work out the concrete type from that name and then
+    /// deserialise the JSON into a new instance of that concrete type. If the provider name is unknown then
+    /// the object deserialises into a null.
     /// </summary>
-    /// <param name="Address">
-    /// The text of the IP address to connect to. This can be IPv4 or IPv6. See <see cref="ParsedAddress"/>
-    /// for the parsed version of this.
-    /// </param>
-    /// <param name="Port">
-    /// The port to connect to.
-    /// </param>
-    [SettingsProvider(_ProviderName)]
-    public record TcpPullConnectorSettings(
-        string Address,
-        int Port
-    ) : IReceiverConnectorOptions
+    class SettingsProviderJsonConverter : JsonConverter
     {
-        private const string _ProviderName = "TcpPullConnector";
+        /// <inheritdoc/>
+        public override bool CanWrite => false;
 
         /// <inheritdoc/>
-        public string SettingsProvider => _ProviderName;
-
-        private IPAddress _ParsedAddress;
-        private bool _CannotParseAddress;
-        /// <summary>
-        /// <see cref="Address"/> parsed into a System.Net.IPAddress. If the address is invalid then
-        /// this will be null.
-        /// </summary>
-        [JsonIgnore]
-        public IPAddress ParsedAddress
+        public override bool CanConvert(Type objectType)
         {
-            get {
-                if(_ParsedAddress == null && !_CannotParseAddress) {
-                    var parsed = IPAddress.TryParse(Address, out var parsedAddress);
-                    if(!parsed) {
-                        _CannotParseAddress = true;
-                    } else {
-                        _ParsedAddress = parsedAddress;
-                    }
-                }
-                return _ParsedAddress;
+            // We need the test for an interface type because otherwise the .ToObject call in ReadJson will
+            // recurse forever
+            return objectType.IsInterface
+                && typeof(ISettingsProvider).IsAssignableFrom(objectType);
+        }
+
+        /// <inheritdoc/>
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            ;
+        }
+
+        /// <inheritdoc/>
+        public override object ReadJson(
+            JsonReader reader,
+            Type objectType,
+            object existingValue,
+            JsonSerializer serialiser
+        )
+        {
+            var jObject = JObject.Load(reader);
+            var providerName = jObject[nameof(ISettingsProvider.SettingsProvider)]?.ToString();
+
+            var concreteType = String.IsNullOrEmpty(providerName)
+                ? null
+                : ConfigurationConfig.ProviderType(providerName);
+
+            object result = null;
+            if(concreteType != null) {
+                result = jObject.ToObject(concreteType, serialiser);
             }
-        }
 
-        /// <summary>
-        /// Default ctor.
-        /// </summary>
-        public TcpPullConnectorSettings() : this(IPAddress.None.ToString(), 0)
-        {
+            return result;
         }
-
-        /// <inheritdoc/>
-        public override string ToString() => $"{Address}:{Port}";
     }
 }
