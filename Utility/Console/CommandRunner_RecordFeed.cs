@@ -11,15 +11,16 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed.Recording;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_RecordFeed(
+        IServiceProvider _ServiceProvider,
         Options _Options,
         HeaderService _Header,
-        IConnectorFactory _ConnectorFactory,
         IRecorder _FeedRecorder
     ) : CommandRunner
     {
@@ -43,10 +44,12 @@ namespace VirtualRadar.Utility.CLIConsole
             var cancelSource = new CancellationTokenSource();
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
-            var connector = _ConnectorFactory.Build<IPullConnector>(new TcpPullConnectorSettings() {
+            var connectorFactory = _ServiceProvider.GetRequiredService<ReceiveConnectorFactory>();
+            var connectorOptions = new TcpPullConnectorSettings() {
                 Address = ipAddress.ToString(),
                 Port = _Options.Port,
-            });
+            };
+            var connector = connectorFactory.Create(connectorOptions);
 
             await WriteLine($"Opening {_Options.SaveFileName} for writing");
             var fileStream = new FileStream(_Options.SaveFileName, FileMode.Create, FileAccess.Write, FileShare.Read);

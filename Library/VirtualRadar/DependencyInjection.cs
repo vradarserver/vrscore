@@ -91,10 +91,9 @@ namespace VirtualRadar
 
             services.AddLifetime<Configuration.ISettingsStorage, Configuration.SettingsStorage>();
 
-            services.AddLifetime<Connection.IConnectorFactory,  Connection.ConnectorFactory>();
-            services.AddLifetime<Connection.TcpPullConnector,   Connection.TcpPullConnector>();
+            services.AddLifetime<Connection.ReceiveConnectorFactory, Connection.ReceiveConnectorFactory>();
 
-            services.AddLifetime<Feed.IFeedDecoderFactory,          Feed.FeedDecoderFactory>();
+            services.AddLifetime<Feed.FeedDecoderFactory,           Feed.FeedDecoderFactory>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             services.AddLifetime<Receivers.IReceiverFactory, Receivers.ReceiverFactory>();
@@ -103,7 +102,9 @@ namespace VirtualRadar
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
             services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();
 
+
             Configuration.ConfigurationConfig.RegisterAssembly(services);
+            Connection.ReceiveConnectorConfig.RegisterAssembly();
 
             return services;
         }

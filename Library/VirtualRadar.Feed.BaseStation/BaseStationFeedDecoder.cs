@@ -16,15 +16,18 @@ namespace VirtualRadar.Feed.BaseStation
     /// <summary>
     /// The default implementation of <see cref="IFeedDecoder"/> for BaseStation feeds.
     /// </summary>
-    class BaseStationFeedDecoder : IFeedDecoder, IOneTimeConfigurable<BaseStationFeedDecoderOptions>
+    [FeedDecoder(typeof(BaseStationFeedDecoderOptions))]
+    public class BaseStationFeedDecoder : IFeedDecoder
     {
-        private OneTimeConfigurableImplementer<BaseStationFeedDecoderOptions> _OneTimeConfig = new(nameof(BaseStationFeedDecoder), new());
         private AsciiLineChunker _StreamChunker = new();
         private IStreamChunkerState _StreamChunkerState;
         private BaseStationMessageConverter _MessageConverter;
 
         /// <inheritdoc/>
-        public BaseStationFeedDecoderOptions Options => _OneTimeConfig.Options;
+        public BaseStationFeedDecoderOptions Options { get; }
+
+        /// <inheritdoc/>
+        IFeedDecoderOptions IFeedDecoder.Options => Options;
 
         /// <inheritdoc/>
         public event EventHandler<TransponderMessage> MessageReceived;
@@ -42,9 +45,18 @@ namespace VirtualRadar.Feed.BaseStation
         /// Creates a new object.
         /// </summary>
         /// <param name="formatConfig"></param>
-        public BaseStationFeedDecoder(BaseStationMessageConverter messageConverter)
+        /// <param name="messageConverter"></param>
+        public BaseStationFeedDecoder(
+            BaseStationMessageConverter messageConverter,
+            BaseStationFeedDecoderOptions options
+        )
         {
+            Options = options;
             _MessageConverter = messageConverter;
+            _MessageConverter.Options = new() {
+                Icao24CanHaveNonHexDigits = options.Icao24CanHaveNonHexDigits,
+            };
+
             _StreamChunker.ChunkRead += (_, chunk) => {
                 foreach(var message in _MessageConverter.FromFeedMessage(chunk)) {
                     OnMessageReceived(message);
@@ -64,18 +76,8 @@ namespace VirtualRadar.Feed.BaseStation
         }
 
         /// <inheritdoc/>
-        public void Configure(BaseStationFeedDecoderOptions options)
-        {
-            _OneTimeConfig.Configure(options);
-            _MessageConverter.Configure(new() {
-                Icao24CanHaveNonHexDigits = options.Icao24CanHaveNonHexDigits,
-            });
-        }
-
-        /// <inheritdoc/>
         public Task ParseFeedPacket(ReadOnlyMemory<byte> packet)
         {
-            _OneTimeConfig.AssertConfigured();
             _StreamChunkerState = _StreamChunker.ParseBlock(packet, _StreamChunkerState);
 
             return Task.CompletedTask;

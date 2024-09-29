@@ -21,11 +21,5 @@ namespace VirtualRadar
         /// Exposes the options that the object was created with.
         /// </summary>
         T Options { get; }
-
-        /// <summary>
-        /// Performs a one-time configuration of the object.
-        /// </summary>
-        /// <param name="options"></param>
-        void Configure(T options);
     }
 }

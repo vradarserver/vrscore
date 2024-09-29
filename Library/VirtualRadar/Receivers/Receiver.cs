@@ -17,7 +17,7 @@ namespace VirtualRadar.Receivers
     /// <summary>
     /// Brings together a source of messages, a decoded feed of those messages and an aircraft list.
     /// </summary>
-    public class Receiver : IDisposable
+    public class Receiver : IReceiver
     {
         private IAircraftOnlineLookupService _AircraftLookupService;
 

@@ -8,37 +8,47 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Feed
+using Microsoft.Extensions.DependencyInjection;
+
+namespace VirtualRadar.Connection
 {
-    [Lifetime(Lifetime.Singleton)]
-    public interface IFeedDecoderFactory
+    [Lifetime(Lifetime.Transient)]
+    public class ReceiveConnectorFactory(
+        IServiceProvider _ServiceProvider
+    ) : IDisposable
     {
-        /// <summary>
-        /// Registers the feed decoder that can be built from an options object. Only one type of decoder can
-        /// be associated with any given type of options. Second and subsequent calls for a given type of
-        /// option will overwrite the registration for previous types.
-        /// </summary>
-        /// <typeparam name="TOptions"></typeparam>
-        /// <typeparam name="TFeedDecoder"></typeparam>
-        void RegisterFeedDecoderByOptions<TOptions, TFeedDecoder>()
-            where TOptions: IFeedDecoderOptions
-            where TFeedDecoder: IFeedDecoder, IOneTimeConfigurable<TOptions>;
+        private readonly object _SyncLock = new();
 
-        /// <summary>
-        /// Builds a new feed decoder from the options passed across.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        /// <exception cref="FeedDecoderNotRegisteredException"></exception>
-        IFeedDecoder Build(IFeedDecoderOptions options);
+        public IReceiveConnector Connector { get; private set; }
 
-        /// <summary>
-        /// Builds a new feed decoder from the options passed across.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        /// <exception cref="FeedDecoderNotRegisteredException"></exception>
-        T Build<T>(IFeedDecoderOptions options) where T: IFeedDecoder;
+        ~ReceiveConnectorFactory() => Dispose(false);
+
+        public IReceiveConnector Create(IReceiveConnectorOptions options)
+        {
+            lock(_SyncLock) {
+                if(options != null && Connector == null) {
+                    var receiverType = ReceiveConnectorConfig.ReceiveConnectorType(options.GetType());
+                    if(receiverType != null) {
+                        Connector = (IReceiveConnector)ActivatorUtilities.CreateInstance(_ServiceProvider, receiverType, options);
+                    }
+                }
+            }
+
+            return Connector;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                var connector = Connector;
+                Task.Run(() => connector?.DisposeAsync());
+            }
+        }
     }
 }

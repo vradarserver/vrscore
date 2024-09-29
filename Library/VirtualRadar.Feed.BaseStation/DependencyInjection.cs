@@ -21,9 +21,8 @@ namespace VirtualRadar.Feed.BaseStation
             services.AddScoped<BaseStationMessageParser,    BaseStationMessageParser>();
             services.AddScoped<BaseStationMessageConverter, BaseStationMessageConverter>();
 
-            services.AddTransient<BaseStationFeedDecoder, BaseStationFeedDecoder>();
-
             VirtualRadar.Configuration.ConfigurationConfig.RegisterAssembly(services);
+            VirtualRadar.Feed.FeedDecoderConfig.RegisterAssembly();
 
             return services;
         }

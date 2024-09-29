@@ -19,6 +19,11 @@ namespace VirtualRadar.Feed
     public interface IFeedDecoder : IAsyncDisposable
     {
         /// <summary>
+        /// Gets the options that were used to create this decoder instance.
+        /// </summary>
+        IFeedDecoderOptions Options { get; }
+
+        /// <summary>
         /// Raised for every transponder message extracted from the feed.
         /// </summary>
         event EventHandler<TransponderMessage> MessageReceived;

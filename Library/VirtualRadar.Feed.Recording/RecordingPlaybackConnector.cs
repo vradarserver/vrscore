@@ -16,14 +16,16 @@ namespace VirtualRadar.Feed.Recording
     /// <summary>
     /// A VRS connector whose source of feed messages is a recording.
     /// </summary>
-    class RecordingPlaybackConnector : IReceiveConnector, IOneTimeConfigurable<RecordingPlaybackConnectorOptions>
+    [ReceiveConnector(typeof(RecordingPlaybackConnectorOptions))]
+    public class RecordingPlaybackConnector : IReceiveConnector
     {
         internal PlaybackConnectorState _State;
 
-        private readonly OneTimeConfigurableImplementer<RecordingPlaybackConnectorOptions> _OneTimeConfig = new(nameof(RecordingPlaybackConnector), new());
+        /// <inheritdoc/>
+        public RecordingPlaybackConnectorOptions Options { get; }
 
         /// <inheritdoc/>
-        public RecordingPlaybackConnectorOptions Options => _OneTimeConfig.Options;
+        IConnectorOptions IConnector.Options => Options;
 
         /// <inheritdoc/>
         public string Description => $"{Options.RecordingFileName} x{Options.PlaybackSpeed}";
@@ -90,6 +92,12 @@ namespace VirtualRadar.Feed.Recording
             PacketReceived?.Invoke(this, packet);
         }
 
+        public RecordingPlaybackConnector(RecordingPlaybackConnectorOptions options)
+        {
+            ArgumentNullException.ThrowIfNull(options);
+            Options = options;
+        }
+
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
@@ -104,13 +112,8 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public void Configure(RecordingPlaybackConnectorOptions options) => _OneTimeConfig.Configure(options);
-
-        /// <inheritdoc/>
         public async Task OpenAsync(CancellationToken cancellationToken)
         {
-            _OneTimeConfig.AssertConfigured();
-
             if(ConnectionState != ConnectionState.Closed) {
                 throw new ConnectionAlreadyOpenException($"You cannot open a connection that is in the {ConnectionState} state");
             }

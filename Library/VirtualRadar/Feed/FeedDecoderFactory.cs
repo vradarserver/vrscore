@@ -8,60 +8,52 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace VirtualRadar.Feed
 {
-    /// <summary>
-    /// Default implementation of the feed decoder factory.
-    /// </summary>
-    class FeedDecoderFactory : IFeedDecoderFactory
+    [Lifetime(Lifetime.Transient)]
+    public class FeedDecoderFactory(
+        IServiceProvider _ServiceProvider
+    ) : IDisposable
     {
         private readonly object _SyncLock = new();
 
-        private IServiceProvider _ServiceProvider;
+        public IFeedDecoder FeedDecoder { get; private set; }
 
-        private Dictionary<Type, Func<IFeedDecoderOptions, IFeedDecoder>> _OptionsTypeToBuildFunctionMap = new();
+        ~FeedDecoderFactory() => Dispose(false);
 
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="serviceProvider"></param>
-        public FeedDecoderFactory(IServiceProvider serviceProvider)
-        {
-            _ServiceProvider = serviceProvider;
-        }
-
-        /// <inheritdoc/>
-        public void RegisterFeedDecoderByOptions<TOptions, TFeedDecoder>()
-            where TOptions: IFeedDecoderOptions
-            where TFeedDecoder: IFeedDecoder, IOneTimeConfigurable<TOptions>
+        public IFeedDecoder Create(IFeedDecoderOptions options)
         {
             lock(_SyncLock) {
-                _OptionsTypeToBuildFunctionMap[typeof(TOptions)] =
-                    config => {
-                        var connector = _ServiceProvider.GetRequiredService<TFeedDecoder>();
-                        connector.Configure((TOptions)config);
-                        return connector;
+                if(options != null && FeedDecoder == null) {
+                    var decoderType = FeedDecoderConfig.FeedDecoderType(options.GetType());
+                    if(decoderType != null) {
+                        FeedDecoder = (IFeedDecoder)ActivatorUtilities.CreateInstance(_ServiceProvider, decoderType, options);
                     }
-                ;
-            }
-        }
-
-        /// <inheritdoc/>
-        public IFeedDecoder Build(IFeedDecoderOptions options)
-        {
-            ArgumentNullException.ThrowIfNull(options);
-
-            lock(_SyncLock) {
-                if(!_OptionsTypeToBuildFunctionMap.TryGetValue(options.GetType(), out var buildFunction)) {
-                    throw new FeedDecoderNotRegisteredException($"There is no feed decoder associated with {options.GetType().Name} options");
                 }
-                return buildFunction(options);
             }
+
+            return FeedDecoder;
         }
 
-        /// <inheritdoc/>
-        public T Build<T>(IFeedDecoderOptions options) where T: IFeedDecoder => (T)Build(options);
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                var feedDecoder = FeedDecoder;
+                Task.Run(() => feedDecoder?.DisposeAsync());
+            }
+        }
     }
 }

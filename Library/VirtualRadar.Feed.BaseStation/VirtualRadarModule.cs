@@ -20,9 +20,6 @@ namespace VirtualRadar.Feed.BaseStation
         public IFeedFormatFactoryService FeedFormatFactory { get; set; }
 
         [InjectedService]
-        public IFeedDecoderFactory FeedDecoderFactory { get; set; }
-
-        [InjectedService]
         public FormatConfig FormatConfig { get; set; }
 
         /// <inheritdoc/>
@@ -38,7 +35,6 @@ namespace VirtualRadar.Feed.BaseStation
         public void Start()
         {
             FeedFormatFactory.RegisterConfig(FormatConfig);
-            FeedDecoderFactory.RegisterFeedDecoderByOptions<BaseStationFeedDecoderOptions, BaseStationFeedDecoder>();
         }
 
         /// <inheritdoc/>

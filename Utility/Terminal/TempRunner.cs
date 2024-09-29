@@ -24,19 +24,18 @@ namespace VirtualRadar.Utility.Terminal
     /// </summary>
     class TempRunner(
         Options                         _Options,
-        IFeedDecoderFactory             _FeedDecoderFactory,
         IServiceProvider                _ServiceProvider,
         IAircraftOnlineLookupService    _AircraftLookupService,
-        IConnectorFactory               _ConnectorFactory,
         IReceiverFactory                _ReceiverFactory
     )
     {
         public async Task Run()
         {
-            var feedDecoder = _FeedDecoderFactory.Build(new BaseStationFeedDecoderOptions());
             using(var scope = _ServiceProvider.CreateScope()) {
                 var aircraftList = scope.ServiceProvider.GetRequiredService<IAircraftList>();
-                var connector = OpenConnector();
+                var receiver = OpenReceiver(scope.ServiceProvider);
+                var connector = receiver?.Connector ?? OpenConnector(scope.ServiceProvider);
+                var feedDecoder = receiver?.FeedDecoder ?? CreateFeedDecoder(scope.ServiceProvider);
                 var cancelSource = new CancellationTokenSource();
 
                 try {
@@ -75,40 +74,68 @@ namespace VirtualRadar.Utility.Terminal
             }
         }
 
-        private IReceiveConnector OpenConnector()
+        private IFeedDecoder CreateFeedDecoder(IServiceProvider serviceProvider)
         {
-            return String.IsNullOrEmpty(_Options.FileName)
-                ? OpenNetworkConnector()
-                : OpenRecordingConnector();
+            var decoderOptions = new BaseStationFeedDecoderOptions();
+            var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
+            var decoder = decoderFactory.Create(decoderOptions);
+
+            return decoder;
         }
 
-        private IReceiveConnector OpenNetworkConnector()
+        private IReceiver OpenReceiver(IServiceProvider serviceProvider)
         {
+            IReceiver result = null;
+
             if(_Options.ReceiverName != null) {
+                Console.WriteLine($"Loading receiver {_Options.ReceiverName}");
                 var receiverOptions = _ReceiverFactory.FindOptionsFor(_Options.ReceiverName.Trim());
-                var receiver = _ReceiverFactory.Build(receiverOptions);
-                throw new NotImplementedException();
+                result = _ReceiverFactory.Build(serviceProvider, receiverOptions);
+
+                if(result == null) {
+                    OptionsParser.Usage($"Could not load the \"{_Options.ReceiverName}\" receiver");
+                }
             }
 
+            return result;
+        }
+
+        private IReceiveConnector OpenConnector(IServiceProvider serviceProvider)
+        {
+            return String.IsNullOrEmpty(_Options.FileName)
+                ? OpenNetworkConnector(serviceProvider)
+                : OpenRecordingConnector(serviceProvider);
+        }
+
+        private IReceiveConnector OpenNetworkConnector(IServiceProvider serviceProvider)
+        {
             Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
             if(!IPAddress.TryParse(_Options.Address, out var address)) {
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
 
-            return _ConnectorFactory.Build<IReceiveConnector>(new TcpPullConnectorSettings() {
+            var connectorOptions = new TcpPullConnectorSettings() {
                 Address =   address.ToString(),
                 Port =      _Options.Port,
-            });
+            };
+            var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
+            var connector = connectorFactory.Create(connectorOptions);
+
+            return connector;
         }
 
-        private IReceiveConnector OpenRecordingConnector()
+        private IReceiveConnector OpenRecordingConnector(IServiceProvider serviceProvider)
         {
             Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
 
-            return _ConnectorFactory.Build<IReceiveConnector>(new RecordingPlaybackConnectorOptions() {
+            var connectorOptions = new RecordingPlaybackConnectorOptions() {
                 RecordingFileName = _Options.FileName,
                 PlaybackSpeed =     _Options.PlaybackSpeed,
-            });
+            };
+            var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
+            var connector = connectorFactory.Create(connectorOptions);
+
+            return connector;
         }
     }
 }

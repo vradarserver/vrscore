@@ -18,7 +18,6 @@ namespace VirtualRadar.Feed.Recording
         {
             services.AddTransient<IRecorder,                    Recorder>();
             services.AddTransient<IRecordingReader,             RecordingReader>();
-            services.AddTransient<RecordingPlaybackConnector,   RecordingPlaybackConnector>();
 
             return services;
         }

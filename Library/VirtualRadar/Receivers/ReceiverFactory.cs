@@ -8,13 +8,14 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Configuration;
 using VirtualRadar.Connection;
+using VirtualRadar.Feed;
 
 namespace VirtualRadar.Receivers
 {
     class ReceiverFactory(
-        IConnectorFactory _ConnectorFactory,
         ISettingsStorage _Settings
     ) : IReceiverFactory
     {
@@ -26,12 +27,29 @@ namespace VirtualRadar.Receivers
                 .FirstOrDefault(receiver => String.Equals(receiver.Name, receiverName, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public IReceiver Build(ReceiverOptions options)
+        public IReceiver Build(IServiceProvider serviceProvider, ReceiverOptions options)
         {
             IReceiver result = null;
 
-            if(options != null) {
-                var connector = _ConnectorFactory.Build(options.Connector);
+            IReceiveConnector connector = null;
+            if(options?.Connector != null) {
+                var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
+                connector = connectorFactory.Create(options.Connector);
+            }
+
+            IFeedDecoder feedDecoder = null;
+            if(options?.FeedDecoder != null) {
+                var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
+                feedDecoder = decoderFactory.Create(options.FeedDecoder);
+            }
+
+            if(connector != null && feedDecoder != null) {
+                result = new Receiver(
+                    options,
+                    connector,
+                    feedDecoder,
+                    serviceProvider.GetRequiredService<IAircraftOnlineLookupService>()
+                );
             }
 
             return result;

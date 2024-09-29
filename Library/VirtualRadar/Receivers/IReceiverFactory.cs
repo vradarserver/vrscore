@@ -15,6 +15,6 @@ namespace VirtualRadar.Receivers
     {
         ReceiverOptions FindOptionsFor(string receiverName);
 
-        IReceiver Build(ReceiverOptions options);
+        IReceiver Build(IServiceProvider serviceProvider, ReceiverOptions options);
     }
 }

@@ -17,20 +17,14 @@ namespace VirtualRadar.Feed.BaseStation
     /// </summary>
     public class BaseStationMessageConverter(
         BaseStationMessageParser _Parser
-    ) : ITransponderMessageConverter, IOneTimeConfigurable<BaseStationMessageConverterOptions>
+    ) : ITransponderMessageConverter
     {
-        private OneTimeConfigurableImplementer<BaseStationMessageConverterOptions> _OneTimeConfig = new(nameof(BaseStationMessageConverter), new());
-
         /// <inheritdoc/>
-        public BaseStationMessageConverterOptions Options => _OneTimeConfig.Options;
-
-        /// <inheritdoc/>
-        public void Configure(BaseStationMessageConverterOptions options) => _OneTimeConfig.Configure(options);
+        public BaseStationMessageConverterOptions Options { get; set; } = new();
 
         /// <inheritdoc/>
         public TransponderMessage[] FromFeedMessage(ReadOnlyMemory<byte> chunk)
         {
-            _OneTimeConfig.AssertConfigured();
             return ConvertBaseStationToTransponder(_Parser.FromFeed(chunk));
         }
 

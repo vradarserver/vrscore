@@ -16,7 +16,7 @@ namespace VirtualRadar.Receivers
     /// <summary>
     /// The interface that all options for connectors that can be used by receivers must implement.
     /// </summary>
-    public interface IReceiverConnectorOptions : IConnectorOptions, ISettingsProvider
+    public interface IReceiverConnectorOptions : IReceiveConnectorOptions, ISettingsProvider
     {
     }
 }

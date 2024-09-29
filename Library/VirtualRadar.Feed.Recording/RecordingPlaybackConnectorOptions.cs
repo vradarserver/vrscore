@@ -24,7 +24,7 @@ namespace VirtualRadar.Feed.Recording
     public record RecordingPlaybackConnectorOptions (
         string RecordingFileName,
         double PlaybackSpeed = 1.0
-    ) : IConnectorOptions
+    ) : IReceiveConnectorOptions
     {
         /// <summary>
         /// Default ctor.

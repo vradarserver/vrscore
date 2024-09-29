@@ -10,23 +10,17 @@
 
 using System.IO;
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Connection;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_ConnectListener : CommandRunner
+    class CommandRunner_ConnectListener(
+        IServiceProvider _ServiceProvider,
+        Options _Options,
+        HeaderService _Header
+    ) : CommandRunner
     {
-        private Options _Options;
-        private HeaderService _Header;
-        private IConnectorFactory _ConnectorFactory;
-
-        public CommandRunner_ConnectListener(Options options, HeaderService header, IConnectorFactory connectorFactory)
-        {
-            _Options = options;
-            _Header = header;
-            _ConnectorFactory = connectorFactory;
-        }
-
         public override async Task<bool> Run()
         {
             await _Header.OutputCopyright();
@@ -45,10 +39,12 @@ namespace VirtualRadar.Utility.CLIConsole
             var cancelSource = new CancellationTokenSource();
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
-            var connector = _ConnectorFactory.Build<IPullConnector>(new TcpPullConnectorSettings() {
+            var connectorFactory = _ServiceProvider.GetRequiredService<ReceiveConnectorFactory>();
+            var connectorOptions = new TcpPullConnectorSettings() {
                 Address =   ipAddress.ToString(),
                 Port =      _Options.Port
-            });
+            };
+            var connector = connectorFactory.Create(connectorOptions);
 
             var hexDump = _Options.Show
                 ? new HexDump() { EmitHeader = false, }

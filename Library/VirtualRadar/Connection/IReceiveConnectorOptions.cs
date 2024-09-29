@@ -10,38 +10,7 @@
 
 namespace VirtualRadar.Connection
 {
-    /// <summary>
-    /// Builds connectors from options objects.
-    /// </summary>
-    [Lifetime(Lifetime.Singleton)]
-    public interface IConnectorFactory
+    public interface IReceiveConnectorOptions : IConnectorOptions
     {
-        /// <summary>
-        /// Registers the connector that can be built from an options object. Only one type of connector can
-        /// be associated with any given type of options. Second and subsequent calls for a given type of
-        /// option will overwrite the registration for previous types.
-        /// </summary>
-        /// <typeparam name="TOptions"></typeparam>
-        /// <typeparam name="TConnector"></typeparam>
-        /// <returns></returns>
-        void RegisterConnectorByOptions<TOptions, TConnector>()
-            where TOptions: IConnectorOptions
-            where TConnector : IConnector, IOneTimeConfigurable<TOptions>;
-
-        /// <summary>
-        /// Builds a new connector from the options passed across.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        /// <exception cref="ConnectorNotRegisteredException"></exception>
-        IConnector Build(IConnectorOptions options);
-
-        /// <summary>
-        /// Builds a new connector from the options passed across.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        T Build<T>(IConnectorOptions options) where T: IConnector;
     }
 }

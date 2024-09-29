@@ -16,7 +16,7 @@ namespace VirtualRadar.Receivers
     /// <summary>
     /// The interface for a receiver.
     /// </summary>
-    public interface IReceiver
+    public interface IReceiver : IDisposable
     {
         ReceiverOptions Options { get; }
 
@@ -24,7 +24,7 @@ namespace VirtualRadar.Receivers
 
         bool Enabled => Options.Enabled;
 
-        IConnector Connector { get; }
+        IReceiveConnector Connector { get; }
 
         IFeedDecoder FeedDecoder { get; }
 

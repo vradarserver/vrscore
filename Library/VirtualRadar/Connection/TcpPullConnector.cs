@@ -19,8 +19,8 @@ namespace VirtualRadar.Connection
     /// <summary>
     /// A connector that actively connects to a remote TCP port and pulls a feed from it.
     /// </summary>
-    [Lifetime(Lifetime.Transient)]
-    class TcpPullConnector : IPullConnector, IOneTimeConfigurable<TcpPullConnectorSettings>
+    [ReceiveConnector(typeof(TcpPullConnectorSettings))]
+    class TcpPullConnector : IPullConnector
     {
         /// <summary>
         /// Collects together everything about a connection. Connections are self-consistent, the idea is that
@@ -73,11 +73,13 @@ namespace VirtualRadar.Connection
             }
         }
 
-        private Connection _Connection;     // The current connection
-        private readonly OneTimeConfigurableImplementer<TcpPullConnectorSettings> _OneTimeConfig = new(nameof(TcpPullConnector), new());
+        private Connection _Connection;             // The current connection
+        private TcpPullConnectorSettings _Options;
 
         /// <inheritdoc/>
-        public TcpPullConnectorSettings Options => _OneTimeConfig.Options;
+        public TcpPullConnectorSettings Options => _Options;
+
+        IConnectorOptions IConnector.Options => Options;
 
         /// <inheritdoc/>
         public string Description => $"tcp://{Options.Address}:{Options.Port}";
@@ -147,8 +149,14 @@ namespace VirtualRadar.Connection
             PacketReceived?.Invoke(this, packet);
         }
 
-        /// <inheritdoc/>
-        public void Configure(TcpPullConnectorSettings options) => _OneTimeConfig.Configure(options);
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="options"></param>
+        public TcpPullConnector(TcpPullConnectorSettings options)
+        {
+            _Options = options;
+        }
 
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
@@ -169,8 +177,6 @@ namespace VirtualRadar.Connection
         /// <inheritdoc/>
         public async Task OpenAsync(CancellationToken cancellationToken)
         {
-            _OneTimeConfig.AssertConfigured();
-
             if(ConnectionState != ConnectionState.Closed) {
                 throw new ConnectionAlreadyOpenException($"Cannot open a connection that is in the {ConnectionState} state");
             }
