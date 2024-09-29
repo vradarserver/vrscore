@@ -8,9 +8,9 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VirtualRadar.Configuration;
 using VirtualRadar.Extensions;
 using VirtualRadar.Reflection;
 
@@ -43,6 +43,9 @@ namespace VirtualRadar
         /// <returns></returns>
         public static IHost StartVirtualRadarServer(this IHost host)
         {
+            var log = host.Services.GetRequiredService<ILog>();
+            log.Message($"Virtual Radar Server Core {InformationalVersion.VirtualRadarVersion} starting up.");
+
             VirtualRadarModuleFactory.CallLoadedModules(
                 module => host.Services.InjectServices(module.ModuleInstance),
                 ignoreExceptions: false
@@ -52,6 +55,8 @@ namespace VirtualRadar
                 module => module.ModuleInstance.Start(),
                 ignoreExceptions: false
             );
+
+            log.Message($"Virtual Radar Server Core started.");
 
             return host;
         }
@@ -64,11 +69,18 @@ namespace VirtualRadar
         /// <returns></returns>
         public static IHost StopVirtualRadarServer(this IHost host)
         {
-            VirtualRadarModuleFactory.CallLoadedModules(
-                module => module.ModuleInstance.Stop(),
-                ignoreExceptions: true,
-                inReverseOrder: true
-            );
+            var log = host.Services.GetRequiredService<ILog>();
+            log.Message($"Virtual Radar Server Core stopping.");
+
+            try {
+                VirtualRadarModuleFactory.CallLoadedModules(
+                    module => module.ModuleInstance.Stop(),
+                    ignoreExceptions: true,
+                    inReverseOrder: true
+                );
+            } finally {
+                log.Message($"Virtual Radar Server Core stopped.");
+            }
 
             return host;
         }
@@ -85,6 +97,7 @@ namespace VirtualRadar
             services.AddLifetime<IAircraftOnlineLookupService,  Services.AircraftOnlineLookup.LookupService>();
             services.AddLifetime<IFileSystem,                   Services.FileSystem>();
             services.AddLifetime<IHttpClientService,            Services.HttpClientService>();
+            services.AddLifetime<ILog,                          Services.LogService>();
             services.AddLifetime<IModuleInformationService,     Services.ModuleInformationService>();
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();

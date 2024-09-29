@@ -9,16 +9,61 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Microsoft.Extensions.DependencyInjection;
+using VirtualRadar.Collections;
 using VirtualRadar.Configuration;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 
 namespace VirtualRadar.Receivers
 {
+    /// <summary>
+    /// Default implementation of <see cref="IReceiverFactory"/>.
+    /// </summary>
+    /// <param name="_ServiceProvider"></param>
+    /// <param name="_Settings"></param>
+    /// <param name="_Log"></param>
     class ReceiverFactory(
-        ISettingsStorage _Settings
-    ) : IReceiverFactory
+        IServiceProvider _ServiceProvider,
+        ISettingsStorage _Settings,
+        ILog _Log
+    ) : IReceiverFactory, IDisposable
     {
+        private readonly object _SyncLock = new();
+        private bool _Disposed;
+        private volatile List<Receiver> _Receivers = [];
+        private readonly CallbackList<IReceiver> _ReceiverAddedCallbacks = new();
+        private readonly CallbackList<IReceiver> _ReceiverShuttingDownCallbacks = new();
+
+        ~ReceiverFactory() => Dispose(false);
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                lock(_SyncLock) {
+                    if(!_Disposed) {
+                        _Disposed = true;
+
+                        var receivers = _Receivers.ToArray();
+                        _Receivers.Clear();
+                        foreach(var receiver in receivers) {
+                            ShutDownReceiver(receiver);
+                        }
+
+                        _ReceiverAddedCallbacks.Dispose();
+                        _ReceiverShuttingDownCallbacks.Dispose();
+                    }
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         public ReceiverOptions FindOptionsFor(string receiverName)
         {
             var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
@@ -27,9 +72,10 @@ namespace VirtualRadar.Receivers
                 .FirstOrDefault(receiver => String.Equals(receiver.Name, receiverName, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public IReceiver Build(IServiceProvider serviceProvider, ReceiverOptions options)
+        /// <inheritdoc/>
+        public Receiver Build(IServiceProvider serviceProvider, ReceiverOptions options)
         {
-            IReceiver result = null;
+            Receiver result = null;
 
             IReceiveConnector connector = null;
             if(options?.Connector != null) {
@@ -44,7 +90,7 @@ namespace VirtualRadar.Receivers
             }
 
             if(connector != null && feedDecoder != null) {
-                result = new Receiver(
+                result = new(
                     options,
                     connector,
                     feedDecoder,
@@ -53,6 +99,94 @@ namespace VirtualRadar.Receivers
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverOptions options) => Build(serviceProvider, options);
+
+        /// <inheritdoc/>
+        public Receiver Find(string receiverName)
+        {
+            var receivers = _Receivers;
+            return receivers.FirstOrDefault(receiver => String.Equals(
+                receiver.Name,
+                receiverName,
+                StringComparison.InvariantCultureIgnoreCase
+            ));
+        }
+
+        /// <inheritdoc/>
+        IReceiver IReceiverFactory.Find(string receiverName) => Find(receiverName);
+
+        /// <inheritdoc/>
+        public ICallbackHandle ReceiverAddedCallback(Action<IReceiver> callback) => _ReceiverAddedCallbacks.Add(callback);
+
+        /// <inheritdoc/>
+        public ICallbackHandle ReceiverShuttingDownCallback(Action<IReceiver> callback) => _ReceiverShuttingDownCallbacks.Add(callback);
+
+        /// <inheritdoc/>
+        public (bool Added, IReceiver Receiver) FindOrBuild(ReceiverOptions options)
+        {
+            var added = false;
+            Receiver receiver = null;
+
+            if(options?.Enabled ?? false) {
+                lock(_SyncLock) {
+                    if(_Disposed) {
+                        throw new InvalidOperationException($"Cannot build more receivers, {nameof(ReceiverFactory)} has been disposed");
+                    }
+
+                    receiver = Find(options.Name);
+                    if(receiver == null || !receiver.Options.Equals(options)) {
+                        var newReceivers = ShallowCollectionCopier.Copy(_Receivers);
+                        if(receiver != null) {
+                            newReceivers.Remove(receiver);
+                            ShutDownReceiver(receiver);
+                        }
+
+                        receiver = Build(_ServiceProvider, options);
+                        if(receiver != null) {
+                            newReceivers.Add(receiver);
+                            added = true;
+                            var aggregateException = _ReceiverAddedCallbacks.InvokeWithoutExceptions(receiver);
+                            if(aggregateException != null) {
+                                _Log.Exception(
+                                    aggregateException,
+                                    $"Exception(s) caught while notifying callbacks that a new instance of " +
+                                    $"receiver \"{receiver.Name}\" has been created."
+                                );
+                            }
+                        }
+
+                        _Receivers = newReceivers;
+                    }
+                }
+            }
+
+            return (Added: added, Receiver: receiver);
+        }
+
+        /// <summary>
+        /// Disposes of the receiver passed across, logging and swallowing any exceptions raised.
+        /// </summary>
+        /// <param name="receiver"></param>
+        private void ShutDownReceiver(Receiver receiver)
+        {
+            if(receiver != null) {
+                try {
+                    var aggregateException = _ReceiverShuttingDownCallbacks.InvokeWithoutExceptions(receiver);
+                    if(aggregateException != null) {
+                        _Log.Exception(
+                            aggregateException,
+                            $"Exception(s) caught while notifying callbacks that an instance of " +
+                            $"receiver \"{receiver.Name}\" is about to be disposed."
+                        );
+                    }
+                    receiver.Dispose();
+                } catch(Exception ex) {
+                    _Log.Exception(ex, $"Exception caught when disposing of the {receiver} {receiver.GetType().Name} receiver");
+                }
+            }
         }
     }
 }
