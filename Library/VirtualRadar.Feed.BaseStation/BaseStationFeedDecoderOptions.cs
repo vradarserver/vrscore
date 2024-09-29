@@ -17,15 +17,15 @@ namespace VirtualRadar.Feed.BaseStation
     /// The options for BaseStation feed decoders.
     /// </summary>
     /// <param name="Icao24CanHaveNonHexDigits">True if invalid characters in ICAOs are accepted.</param>
-    [SettingsProvider(_Provider)]
+    [SettingsProvider(SettingsProviderName)]
     public record BaseStationFeedDecoderOptions(
         bool Icao24CanHaveNonHexDigits
     ) : IReceiverFeedDecoderOptions
     {
-        private const string _Provider = "BaseStationTranslator";
+        public const string SettingsProviderName = "BaseStationTranslator";
 
         /// <inheritdoc/>
-        public string SettingsProvider => _Provider;
+        public string SettingsProvider => SettingsProviderName;
 
         /// <summary>
         /// Default ctor.
