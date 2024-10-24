@@ -130,8 +130,8 @@ namespace VirtualRadar.Utility.CLIConsole
                 (new("IATA", 4),                        row => row.IataCode),
                 (new("Name", 50),                       row => row.Name),
                 (new("Country", 30),                    row => row.Country),
-                (new("Latitude", 11, Alignment.Right),  row => row.Latitude?.ToString("N6")),
-                (new("Longitude", 11, Alignment.Right), row => row.Longitude?.ToString("N6")),
+                (new("Latitude", 11, Alignment.Right),  row => row.Location?.Latitude.ToString("N6")),
+                (new("Longitude", 11, Alignment.Right), row => row.Location?.Longitude.ToString("N6")),
                 (new("Altitude", 8, Alignment.Right),   row => row.AltitudeFeet?.ToString("N0")),
             ]);
             await table.Dump(airports);

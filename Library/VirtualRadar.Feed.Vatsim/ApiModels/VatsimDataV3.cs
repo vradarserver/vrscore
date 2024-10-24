@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2022 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,44 +8,38 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
-namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
+namespace VirtualRadar.Feed.Vatsim.ApiModels
 {
-    class Airport
+    [DataContract]
+    public class VatsimDataV3
     {
-        [Key]
-        public long AirportId { get; set; }
+        [DataMember(Name = "general")]
+        public VatsimDataV3General General { get; set; } = new();
 
-        [MaxLength(4)]
-        public string Icao { get; set; }
+        [DataMember(Name = "pilots")]
+        public List<VatsimDataV3Pilot> Pilots { get; } = [];
 
-        [MaxLength(3)]
-        public string Iata { get; set; }
+        [DataMember(Name = "controllers")]
+        public List<VatsimDataV3Controller> Controllers { get; } = [];
 
-        [MaxLength(80)]
-        public string Name { get; set; }
+        [DataMember(Name = "atis")]
+        public List<VatsimDataV3Atis> Atis { get; } = [];
 
-        [MaxLength(80)]
-        public Location Location { get; set; }
+        [DataMember(Name = "servers")]
+        public List<VatsimDataV3Server> Servers { get; } = [];
 
-        public long CountryId { get; set; }
+        [DataMember(Name = "prefiles")]
+        public List<VatsimDataV3Prefile> Prefiles { get; } = [];
 
-        public Country Country { get; set; }
+        [DataMember(Name = "Facilities")]
+        public List<VatsimDataV3Facility> Facilities { get; } = [];
 
-        public double? Latitude { get; set; }
+        [DataMember(Name = "ratings")]
+        public List<VatsimDataV3Rating> Ratings { get; } = [];
 
-        public double? Longitude { get; set; }
-
-        public int? Altitude { get; set; }
-
-        public VirtualRadar.StandingData.Airport ToAirport() => new() {
-            AltitudeFeet =      Altitude,
-            Country =           Country?.Name ?? "",
-            IataCode =          Iata,
-            IcaoCode =          Icao,
-            Location =          Location.FromNullable(Latitude, Longitude),
-            Name =              Name,
-        };
+        [DataMember(Name = "pilot_ratings")]
+        public List<VatsimDataV3PilotRating> PilotRatings { get; } = [];
     }
 }

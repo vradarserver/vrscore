@@ -11,47 +11,35 @@
 using Microsoft.Extensions.DependencyInjection;
 using VirtualRadar.Extensions;
 
-namespace VirtualRadar.Connection
+namespace VirtualRadar.Feed.Vatsim
 {
-    [Lifetime(Lifetime.Transient)]
-    public class ReceiveConnectorFactory(
-        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        IServiceProvider _ServiceProvider
-        #pragma warning restore IDE1006
-    ) : IDisposable
+    /// <inheritdoc/>
+    public class VirtualRadarModule : IVirtualRadarModule
     {
-        private readonly object _SyncLock = new();
+        [InjectedService]
+        public IFeedFormatFactoryService FeedFormatFactory { get; set; }
 
-        public IReceiveConnector Connector { get; private set; }
+        [InjectedService]
+        public FormatConfig FormatConfig { get; set; }
 
-        ~ReceiveConnectorFactory() => Dispose(false);
+        /// <inheritdoc/>
+        public int Priority => 0;
 
-        public IReceiveConnector Create(IReceiveConnectorOptions options)
+        /// <inheritdoc/>
+        public void RegisterServices(IServiceCollection services)
         {
-            lock(_SyncLock) {
-                if(options != null && Connector == null) {
-                    var receiverType = ReceiveConnectorConfig.ReceiveConnectorType(options.GetType());
-                    if(receiverType != null) {
-                        Connector = (IReceiveConnector)ActivatorUtilities.CreateInstance(_ServiceProvider, receiverType, options);
-                    }
-                }
-            }
-
-            return Connector;
+            DependencyInjection.AddVirtualRadarVatsimFeedGroup(services);
         }
 
-        public void Dispose()
+        /// <inheritdoc/>
+        public void Start()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            FeedFormatFactory.RegisterConfig(FormatConfig);
         }
 
-        protected virtual void Dispose(bool disposing)
+        /// <inheritdoc/>
+        public void Stop()
         {
-            if(disposing) {
-                var connector = Connector;
-                Task.Run(() => connector?.DisposeAsync());
-            }
         }
     }
 }

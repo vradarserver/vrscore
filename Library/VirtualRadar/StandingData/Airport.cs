@@ -38,14 +38,9 @@ namespace VirtualRadar.StandingData
         public string Country { get; set; }
 
         /// <summary>
-        /// Gets or sets the latitude part of the airport's coordinate.
+        /// Gets or sets the airport's location on the surface of the earth.
         /// </summary>
-        public double? Latitude { get; set; }
-
-        /// <summary>
-        /// Gets or sets the longitude part of the airport's coordinate.
-        /// </summary>
-        public double? Longitude { get; set; }
+        public Location Location { get; set; }
 
         /// <summary>
         /// Gets or sets the altitude in feet of the airport.

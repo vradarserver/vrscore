@@ -38,6 +38,13 @@ namespace VirtualRadar
         /// </summary>
         public bool IsAntiMeridian => Longitude == 180.0 || Longitude == -180.0;
 
+        /// <summary>
+        /// Returns the longitude as a value between 0 and 360, where -0 to -180 translates to 180 to 360.
+        /// </summary>
+        /// <param name="longitude"></param>
+        /// <returns></returns>
+        public double LinearLongitude => Convert.Longitude.ToLinear(Longitude);
+
         /// <inheritdoc/>
         public static bool operator ==(Location lhs, Location rhs)
         {
@@ -59,6 +66,20 @@ namespace VirtualRadar
             Longitude = longitude;
         }
 
+        /// <summary>
+        /// Creates a new Location unless either latitude or longitude are null,
+        /// in which case it returns null.
+        /// </summary>
+        /// <param name="latitude"></param>
+        /// <param name="longitude"></param>
+        /// <returns></returns>
+        public static Location FromNullable(double? latitude, double? longitude)
+        {
+            return latitude == null || longitude == null
+                ? null
+                : new(latitude.Value, longitude.Value);
+        }
+
         /// <inheritdoc/>
         public override string ToString() => $"{Latitude:0.000000} / {Longitude:0.000000}";
 
@@ -74,7 +95,7 @@ namespace VirtualRadar
         }
 
         /// <inheritdoc/>
-        public override int GetHashCode() => Latitude.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(Latitude, Longitude);
 
         /// <summary>
         /// Returns a location from the parts passed across. If either latitude or

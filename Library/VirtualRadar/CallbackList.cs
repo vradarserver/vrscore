@@ -20,6 +20,18 @@ namespace VirtualRadar
         private bool _Disposed;
         private readonly List<CallbackHandle<TArgs>> _CallbackHandles = [];
 
+        /// <summary>
+        /// Returns the number of callbacks currently registered.
+        /// </summary>
+        public int Count
+        {
+            get {
+                lock(_SyncLock) {
+                    return _CallbackHandles.Count;
+                }
+            }
+        }
+
         // Finaliser
         ~CallbackList() => Dispose(false);
 

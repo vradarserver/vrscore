@@ -8,50 +8,23 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.DependencyInjection;
-using VirtualRadar.Extensions;
-
-namespace VirtualRadar.Connection
+namespace VirtualRadar
 {
-    [Lifetime(Lifetime.Transient)]
-    public class ReceiveConnectorFactory(
-        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        IServiceProvider _ServiceProvider
-        #pragma warning restore IDE1006
-    ) : IDisposable
+    /// <summary>
+    /// Extensions for distances.
+    /// </summary>
+    public static class DistanceUnitExtensions
     {
-        private readonly object _SyncLock = new();
-
-        public IReceiveConnector Connector { get; private set; }
-
-        ~ReceiveConnectorFactory() => Dispose(false);
-
-        public IReceiveConnector Create(IReceiveConnectorOptions options)
+        /// <summary>
+        /// Converts a distance to another unit.
+        /// </summary>
+        /// <param name="fromUnit"></param>
+        /// <param name="distance"></param>
+        /// <param name="toUnit"></param>
+        /// <returns></returns>
+        public static double To(this DistanceUnit fromUnit, double distance, DistanceUnit toUnit)
         {
-            lock(_SyncLock) {
-                if(options != null && Connector == null) {
-                    var receiverType = ReceiveConnectorConfig.ReceiveConnectorType(options.GetType());
-                    if(receiverType != null) {
-                        Connector = (IReceiveConnector)ActivatorUtilities.CreateInstance(_ServiceProvider, receiverType, options);
-                    }
-                }
-            }
-
-            return Connector;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if(disposing) {
-                var connector = Connector;
-                Task.Run(() => connector?.DisposeAsync());
-            }
+            return Convert.Distance.FromTo(distance, fromUnit, toUnit);
         }
     }
 }
