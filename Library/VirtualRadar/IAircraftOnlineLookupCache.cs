@@ -70,7 +70,7 @@ namespace VirtualRadar
         /// Cached hits and misses. Do not return records for entries that have not been cached, I.E. if a
         /// failure has not previously been saved for an ICAO then do not return a 'Missing' entry for it.
         /// </returns>
-        Task<BatchedLookupOutcome> Read(IEnumerable<Icao24> icaos);
+        Task<BatchedLookupOutcome<LookupByIcaoOutcome>> Read(IEnumerable<Icao24> icaos);
 
         /// <summary>
         /// Writes successes and failures to the cache. If a cache with a higher priority exists then it will
@@ -80,6 +80,6 @@ namespace VirtualRadar
         /// <param name="hasBeenSavedByAnotherCache">True if a higher priority cache has already saved all of
         /// the outcomes.</param>
         /// <returns></returns>
-        Task Write(BatchedLookupOutcome outcome, bool hasBeenSavedByAnotherCache);
+        Task Write(BatchedLookupOutcome<LookupByIcaoOutcome> outcome, bool hasBeenSavedByAnotherCache);
     }
 }

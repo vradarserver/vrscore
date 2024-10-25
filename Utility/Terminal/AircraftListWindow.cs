@@ -92,9 +92,9 @@ namespace VirtualRadar.Utility.Terminal
             if(!_CancellationToken.IsCancellationRequested) {
                 var set = AircraftList
                     ?.ToArray()
-                    .OrderBy(r => r.Icao24)
+                    .OrderBy(r => r.Icao24.Value)
                     .Select(r => new AircraftTableRow() {
-                        Icao24 =        r.Icao24.ToString(),
+                        Icao24 =        r.Icao24.Value.ToString(),
                         Msgs =          r.CountMessagesReceived.Value.ToString("N0"),
                         Callsign =      r.Callsign ?? "",
                         Squawk =        Format.Squawk.Base10AsBase8(r.Squawk),

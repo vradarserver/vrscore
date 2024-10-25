@@ -96,7 +96,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// <exception cref="NotImplementedException"></exception>
         private void GenerateMessagesForPilot(VatsimDataV3Pilot pilot)
         {
-            var message = new TransponderMessage() {
+            var message = new TransponderMessage((uint)pilot.Cid) {
                 AltitudeFeet =          pilot.AltitudeFeet,
                 Callsign =              pilot.Callsign,
                 GroundSpeedKnots =      pilot.GroundSpeedKnots,

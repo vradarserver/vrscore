@@ -42,7 +42,7 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="lookup"></param>
         /// <returns>True if the lookup changed an aircraft record.</returns>
-        bool ApplyLookup(LookupOutcome lookup);
+        bool ApplyLookup(LookupByAircraftIdOutcome lookup);
 
         /// <summary>
         /// Applies the outcome of a successful lookup to the state held for the aircraft in
@@ -50,7 +50,24 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="batchedOutcome"></param>
         /// <returns>True if at least one aircraft was changed.</returns>
-        bool ApplyLookup(BatchedLookupOutcome batchedOutcome);
+        bool ApplyLookup(BatchedLookupOutcome<LookupByAircraftIdOutcome> batchedOutcome);
+
+        /// <summary>
+        /// Applies the outcome of a successful lookup to the state held for the aircraft in
+        /// the list. Ignored if the lookup failed, or if it is for an aircraft that is not
+        /// in the list.
+        /// </summary>
+        /// <param name="lookup"></param>
+        /// <returns>True if the lookup changed an aircraft record.</returns>
+        bool ApplyLookup(LookupByIcaoOutcome lookup);
+
+        /// <summary>
+        /// Applies the outcome of a successful lookup to the state held for the aircraft in
+        /// the list. Ignores failed outcomes and outcomes for aircraft not in the list.
+        /// </summary>
+        /// <param name="batchedOutcome"></param>
+        /// <returns>True if at least one aircraft was changed.</returns>
+        bool ApplyLookup(BatchedLookupOutcome<LookupByIcaoOutcome> batchedOutcome);
 
         /// <summary>
         /// Returns a copy of the contents of the aircraft list.

@@ -16,7 +16,9 @@ namespace VirtualRadar.Feed.BaseStation
     /// Converts between <see cref="BaseStationMessage"/>s and <see cref="TransponderMessage"/>s.
     /// </summary>
     public class BaseStationMessageConverter(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         BaseStationMessageParser _Parser
+        #pragma warning restore IDE1006
     ) : ITransponderMessageConverter
     {
         /// <inheritdoc/>
@@ -34,7 +36,7 @@ namespace VirtualRadar.Feed.BaseStation
 
             if(baseStationMessage != null && baseStationMessage.IsAircraftMessage) {
                 if(Icao24.TryParse(baseStationMessage.Icao24, out var icao24, ignoreNonHexDigits: Options.Icao24CanHaveNonHexDigits)) {
-                    result = [ new() {
+                    result = [ new(icao24) {
                         Icao24 =                    icao24,
                         AltitudeFeet =              baseStationMessage.Altitude,
                         AltitudeType =              AltitudeType.AirPressure,

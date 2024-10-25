@@ -16,11 +16,6 @@ namespace VirtualRadar.Message
     public class LookupOutcome
     {
         /// <summary>
-        /// The aircraft that was looked up.
-        /// </summary>
-        public Icao24 Icao24 { get; set; }
-
-        /// <summary>
         /// True if information could be found for it.
         /// </summary>
         public bool Success { get; set; }
@@ -49,26 +44,5 @@ namespace VirtualRadar.Message
         public string Serial { get; set; }
 
         public int? YearFirstFlight { get; set; }
-
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        public LookupOutcome() : this(Icao24.Invalid, false)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="icao24"></param>
-        /// <param name="success"></param>
-        public LookupOutcome(Icao24 icao24, bool success)
-        {
-            Icao24 = icao24;
-            Success = success;
-        }
-
-        /// <inheritdoc/>
-        public override string ToString() => Icao24.ToString();
     }
 }

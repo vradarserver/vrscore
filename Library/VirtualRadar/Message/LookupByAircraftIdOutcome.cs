@@ -10,47 +10,32 @@
 
 namespace VirtualRadar.Message
 {
-    /// <summary>
-    /// Represents the outcome of a batched lookup, where many lookups were made in one go.
-    /// </summary>
-    public class BatchedLookupOutcome<T>
-        where T: LookupOutcome
+    public class LookupByAircraftIdOutcome : LookupOutcome
     {
         /// <summary>
-        /// A list of outcomes for objects that could be found.
+        /// The ID of the aircraft whose details have been looked up.
         /// </summary>
-        public List<T> Found { get; } = new();
-
-        /// <summary>
-        /// A list of identifiers for aircraft that could not be found.
-        /// </summary>
-        public List<T> Missing { get; } = new();
-
-        /// <summary>
-        /// An enumerator over both <see cref="Found"/> and <see cref="Missing"/>.
-        /// </summary>
-        public IEnumerable<T> AllOutcomes => Found.Concat(Missing);
+        public uint AircraftId { get; set; }
 
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        public BatchedLookupOutcome()
+        public LookupByAircraftIdOutcome() : this(0, false)
         {
         }
 
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="found"></param>
-        /// <param name="missing"></param>
-        public BatchedLookupOutcome(IEnumerable<T> found, IEnumerable<T> missing) : this()
+        /// <param name="aircraftId"></param>
+        /// <param name="success"></param>
+        public LookupByAircraftIdOutcome(uint aircraftId, bool success)
         {
-            if(found != null) {
-                Found.AddRange(found);
-            }
-            if(missing != null) {
-                Missing.AddRange(missing);
-            }
+            AircraftId = aircraftId;
+            Success = success;
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => AircraftId.ToString();
     }
 }

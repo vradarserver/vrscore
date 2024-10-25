@@ -108,7 +108,7 @@ namespace VirtualRadar.Receivers
             }
         }
 
-        private void AircraftLookupService_LookupCompleted(object sender, BatchedLookupOutcome args)
+        private void AircraftLookupService_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> args)
         {
             AircraftList.ApplyLookup(args);
         }

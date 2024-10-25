@@ -26,16 +26,14 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private bool _ProviderInitialised;
         private int _TimerPauseSeconds = 1;
 
-        int QueueLength { get; }
-
         /// <inheritdoc/>
-        public event EventHandler<BatchedLookupOutcome> LookupCompleted;
+        public event EventHandler<BatchedLookupOutcome<LookupByIcaoOutcome>> LookupCompleted;
 
         /// <summary>
         /// Raises <see cref="LookupCompleted"/>.
         /// </summary>
         /// <param name="batchedOutcome"></param>
-        private void OnLookupCompleted(BatchedLookupOutcome batchedOutcome)
+        private void OnLookupCompleted(BatchedLookupOutcome<LookupByIcaoOutcome> batchedOutcome)
         {
             LookupCompleted?.Invoke(this, batchedOutcome);
         }
@@ -90,13 +88,16 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         }
 
         /// <inheritdoc/>
-        public async Task<BatchedLookupOutcome> LookupManyAsync(IEnumerable<Icao24> icao24s, CancellationToken cancellationToken)
+        public async Task<BatchedLookupOutcome<LookupByIcaoOutcome>> LookupManyAsync(
+            IEnumerable<Icao24> icao24s,
+            CancellationToken cancellationToken
+        )
         {
             using(var awaiter = new LookupAwaiter(this, icao24s)) {
                 var awaiterTask = awaiter.WaitUntilCompleted(cancellationToken);
                 LookupMany(icao24s);
                 var outcomes = await awaiterTask;
-                return new BatchedLookupOutcome(
+                return new BatchedLookupOutcome<LookupByIcaoOutcome>(
                     outcomes.Where(r => r.Success),
                     outcomes.Where(r => !r.Success)
                 );
@@ -176,9 +177,9 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             }
 
             if(expired.Length > 0) {
-                var fakeOutcome = new BatchedLookupOutcome(
+                var fakeOutcome = new BatchedLookupOutcome<LookupByIcaoOutcome>(
                     null,
-                    expired.Select(icao24 => new LookupOutcome(icao24, success: false))
+                    expired.Select(icao24 => new LookupByIcaoOutcome(icao24, success: false))
                 );
                 OnLookupCompleted(fakeOutcome);
             }
@@ -199,10 +200,14 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             return backOff;
         }
 
-        private async Task<bool> LookupMissingIcaosOnline(Icao24[] icao24s, BatchedLookupOutcome batchedOutcome, bool backOff)
+        private async Task<bool> LookupMissingIcaosOnline(
+            Icao24[] icao24s,
+            BatchedLookupOutcome<LookupByIcaoOutcome> batchedOutcome,
+            bool backOff
+        )
         {
             if(icao24s.Length > 0) {
-                BatchedLookupOutcome lookupOutcome;
+                BatchedLookupOutcome<LookupByIcaoOutcome> lookupOutcome;
                 try {
                     lookupOutcome = await _Provider.LookupIcaos(icao24s, CancellationToken.None);
                 } catch {
@@ -222,10 +227,10 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             return backOff;
         }
 
-        private async Task<BatchedLookupOutcome> ReadFromCache(Icao24[] icao24s)
+        private async Task<BatchedLookupOutcome<LookupByIcaoOutcome>> ReadFromCache(Icao24[] icao24s)
         {
-            var foundSet = new Dictionary<Icao24, LookupOutcome>();
-            var missingSet = new Dictionary<Icao24, LookupOutcome>();
+            var foundSet = new Dictionary<Icao24, LookupByIcaoOutcome>();
+            var missingSet = new Dictionary<Icao24, LookupByIcaoOutcome>();
             var unknownSet = new HashSet<Icao24>(icao24s);
 
             foreach(var cache in _Caches.Where(r => r.CanRead).OrderByDescending(r => r.ReadPriority)) {
@@ -250,10 +255,10 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                 }
             }
 
-            return new BatchedLookupOutcome(foundSet.Values, missingSet.Values);
+            return new BatchedLookupOutcome<LookupByIcaoOutcome>(foundSet.Values, missingSet.Values);
         }
 
-        private async Task WriteToCache(BatchedLookupOutcome lookupOutcome)
+        private async Task WriteToCache(BatchedLookupOutcome<LookupByIcaoOutcome> lookupOutcome)
         {
             if(lookupOutcome.Found.Count > 0 || lookupOutcome.Missing.Count > 0) {
                 var alreadySaved = false;

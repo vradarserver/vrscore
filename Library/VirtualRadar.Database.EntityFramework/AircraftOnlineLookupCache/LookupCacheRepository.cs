@@ -16,9 +16,11 @@ using VirtualRadar.Message;
 namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
 {
     class LookupCacheRepository(
+        #pragma warning disable IDE1006 // VS2022 does not support naming rules for class private ctors
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder,
         ISettings<AircraftOnlineLookupCacheSettings> _Settings
+        #pragma warning restore IDE1006
     ) : IAircraftOnlineLookupCache
     {
         private static bool _CreatedInThisSession;
@@ -41,9 +43,9 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
         public bool CanWrite => true;
 
         /// <inheritdoc/>
-        public Task<BatchedLookupOutcome> Read(IEnumerable<Icao24> icaos)
+        public Task<BatchedLookupOutcome<LookupByIcaoOutcome>> Read(IEnumerable<Icao24> icaos)
         {
-            var result = new BatchedLookupOutcome();
+            var result = new BatchedLookupOutcome<LookupByIcaoOutcome>();
 
             if(icaos?.Any() ?? false) {
                 lock(_EFSingleThreadLock) {
@@ -61,9 +63,9 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
                                 .FirstOrDefault();
                             if(aircraftDetail != null) {
                                 if(!aircraftDetail.IsMissing && aircraftDetail.UpdatedUtc >= hitThreshold) {
-                                    result.Found.Add(aircraftDetail.ToLookupOutcome());
+                                    result.Found.Add(aircraftDetail.ToLookupByIcaoOutcome());
                                 } else if(aircraftDetail.IsMissing && aircraftDetail.UpdatedUtc >= missThreshold) {
-                                    result.Missing.Add(aircraftDetail.ToLookupOutcome());
+                                    result.Missing.Add(aircraftDetail.ToLookupByIcaoOutcome());
                                 }
                             }
                         }
@@ -75,7 +77,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
         }
 
         /// <inheritdoc/>
-        public Task Write(BatchedLookupOutcome outcome, bool hasBeenSavedByAnotherCache)
+        public Task Write(BatchedLookupOutcome<LookupByIcaoOutcome> outcome, bool hasBeenSavedByAnotherCache)
         {
             if(Enabled && !hasBeenSavedByAnotherCache) {
                 lock(_EFSingleThreadLock) {

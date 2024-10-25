@@ -16,7 +16,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     {
         private LookupService _Service;
         private readonly HashSet<Icao24> _IdentifiersOfInterest = [];
-        private readonly List<LookupOutcome> _Outcomes = [];
+        private readonly List<LookupByIcaoOutcome> _Outcomes = [];
         private object _SyncLock;
 
         public LookupAwaiter(LookupService service, IEnumerable<Icao24> identifiersOfInterest)
@@ -35,7 +35,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             GC.SuppressFinalize(this);
         }
 
-        public async Task<IReadOnlyList<LookupOutcome>> WaitUntilCompleted(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<LookupByIcaoOutcome>> WaitUntilCompleted(CancellationToken cancellationToken)
         {
             await Task.Run(() => {
                 var spinWait = new SpinWait();
@@ -54,7 +54,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             return _Outcomes;
         }
 
-        private void Service_LookupCompleted(object sender, BatchedLookupOutcome e)
+        private void Service_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> e)
         {
             lock(_SyncLock) {
                 foreach(var outcome in e.AllOutcomes) {

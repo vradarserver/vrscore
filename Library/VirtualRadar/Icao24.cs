@@ -55,13 +55,19 @@ namespace VirtualRadar
         /// Implicitly converts an integer into an ICAO24.
         /// </summary>
         /// <param name="value"></param>
-        public static implicit operator Icao24(int value) => new Icao24(value);
+        public static implicit operator Icao24(int value) => new(value);
 
         /// <summary>
         /// Implicitly converts an ICAO24 into a 32-bit integer.
         /// </summary>
         /// <param name="value"></param>
         public static implicit operator int(Icao24 value) => value._Value;
+
+        /// <summary>
+        /// Implicitly converts an ICAO24 into a 32-bit unsigned integer.
+        /// </summary>
+        /// <param name="value"></param>
+        public static implicit operator uint(Icao24 value) => (uint)value._Value;
 
         /// <inheritdoc/>
         public static bool operator==(Icao24 lhs, Icao24 rhs) => lhs._Value == rhs._Value;

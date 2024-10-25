@@ -16,6 +16,7 @@ namespace VirtualRadar
     class AircraftList : IAircraftList
     {
         private readonly object _SyncLock = new();
+        private readonly Dictionary<uint, Aircraft> _AircraftById = [];
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = [];
         private long _Stamp = 0L;
 
@@ -30,15 +31,30 @@ namespace VirtualRadar
 
             if(message != null) {
                 lock(_SyncLock) {
-                    isNew = !_AircraftByIcao24.TryGetValue(message.Icao24, out var aircraft);
+                    isNew = !_AircraftById.TryGetValue(message.AircraftId, out var aircraft);
                     if(isNew) {
                         changed = true;
-                        aircraft = new(message.Icao24);
-                        _AircraftByIcao24[message.Icao24] = aircraft;
+                        aircraft = new(message.AircraftId);
+                        _AircraftById[message.AircraftId] = aircraft;
                     }
+
+                    var originalIcao24 = aircraft.Icao24.Value;
 
                     changed = aircraft.CopyFromMessage(message) || changed;
                     _Stamp = Math.Max(_Stamp, aircraft.Stamp);
+
+                    // Note that if the feed assigns the same ICAO24 to multiple aircraft then things
+                    // are going to get weird. But whatever. In real life it'll only be flight sim feeds
+                    // that might have multiple aircraft with the same ICAO24.
+                    var aircraftIcao24 = aircraft.Icao24.Value;
+                    if(originalIcao24 != aircraftIcao24) {
+                        if(originalIcao24.IsValid && originalIcao24 > 0) {
+                            _AircraftByIcao24.Remove(originalIcao24);
+                        }
+                        if(aircraftIcao24.IsValid && aircraftIcao24 > 0) {
+                            _AircraftByIcao24[aircraftIcao24] = aircraft;
+                        }
+                    }
                 }
             }
 
@@ -46,7 +62,40 @@ namespace VirtualRadar
         }
 
         /// <inheritdoc/>
-        public bool ApplyLookup(LookupOutcome lookup)
+        public bool ApplyLookup(LookupByAircraftIdOutcome lookup)
+        {
+            var changed = false;
+
+            if(lookup?.Success ?? false) {
+                lock(_SyncLock) {
+                    if(_AircraftById.TryGetValue(lookup.AircraftId, out var aircraft)) {
+                        changed = aircraft.CopyFromLookup(lookup);
+                        _Stamp = Math.Max(_Stamp, aircraft.Stamp);
+                    }
+                }
+            }
+
+            return changed;
+        }
+
+        /// <inheritdoc/>
+        public bool ApplyLookup(BatchedLookupOutcome<LookupByAircraftIdOutcome> batchedOutcome)
+        {
+            var changed = false;
+
+            if(batchedOutcome?.Found.Count > 0) {
+                lock(_SyncLock) {
+                    foreach(var found in batchedOutcome.Found) {
+                        changed = ApplyLookup(found) || changed;
+                    }
+                }
+            }
+
+            return changed;
+        }
+
+        /// <inheritdoc/>
+        public bool ApplyLookup(LookupByIcaoOutcome lookup)
         {
             var changed = false;
 
@@ -63,7 +112,7 @@ namespace VirtualRadar
         }
 
         /// <inheritdoc/>
-        public bool ApplyLookup(BatchedLookupOutcome batchedOutcome)
+        public bool ApplyLookup(BatchedLookupOutcome<LookupByIcaoOutcome> batchedOutcome)
         {
             var changed = false;
 
@@ -82,7 +131,7 @@ namespace VirtualRadar
         public Aircraft[] ToArray()
         {
             lock(_SyncLock) {
-                var result = _AircraftByIcao24
+                var result = _AircraftById
                     .Values
                     .OfType<Aircraft>()
                     .Select(aircraft => aircraft.ShallowCopy())

@@ -62,9 +62,12 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         }
 
         /// <inheritdoc/>
-        public async Task<BatchedLookupOutcome> LookupIcaos(IEnumerable<Icao24> icaos, CancellationToken cancellationToken)
+        public async Task<BatchedLookupOutcome<LookupByIcaoOutcome>> LookupIcaos(
+            IEnumerable<Icao24> icaos,
+            CancellationToken cancellationToken
+        )
         {
-            var result = new BatchedLookupOutcome();
+            var result = new BatchedLookupOutcome<LookupByIcaoOutcome>();
 
             await FetchSettings(cancellationToken);
 

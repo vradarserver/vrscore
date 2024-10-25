@@ -72,6 +72,9 @@ namespace VirtualRadar
         /// then it is always assumed to have failed, i.e. returned false. Try not to let exceptions bubble out after a
         /// successful fetch.
         /// </para></remarks>
-        Task<BatchedLookupOutcome> LookupIcaos(IEnumerable<Icao24> icaos, CancellationToken cancellationToken);
+        Task<BatchedLookupOutcome<LookupByIcaoOutcome>> LookupIcaos(
+            IEnumerable<Icao24> icaos,
+            CancellationToken cancellationToken
+        );
     }
 }

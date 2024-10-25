@@ -23,6 +23,14 @@ namespace VirtualRadar
         private readonly object _SyncLock = new();
 
         /// <summary>
+        /// The unique identifier of the aircraft. For most feeds this will be the <see cref="Icao24"/> but
+        /// for synthesised feeds, or sources that are not tracking real aircraft, this could be any number
+        /// that uniquely distinguishes one aircraft from another. It is established on receipt of the first
+        /// message and never changes.
+        /// </summary>
+        public uint Id { get; }
+
+        /// <summary>
         /// A value indicating when the aircraft was last changed. See <see cref="PostOffice"/> for the rules
         /// about how this value is established, and what you can infer from it.
         /// </summary>
@@ -34,12 +42,6 @@ namespace VirtualRadar
             Stamp = newStamp;
         }
 
-        /// <summary>
-        /// The ICAO24 of the aircraft. This is established when the object is created and
-        /// can never change.
-        /// </summary>
-        public Icao24 Icao24 { get; }
-
         //
         //                                  TRANSMITTED INFORMATION
         //
@@ -47,6 +49,8 @@ namespace VirtualRadar
         public DateTime FirstMessageReceivedUtc { get; private set; }
 
         public StampedTimedValue<long> CountMessagesReceived { get; } = new();
+
+        public StampedValue<Icao24> Icao24 { get; } = new();
 
         public StampedValue<int?> SignalLevel { get; } = new();
 
@@ -110,10 +114,20 @@ namespace VirtualRadar
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="icao24"></param>
-        public Aircraft(Icao24 icao24)
+        /// <param name="id"></param>
+        public Aircraft(uint id)
         {
-            Icao24 = icao24;
+            Id = id;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{nameof(Aircraft)} {{"
+                 + $" nameof(Id): 0x{Id:X}"
+                 + $" nameof(Icao24): {Icao24}"
+                 + $" nameof(Stamp): {Stamp}"
+                 + " ... }";
         }
 
         /// <summary>
@@ -123,7 +137,7 @@ namespace VirtualRadar
         public Aircraft ShallowCopy()
         {
             lock(_SyncLock) {
-                var result = new Aircraft(Icao24) {
+                var result = new Aircraft(Id) {
                     Stamp =                   Stamp,
                     FirstMessageReceivedUtc = FirstMessageReceivedUtc,
                 };
@@ -138,6 +152,7 @@ namespace VirtualRadar
                 GroundSpeedType             .CopyTo(result.GroundSpeedType);
                 GroundTrackDegrees          .CopyTo(result.GroundTrackDegrees);
                 GroundTrackIsHeading        .CopyTo(result.GroundTrackIsHeading);
+                Icao24                      .CopyTo(result.Icao24);
                 IdentActive                 .CopyTo(result.IdentActive);
                 IsTisb                      .CopyTo(result.IsTisb);
                 Location                    .CopyTo(result.Location);
@@ -173,10 +188,10 @@ namespace VirtualRadar
             var changed = false;
 
             if(message != null) {
-                if(message.Icao24 != Icao24) {
+                if(message.AircraftId != Id) {
                     throw new ArgumentException(
-                        $"An attempt was made to assign values transmitted from ICAO {message.Icao24} " +
-                        $"to the aircraft object for {Icao24}"
+                        $"An attempt was made to assign values transmitted from Id 0x{message.AircraftId:X} " +
+                        $"to the aircraft object for 0x{Id:X}"
                     );
                 }
 
@@ -196,6 +211,7 @@ namespace VirtualRadar
                     changed = GroundSpeedType           .Set(               message.GroundSpeedType, stamp)             || changed;
                     changed = GroundTrackDegrees        .SetIfNotDefault(   message.GroundTrackDegrees, stamp)          || changed;
                     changed = GroundTrackIsHeading      .Set(               message.GroundTrackIsHeading, stamp)        || changed;
+                    changed = Icao24                    .Set(               message.Icao24, stamp)                      || changed;
                     changed = IdentActive               .SetIfNotDefault(   message.IdentActive, stamp)                 || changed;
                     changed = IsTisb                    .Set(               message.IsTisb, stamp)                      || changed;
                     changed = Location                  .SetIfNotDefault(   message.Location, stamp)                    || changed;
@@ -227,13 +243,6 @@ namespace VirtualRadar
             var changed = false;
 
             if(lookup?.Success ?? false) {
-                if(lookup.Icao24 != Icao24) {
-                    throw new ArgumentException(
-                        $"An attempt was made to assign values looked up for ICAO {lookup.Icao24} " +
-                        $"to the aircraft object for {Icao24}"
-                    );
-                }
-
                 lock(_SyncLock) {
                     var stamp = PostOffice.GetStamp();
 

@@ -10,7 +10,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using VirtualRadar.Message;
 
 namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entities
@@ -55,7 +54,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
 
         public DateTime UpdatedUtc { get; set; }
 
-        public void CopyFrom(LookupOutcome lookupOutcome, DateTime utcNow)
+        public void CopyFrom(LookupByIcaoOutcome lookupOutcome, DateTime utcNow)
         {
             Icao =          lookupOutcome.Icao24.ToString();
             IsMissing =     !lookupOutcome.Success;
@@ -75,9 +74,9 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
             }
         }
 
-        public LookupOutcome ToLookupOutcome()
+        public LookupByIcaoOutcome ToLookupByIcaoOutcome()
         {
-            var result = new LookupOutcome() {
+            var result = new LookupByIcaoOutcome() {
                 Icao24 =        Icao24.Parse(Icao),
                 Success =       !IsMissing,
                 SourceAgeUtc =  DateTime.SpecifyKind(UpdatedUtc, DateTimeKind.Utc),
