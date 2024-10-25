@@ -18,6 +18,7 @@ namespace VirtualRadar.Feed.Vatsim
     /// <summary>
     /// The connector for VATSIM feeds. This just latches onto the <see cref="VatsimDownloader"/>.
     /// </summary>
+    [ReceiveConnector(typeof(VatsimConnectorOptions))]
     public class VatsimConnector : IReceiveConnector
     {
         private object _SyncLock = new();

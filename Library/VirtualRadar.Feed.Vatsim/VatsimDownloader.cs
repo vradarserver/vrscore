@@ -109,7 +109,7 @@ namespace VirtualRadar.Feed.Vatsim
                 var jsonText = await _HttpClient.Shared.GetStringAsync(_Settings.LatestValue.StatusUrl);
                 if(!String.IsNullOrEmpty(jsonText)) {
                     var status = JsonConvert.DeserializeObject<Status>(jsonText);
-                    if((status.data?.v3.Count ?? 0) > 0) {
+                    if((status.Data?.V3.Count ?? 0) > 0) {
                         lock(_SyncLock) {
                             _Status = status;
                             _StatusDownloadedUtc = DateTime.UtcNow;
@@ -123,7 +123,7 @@ namespace VirtualRadar.Feed.Vatsim
         {
             var status = _Status;
             if(status != null) {
-                var url = RoundRobin.ChooseAtRandom(status.data.v3);
+                var url = RoundRobin.ChooseAtRandom(status.Data.V3);
                 if(!String.IsNullOrEmpty(url)) {
                     var jsonText = await _HttpClient.Shared.GetStringAsync(url);
                     if(!String.IsNullOrEmpty(jsonText)) {

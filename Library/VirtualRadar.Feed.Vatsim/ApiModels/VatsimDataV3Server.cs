@@ -58,15 +58,15 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3Server)} {{" +
-                $" Ident: {Ident}" +
-                $" HostnameOrIPAddress: {HostnameOrIPAddress}" +
-                $" Location: {Location}" +
-                $" Name: {Name}" +
-                $" ClientsConnectionAllowed: {ClientsConnectionAllowed}" +
-                $" ClientConnectionsAllowed: {ClientConnectionsAllowed}" +
-                $" IsSweatbox: {IsSweatbox}" +
-                " }";
+            return $"{nameof(VatsimDataV3Server)} {{"
+                + $" {nameof(Ident)}: {Ident}"
+                + $" {nameof(HostnameOrIPAddress)}: {HostnameOrIPAddress}"
+                + $" {nameof(Location)}: {Location}"
+                + $" {nameof(Name)}: {Name}"
+                + $" {nameof(ClientsConnectionAllowed)}: {ClientsConnectionAllowed}"
+                + $" {nameof(ClientConnectionsAllowed)}: {ClientConnectionsAllowed}"
+                + $" {nameof(IsSweatbox)}: {IsSweatbox}"
+                + " }";
         }
     }
 }

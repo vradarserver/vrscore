@@ -78,20 +78,20 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3Atis)} {{" +
-                $" Cid: {Cid}" +
-                $" Name: {Name}" +
-                $" Callsign: {Callsign}" +
-                $" Frequency: {Frequency}" +
-                $" Facility: {Facility}" +
-                $" Rating: {Rating}" +
-                $" Server: {Server}" +
-                $" VisualRange: {VisualRange}" +
-                $" AtisCode: {AtisCode}" +
-                $" TextAtis: {String.Join(",", TextAtis)}" +
-                $" LastUpdated: {LastUpdated}" +
-                $" LogonTime: {LogonTime}" +
-                " }";
+            return $"{nameof(VatsimDataV3Atis)} {{"
+                + $" {nameof(Cid)}: {Cid}"
+                + $" {nameof(Name)}: {Name}"
+                + $" {nameof(Callsign)}: {Callsign}"
+                + $" {nameof(Frequency)}: {Frequency}"
+                + $" {nameof(Facility)}: {Facility}"
+                + $" {nameof(Rating)}: {Rating}"
+                + $" {nameof(Server)}: {Server}"
+                + $" {nameof(VisualRange)}: {VisualRange}"
+                + $" {nameof(AtisCode)}: {AtisCode}"
+                + $" {nameof(TextAtis)}: {String.Join(",", TextAtis)}"
+                + $" {nameof(LastUpdated)}: {LastUpdated}"
+                + $" {nameof(LogonTime)}: {LogonTime}"
+                + " }";
         }
     }
 }

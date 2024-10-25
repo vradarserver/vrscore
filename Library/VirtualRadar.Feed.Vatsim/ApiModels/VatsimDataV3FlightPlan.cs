@@ -94,24 +94,24 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3FlightPlan)} {{" +
-                $" FlightRules: {FlightRules}" +
-                $" Aircraft: {Aircraft}" +
-                $" AircraftFAA: {AircraftFAA}" +
-                $" AircraftShort: {AircraftShort}" +
-                $" Departure: {Departure}" +
-                $" Arrival: {Arrival}" +
-                $" Alternate: {Alternate}" +
-                $" CruiseTrueAirspeedKnots: {CruiseTrueAirspeedKnots}" +
-                $" AltitudeFeet: {AltitudeFeet}" +
-                $" DepartureTime: {DepartureTime}" +
-                $" EnrouteTime: {EnrouteTime}" +
-                $" FuelTime: {FuelTime}" +
-                $" Remarks: {Remarks}" +
-                $" Route: {Route}" +
-                $" RevisionId: {RevisionId}" +
-                $" AssignedTransponder: {AssignedTransponder}" +
-                " }";
+            return $"{nameof(VatsimDataV3FlightPlan)} {{"
+                + $" {nameof(FlightRules)}: {FlightRules}"
+                + $" {nameof(Aircraft)}: {Aircraft}"
+                + $" {nameof(AircraftFAA)}: {AircraftFAA}"
+                + $" {nameof(AircraftShort)}: {AircraftShort}"
+                + $" {nameof(Departure)}: {Departure}"
+                + $" {nameof(Arrival)}: {Arrival}"
+                + $" {nameof(Alternate)}: {Alternate}"
+                + $" {nameof(CruiseTrueAirspeedKnots)}: {CruiseTrueAirspeedKnots}"
+                + $" {nameof(AltitudeFeet)}: {AltitudeFeet}"
+                + $" {nameof(DepartureTime)}: {DepartureTime}"
+                + $" {nameof(EnrouteTime)}: {EnrouteTime}"
+                + $" {nameof(FuelTime)}: {FuelTime}"
+                + $" {nameof(Remarks)}: {Remarks}"
+                + $" {nameof(Route)}: {Route}"
+                + $" {nameof(RevisionId)}: {RevisionId}"
+                + $" {nameof(AssignedTransponder)}: {AssignedTransponder}"
+                + " }";
         }
     }
 }

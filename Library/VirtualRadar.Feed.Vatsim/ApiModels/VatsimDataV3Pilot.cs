@@ -48,7 +48,7 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         }
 
         [DataMember(Name = "altitude")]
-        public int AltitudeFeet { get; set; }
+        public int AltitudeGeometricFeet { get; set; }
 
         [DataMember(Name = "groundspeed")]
         public int GroundSpeedKnots { get; set; }
@@ -57,16 +57,20 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public string Transponder { get; set; }
 
         private string _TransponderText;
-        private int _TransponderParsed;
+        private int? _TransponderParsed;
         /// <summary>
         /// See <see cref="Transponder"/> parsed into a base-10 integer.
         /// </summary>
-        public int Squawk
+        public int? Squawk
         {
             get {
                 if(!String.Equals(Transponder, _TransponderText)) {
                     _TransponderText = Transponder;
-                    int.TryParse(Transponder ?? "", out _TransponderParsed);
+                    if(!int.TryParse(Transponder ?? "", out var parsed)) {
+                        _TransponderParsed = null;
+                    } else {
+                        _TransponderParsed = parsed;
+                    }
                 }
                 return _TransponderParsed;
             }
@@ -96,22 +100,22 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
 
             if(copyFrom != null) {
                 result = new() {
-                    Cid =               copyFrom.Cid,
-                    Name =              copyFrom.Name,
-                    Callsign =          copyFrom.Callsign,
-                    Server =            copyFrom.Server,
-                    PilotRating =       copyFrom.PilotRating,
-                    Latitude =          copyFrom.Latitude,
-                    Longitude =         copyFrom.Longitude,
-                    AltitudeFeet =      copyFrom.AltitudeFeet,
-                    GroundSpeedKnots =  copyFrom.GroundSpeedKnots,
-                    Transponder =       copyFrom.Transponder,
-                    HeadingDegrees =    copyFrom.HeadingDegrees,
-                    QnhInchesMercury =  copyFrom.QnhInchesMercury,
-                    QnhMillibars =      copyFrom.QnhMillibars,
-                    FlightPlan =        VatsimDataV3FlightPlan.CopyFrom(copyFrom.FlightPlan),
-                    LogonTime =         copyFrom.LogonTime,
-                    LastUpdated =       copyFrom.LastUpdated,
+                    Cid =                   copyFrom.Cid,
+                    Name =                  copyFrom.Name,
+                    Callsign =              copyFrom.Callsign,
+                    Server =                copyFrom.Server,
+                    PilotRating =           copyFrom.PilotRating,
+                    Latitude =              copyFrom.Latitude,
+                    Longitude =             copyFrom.Longitude,
+                    AltitudeGeometricFeet = copyFrom.AltitudeGeometricFeet,
+                    GroundSpeedKnots =      copyFrom.GroundSpeedKnots,
+                    Transponder =           copyFrom.Transponder,
+                    HeadingDegrees =        copyFrom.HeadingDegrees,
+                    QnhInchesMercury =      copyFrom.QnhInchesMercury,
+                    QnhMillibars =          copyFrom.QnhMillibars,
+                    FlightPlan =            VatsimDataV3FlightPlan.CopyFrom(copyFrom.FlightPlan),
+                    LogonTime =             copyFrom.LogonTime,
+                    LastUpdated =           copyFrom.LastUpdated,
                 };
             }
 
@@ -121,24 +125,24 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3Pilot)} {{" +
-                $" Cid: {Cid}" +
-                $" Name: {Name}" +
-                $" Callsign: {Callsign}" +
-                $" Server: {Server}" +
-                $" PilotRating: {PilotRating}" +
-                $" Latitude: {Latitude}" +
-                $" Longitude: {Longitude}" +
-                $" AltitudeFeet: {AltitudeFeet}" +
-                $" GroundSpeedKnots: {GroundSpeedKnots}" +
-                $" Transponder: {Transponder}" +
-                $" HeadingDegrees: {HeadingDegrees}" +
-                $" QnhInchesMercury: {QnhInchesMercury}" +
-                $" QnhMillibars: {QnhMillibars}" +
-                $" FlightPlan: {FlightPlan}" +
-                $" LogonTime: {LogonTime}" +
-                $" LastUpdated: {LastUpdated}" +
-                " }";
+            return $"{nameof(VatsimDataV3Pilot)} {{"
+                + $" {nameof(Cid)}: {Cid}"
+                + $" {nameof(Name)}: {Name}"
+                + $" {nameof(Callsign)}: {Callsign}"
+                + $" {nameof(Server)}: {Server}"
+                + $" {nameof(PilotRating)}: {PilotRating}"
+                + $" {nameof(Latitude)}: {Latitude}"
+                + $" {nameof(Longitude)}: {Longitude}"
+                + $" {nameof(AltitudeGeometricFeet)}: {AltitudeGeometricFeet}"
+                + $" {nameof(GroundSpeedKnots)}: {GroundSpeedKnots}"
+                + $" {nameof(Transponder)}: {Transponder}"
+                + $" {nameof(HeadingDegrees)}: {HeadingDegrees}"
+                + $" {nameof(QnhInchesMercury)}: {QnhInchesMercury}"
+                + $" {nameof(QnhMillibars)}: {QnhMillibars}"
+                + $" {nameof(FlightPlan)}: {FlightPlan}"
+                + $" {nameof(LogonTime)}: {LogonTime}"
+                + $" {nameof(LastUpdated)}: {LastUpdated}"
+                + " }";
         }
     }
 }

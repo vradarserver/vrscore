@@ -42,11 +42,11 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3PilotRating)} {{" +
-                $" Id: {Id}" +
-                $" ShortName: {ShortName}" +
-                $" LongName: {LongName}" +
-                " }";
+            return $"{nameof(VatsimDataV3PilotRating)} {{"
+                + $" {nameof(Id)}: {Id}"
+                + $" {nameof(ShortName)}: {ShortName}"
+                + $" {nameof(LongName)}: {LongName}"
+                + " }";
         }
     }
 }

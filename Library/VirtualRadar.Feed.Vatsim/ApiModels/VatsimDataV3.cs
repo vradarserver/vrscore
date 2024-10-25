@@ -33,7 +33,7 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         [DataMember(Name = "prefiles")]
         public List<VatsimDataV3Prefile> Prefiles { get; } = [];
 
-        [DataMember(Name = "Facilities")]
+        [DataMember(Name = "facilities")]
         public List<VatsimDataV3Facility> Facilities { get; } = [];
 
         [DataMember(Name = "ratings")]
@@ -41,5 +41,20 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
 
         [DataMember(Name = "pilot_ratings")]
         public List<VatsimDataV3PilotRating> PilotRatings { get; } = [];
+
+        public override string ToString()
+        {
+            return $"{nameof(Status)}: {{"
+                + $" {nameof(General)}: {General?.ToString() ?? "<null>"}"
+                + $" {nameof(Pilots)}: {Pilots?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Controllers)}: {Controllers?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Atis)}: {Atis?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Servers)}: {Servers?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Prefiles)}: {Prefiles?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Facilities)}: {Facilities?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Ratings)}: {Ratings?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(PilotRatings)}: {PilotRatings?.Count.ToString() ?? "<null>"}"
+                + " }";
+        }
     }
 }

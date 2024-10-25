@@ -50,13 +50,13 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3Prefile)} {{" +
-                $" Cid: {Cid}" +
-                $" Name: {Name}" +
-                $" Callsign: {Callsign}" +
-                $" FlightPlan: {FlightPlan}" +
-                $" LastUpdated: {LastUpdated}" +
-                " }";
+            return $"{nameof(VatsimDataV3Prefile)} {{"
+                + $" {nameof(Cid)}: {Cid}"
+                + $" {nameof(Name)}: {Name}"
+                + $" {nameof(Callsign)}: {Callsign}"
+                + $" {nameof(FlightPlan)}: {FlightPlan}"
+                + $" {nameof(LastUpdated)}: {LastUpdated}"
+                + " }";
         }
     }
 }

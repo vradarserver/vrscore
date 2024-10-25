@@ -20,6 +20,7 @@ namespace VirtualRadar.Feed.Vatsim
             services.AddSingleton<IVatsimDownloader,    VatsimDownloader>();
 
             VirtualRadar.Configuration.ConfigurationConfig.RegisterAssembly(services);
+            VirtualRadar.Connection.ReceiveConnectorConfig.RegisterAssembly();
             VirtualRadar.Feed.FeedDecoderConfig.RegisterAssembly();
 
             return services;

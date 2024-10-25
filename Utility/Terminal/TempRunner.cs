@@ -23,10 +23,12 @@ namespace VirtualRadar.Utility.Terminal
     /// Just a quickie object to plug together a basic feed pipeline and show the results.
     /// </summary>
     class TempRunner(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         Options                         _Options,
         IServiceProvider                _ServiceProvider,
         IAircraftOnlineLookupService    _AircraftLookupService,
         IReceiverFactory                _ReceiverFactory
+        #pragma warning restore IDE1006
     )
     {
         public async Task Run()
@@ -98,10 +100,25 @@ namespace VirtualRadar.Utility.Terminal
             if(_Options.ReceiverName != null) {
                 Console.WriteLine($"Loading receiver {_Options.ReceiverName}");
                 var receiverOptions = _ReceiverFactory.FindOptionsFor(_Options.ReceiverName.Trim());
-                result = _ReceiverFactory.Build(serviceProvider, receiverOptions);
-
-                if(result == null) {
-                    OptionsParser.Usage($"Could not load the \"{_Options.ReceiverName}\" receiver");
+                if(receiverOptions == null) {
+                    OptionsParser.Usage($"Could not find receiver options for the \"{_Options.ReceiverName}\" receiver");
+                } else if(receiverOptions.Connector == null || receiverOptions.FeedDecoder == null || receiverOptions.Enabled == false) {
+                    Console.WriteLine($"Receiver {_Options.ReceiverName} cannot be used.");
+                    if(receiverOptions.Connector == null) {
+                        Console.WriteLine($"* The {nameof(receiverOptions.Connector)} settings cannot be parsed");
+                    }
+                    if(receiverOptions.FeedDecoder == null) {
+                        Console.WriteLine($"* The {nameof(receiverOptions.FeedDecoder)} settings cannot be parsed");
+                    }
+                    if(!receiverOptions.Enabled) {
+                        Console.WriteLine($"* The receiver is not enabled");
+                    }
+                    OptionsParser.Usage($"A receiver cannot be built from the options for {_Options.ReceiverName}");
+                } else {
+                    result = _ReceiverFactory.Build(serviceProvider, receiverOptions);
+                    if(result == null) {
+                        OptionsParser.Usage($"\"{_Options.ReceiverName}\" receiver has good options but a receiver could not be built from them");
+                    }
                 }
             }
 

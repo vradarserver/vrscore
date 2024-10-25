@@ -14,11 +14,11 @@ namespace VirtualRadar.Configuration
 
         internal const string FileName = "Settings.json";
 
-        private const string Schema_Original = "1";
-        private const string Schema_Current = Schema_Original;
+        private const string _Schema_Original = "1";
+        private const string _Schema_Current = _Schema_Original;
 
-        private IFileSystem _FileSystem;
-        private IWorkingFolder _WorkingFolder;
+        private readonly IFileSystem _FileSystem;
+        private readonly IWorkingFolder _WorkingFolder;
 
         private readonly object _SyncLock = new();
         private Dictionary<string, JObject> _Content;

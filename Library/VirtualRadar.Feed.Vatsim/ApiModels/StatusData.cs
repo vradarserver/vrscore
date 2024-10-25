@@ -8,18 +8,37 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Runtime.Serialization;
+
 namespace VirtualRadar.Feed.Vatsim.ApiModels
 {
+    [DataContract]
     public class StatusData
     {
-        public List<string> v3 { get; set; }
+        [DataMember(Name = "v3")]
+        public List<string> V3 { get; set; }
 
-        public List<string> transceivers { get; set; }
+        [DataMember(Name = "transceivers")]
+        public List<string> Transceivers { get; set; }
 
-        public List<string> servers { get; set; }
+        [DataMember(Name = "servers")]
+        public List<string> Servers { get; set; }
 
-        public List<string> servers_sweatbox { get; set; }
+        [DataMember(Name = "servers_sweatbox")]
+        public List<string> SweatboxServers { get; set; }
 
-        public List<string> servers_all { get; set; }
+        [DataMember(Name = "servers_all")]
+        public List<string> AllServers { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(Status)}: {{"
+                + $" {nameof(V3)}: {V3?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Transceivers)}: {Transceivers?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(Servers)}: {Servers?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(SweatboxServers)}: {SweatboxServers?.Count.ToString() ?? "<null>"}"
+                + $" {nameof(AllServers)}: {AllServers?.Count.ToString() ?? "<null>"}"
+                + " }";
+        }
     }
 }

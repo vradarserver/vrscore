@@ -96,13 +96,24 @@ namespace VirtualRadar.Feed.Vatsim
         /// <exception cref="NotImplementedException"></exception>
         private void GenerateMessagesForPilot(VatsimDataV3Pilot pilot)
         {
+            var pressureAltitude = Convert.Altitude.GeometricAltitudeToStandardPressureAltitudeFeet(
+                pilot.AltitudeGeometricFeet,
+                pilot.QnhMillibars,
+                roundToTwentyFiveFeetIncrements: true
+            );
+
             var message = new TransponderMessage((uint)pilot.Cid) {
-                AltitudeFeet =          pilot.AltitudeFeet,
+                AltitudeFeet =          pressureAltitude,
+                AltitudeType =          AltitudeType.AirPressure,
                 Callsign =              pilot.Callsign,
                 GroundSpeedKnots =      pilot.GroundSpeedKnots,
+                GroundSpeedType =       SpeedType.GroundSpeed,
                 GroundTrackDegrees =    pilot.HeadingDegrees,
+                Location =              new(pilot.Latitude, pilot.Longitude),
+                Squawk =                pilot.Squawk,
             };
-throw new NotImplementedException();
+
+            OnMessageReceived(message);
         }
     }
 }

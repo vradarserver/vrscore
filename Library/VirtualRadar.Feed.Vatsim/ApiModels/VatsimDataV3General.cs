@@ -54,14 +54,14 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{nameof(VatsimDataV3General)} {{" +
-                $" Version: {Version}" +
-                $" Reload: {Reload}" +
-                $" Update: {Update}" +
-                $" UpdateTimestamp: {UpdateTimestamp}" +
-                $" ConnectedClients: {ConnectedClients}" +
-                $" UniqueUsers: {UniqueUsers}" +
-                " }";
+            return $"{nameof(VatsimDataV3General)} {{"
+                + $" {nameof(Version)}: {Version}"
+                + $" {nameof(Reload)}: {Reload}"
+                + $" {nameof(Update)}: {Update}"
+                + $" {nameof(UpdateTimestamp)}: {UpdateTimestamp}"
+                + $" {nameof(ConnectedClients)}: {ConnectedClients}"
+                + $" {nameof(UniqueUsers)}: {UniqueUsers}"
+                + " }";
         }
     }
 }
