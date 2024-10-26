@@ -19,6 +19,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// <summary>
         /// The pilots that are within the geofence associated with the connector.
         /// </summary>
+        [DataMember]
         public List<VatsimDataV3Pilot> Pilots { get; } = [];
     }
 }

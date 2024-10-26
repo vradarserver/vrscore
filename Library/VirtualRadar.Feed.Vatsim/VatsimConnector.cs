@@ -155,7 +155,7 @@ namespace VirtualRadar.Feed.Vatsim
         {
             ConnectionState = ConnectionState.Opening;
             lock(_SyncLock) {
-                if(_DownloaderDataDownloadedHandle != null) {
+                if(_DownloaderDataDownloadedHandle == null) {
                     _DownloaderDataDownloadedHandle = VatsimDownloader.AddDataDownloadedCallback(
                         VatsimDataDownloaded
                     );
