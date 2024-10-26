@@ -48,8 +48,10 @@ namespace VirtualRadar
         /// <inheritdoc/>
         public static bool operator ==(Location lhs, Location rhs)
         {
-            return lhs.Latitude == rhs.Latitude
-                && (lhs.Longitude == rhs.Longitude || (lhs.IsAntiMeridian && rhs.IsAntiMeridian));
+            var lhsNull = lhs is null;
+            var rhsNull = rhs is null;
+            return (lhsNull && rhsNull)
+                || (!lhsNull && !rhsNull && lhs.Equals(rhs));
         }
 
         /// <inheritdoc/>
@@ -88,7 +90,8 @@ namespace VirtualRadar
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is Location other) {
-                result = this == other;
+                result = Latitude == other.Latitude
+                      && (Longitude == other.Longitude || (IsAntiMeridian && other.IsAntiMeridian));
             }
 
             return result;
