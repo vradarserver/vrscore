@@ -8,45 +8,14 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Message
+using VirtualRadar.Configuration;
+
+namespace VirtualRadar.StandingData
 {
-    /// <summary>
-    /// Describes the outcome of a lookup of aircraft detail.
-    /// </summary>
-    public class LookupOutcome
+    [Settings("RegistrationPrefixLookup")]
+    public record RegistrationPrefixLookupSettings(
+        string Url = "https://raw.githubusercontent.com/vradarserver/standing-data/main/registration-prefixes/schema-01/reg-prefixes.csv"
+    )
     {
-        /// <summary>
-        /// True if information could be found for it.
-        /// </summary>
-        public bool Success { get; set; }
-
-        /// <summary>
-        /// How long ago was this information established - e.g. if this is from a cache
-        /// of online lookups then this would be the date and time that the lookup was
-        /// cached. This is a UTC timestamp.
-        /// </summary>
-        public DateTime SourceAgeUtc { get; set; }
-
-        public string Registration { get; set; }
-
-        public string Country { get; set; }
-
-        public string ModelIcao { get; set; }
-
-        public string Manufacturer { get; set; }
-
-        public string Model { get; set; }
-
-        public string OperatorIcao { get; set; }
-
-        public string Operator { get; set; }
-
-        public string Serial { get; set; }
-
-        public string UserNotes { get; set; }
-
-        public string UserTag { get; set; }
-
-        public int? YearFirstFlight { get; set; }
     }
 }

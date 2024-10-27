@@ -30,6 +30,9 @@ namespace VirtualRadar.Feed.BaseStation
         IFeedDecoderOptions IFeedDecoder.Options => Options;
 
         /// <inheritdoc/>
+        public bool FeedContainsLookups => false;
+
+        /// <inheritdoc/>
         public event EventHandler<TransponderMessage> MessageReceived;
 
         /// <summary>
@@ -40,6 +43,11 @@ namespace VirtualRadar.Feed.BaseStation
         {
             MessageReceived?.Invoke(this, message);
         }
+
+        /// <inheritdoc/>
+        #pragma warning disable CS0067 // event never used, BaseStation feeds do not contain lookup information
+        public event EventHandler<LookupByAircraftIdOutcome> LookupReceived;
+        #pragma warning restore CS0067
 
         /// <summary>
         /// Creates a new object.

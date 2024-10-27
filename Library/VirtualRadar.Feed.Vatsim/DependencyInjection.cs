@@ -16,8 +16,9 @@ namespace VirtualRadar.Feed.Vatsim
     {
         public static IServiceCollection AddVirtualRadarVatsimFeedGroup(this IServiceCollection services)
         {
-            services.AddSingleton<FormatConfig,         FormatConfig>();
-            services.AddSingleton<IVatsimDownloader,    VatsimDownloader>();
+            services.AddSingleton<CommonFeedParser>();
+            services.AddSingleton<FormatConfig>();
+            services.AddSingleton<IVatsimDownloader, VatsimDownloader>();
 
             VirtualRadar.Configuration.ConfigurationConfig.RegisterAssembly(services);
             VirtualRadar.Connection.ReceiveConnectorConfig.RegisterAssembly();

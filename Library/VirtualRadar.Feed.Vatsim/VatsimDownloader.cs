@@ -25,7 +25,8 @@ namespace VirtualRadar.Feed.Vatsim
         #pragma warning disable IDE1006 // VS2022 doesn't let you set naming rules for class primary ctors
         ISettings<VatsimSettings> _Settings,
         ILog _Log,
-        IHttpClientService _HttpClient
+        IHttpClientService _HttpClient,
+        CommonFeedParser _CommonFeedParser
         #pragma warning restore IDE1006
     ) : IVatsimDownloader
     {
@@ -128,7 +129,12 @@ namespace VirtualRadar.Feed.Vatsim
                     var jsonText = await _HttpClient.Shared.GetStringAsync(url);
                     if(!String.IsNullOrEmpty(jsonText)) {
                         var dataV3 = JsonConvert.DeserializeObject<VatsimDataV3>(jsonText);
-                        _DataDownloadedCallbacks.InvokeWithoutExceptions(dataV3);
+                        _CommonFeedParser.StartNewGeneration();
+                        var exception = _DataDownloadedCallbacks.InvokeWithoutExceptions(dataV3);
+                        _CommonFeedParser.CleanupPreviousGenerations();
+                        if(exception != null) {
+                            throw exception;
+                        }
                     }
                 }
             }

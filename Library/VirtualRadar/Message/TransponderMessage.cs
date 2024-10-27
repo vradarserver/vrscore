@@ -34,6 +34,16 @@ namespace VirtualRadar.Message
         public DateTimeOffset MessageReceived { get; set; }
 
         /// <summary>
+        /// True if the aircraft is not a real aircraft.
+        /// </summary>
+        public bool IsFakeAircraft { get; set; }
+
+        /// <summary>
+        /// True if lookups should be suppressed for this aircraft.
+        /// </summary>
+        public bool SuppressLookup => IsFakeAircraft;
+
+        /// <summary>
         /// The callsign transmitted by the aircraft.
         /// </summary>
         public string Callsign { get; set; }

@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2022 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,45 +8,27 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Message
+namespace VirtualRadar.StandingData
 {
     /// <summary>
-    /// Describes the outcome of a lookup of aircraft detail.
+    /// Manages details about registration prefixes.
     /// </summary>
-    public class LookupOutcome
+    [Lifetime(Lifetime.Singleton)]
+    public interface IRegistrationPrefixLookup
     {
         /// <summary>
-        /// True if information could be found for it.
+        /// Returns the <see cref="RegistrationPrefixDetail"/> for the full registration passed across or null
+        /// if no details are known for the registration.
         /// </summary>
-        public bool Success { get; set; }
+        /// <param name="fullRegistration"></param>
+        /// <returns></returns>
+        RegistrationPrefixDetail FindDetailForFullRegistration(string fullRegistration);
 
         /// <summary>
-        /// How long ago was this information established - e.g. if this is from a cache
-        /// of online lookups then this would be the date and time that the lookup was
-        /// cached. This is a UTC timestamp.
+        /// Returns all candidate details for a registration with the hyphen stripped out.
         /// </summary>
-        public DateTime SourceAgeUtc { get; set; }
-
-        public string Registration { get; set; }
-
-        public string Country { get; set; }
-
-        public string ModelIcao { get; set; }
-
-        public string Manufacturer { get; set; }
-
-        public string Model { get; set; }
-
-        public string OperatorIcao { get; set; }
-
-        public string Operator { get; set; }
-
-        public string Serial { get; set; }
-
-        public string UserNotes { get; set; }
-
-        public string UserTag { get; set; }
-
-        public int? YearFirstFlight { get; set; }
+        /// <param name="noHyphenRegistration"></param>
+        /// <returns></returns>
+        IList<RegistrationPrefixDetail> FindDetailsForNoHyphenRegistration(string noHyphenRegistration);
     }
 }

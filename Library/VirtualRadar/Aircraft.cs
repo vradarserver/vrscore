@@ -108,6 +108,10 @@ namespace VirtualRadar
 
         public StampedValue<string> Serial { get; } = new();
 
+        public StampedValue<string> UserNotes { get; } = new();
+
+        public StampedValue<string> UserTag { get; } = new();
+
         public StampedValue<int?> YearFirstFlight { get; } = new();
 
 
@@ -173,6 +177,8 @@ namespace VirtualRadar
                 OperatorIcao                .CopyTo(result.OperatorIcao);
                 Registration                .CopyTo(result.Registration);
                 Serial                      .CopyTo(result.Serial);
+                UserNotes                   .CopyTo(result.UserNotes);
+                UserTag                     .CopyTo(result.UserTag);
                 YearFirstFlight             .CopyTo(result.YearFirstFlight);
 
                 return result;
@@ -256,6 +262,8 @@ namespace VirtualRadar
                     changed = OperatorIcao      .SetIfNotDefault(lookup.OperatorIcao, stamp)    || changed;
                     changed = Registration      .SetIfNotDefault(lookup.Registration, stamp)    || changed;
                     changed = Serial            .SetIfNotDefault(lookup.Serial, stamp)          || changed;
+                    changed = UserNotes         .SetIfNotDefault(lookup.UserNotes, stamp)       || changed;
+                    changed = UserTag           .SetIfNotDefault(lookup.UserTag, stamp)         || changed;
                     changed = YearFirstFlight   .SetIfNotDefault(lookup.YearFirstFlight, stamp) || changed;
 
                     if(changed) {

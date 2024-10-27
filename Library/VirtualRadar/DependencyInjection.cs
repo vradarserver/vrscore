@@ -111,6 +111,7 @@ namespace VirtualRadar
 
             services.AddLifetime<Receivers.IReceiverFactory, Receivers.ReceiverFactory>();
 
+            services.AddLifetime<StandingData.IRegistrationPrefixLookup,        StandingData.RegistrationPrefixLookup>();
             services.AddLifetime<StandingData.IStandingDataManager,             StandingData.StandingDataManager>();
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
             services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();

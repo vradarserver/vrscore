@@ -24,9 +24,21 @@ namespace VirtualRadar.Feed
         IFeedDecoderOptions Options { get; }
 
         /// <summary>
+        /// True if the feed contains lookup details, information that is not transmitted by Mode-S
+        /// and/or ADS-B.
+        /// </summary>
+        bool FeedContainsLookups { get; }
+
+        /// <summary>
         /// Raised for every transponder message extracted from the feed.
         /// </summary>
         event EventHandler<TransponderMessage> MessageReceived;
+
+        /// <summary>
+        /// Raised when <see cref="FeedContainsLookups"/> is true and information about an aircraft
+        /// has been decoded from the feed.
+        /// </summary>
+        event EventHandler<LookupByAircraftIdOutcome> LookupReceived;
 
         /// <summary>
         /// Presents a packet to the decoder for parsing. The packet might be incomplete.

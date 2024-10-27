@@ -62,6 +62,7 @@ namespace VirtualRadar.Receivers
 
             Connector.PacketReceived += Connector_PacketReceived;
             FeedDecoder.MessageReceived += FeedDecoder_MessageReceived;
+            FeedDecoder.LookupReceived += FeedDecoder_LookupReceived;
         }
 
         /// <summary>
@@ -93,24 +94,31 @@ namespace VirtualRadar.Receivers
             }
         }
 
+        private void AircraftLookupService_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> args)
+        {
+            AircraftList.ApplyLookup(args);
+        }
+
         private void Connector_PacketReceived(object sender, ReadOnlyMemory<byte> args)
         {
             Interlocked.Increment(ref _CountPacketsReceived);
             FeedDecoder.ParseFeedPacket(args);
         }
 
+        private void FeedDecoder_LookupReceived(object sender, LookupByAircraftIdOutcome lookupOutcome)
+        {
+            AircraftList.ApplyLookup(lookupOutcome);
+        }
+
         private void FeedDecoder_MessageReceived(object sender, TransponderMessage args)
         {
             Interlocked.Increment(ref _CountMessagesReceived);
             if(AircraftList.ApplyMessage(args).AddedAircraft) {
-                var lookupService = _AircraftLookupService;
-                lookupService?.Lookup(args.Icao24);
+                if(!args.SuppressLookup) {
+                    var lookupService = _AircraftLookupService;
+                    lookupService?.Lookup(args.Icao24);
+                }
             }
-        }
-
-        private void AircraftLookupService_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> args)
-        {
-            AircraftList.ApplyLookup(args);
         }
     }
 }

@@ -52,5 +52,31 @@ namespace VirtualRadar.Extensions
                 options
             );
         }
+
+        /// <summary>
+        /// The string with everything except ASCII alphanumerics stripped out.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static string AsciiAlphanumeric(this string text)
+        {
+            var result = text;
+
+            if(!String.IsNullOrEmpty(result)) {
+                var buffer = new StringBuilder();
+                for(var idx = 0;idx < result.Length;++idx) {
+                    var ch = result[idx];
+                    if(    (ch >= '0' && ch <= '9')
+                        || (ch >= 'A' && ch <= 'Z')
+                        || (ch >= 'a' && ch <= 'z')
+                    ) {
+                        buffer.Append(ch);
+                    }
+                }
+                result = buffer.ToString();
+            }
+
+            return result;
+        }
     }
 }

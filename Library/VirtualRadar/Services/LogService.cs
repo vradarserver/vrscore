@@ -50,8 +50,8 @@ namespace VirtualRadar.Services
             // We hide any failures to write to the log because we can't log them, and they could
             // mask the underlying error that's causing the failure in the first place
             try {
-                message = $"{message ?? "Exception caught during processing:"}{Environment.NewLine}{ex}";
-                Message(message);
+                Message(message ?? "Exception caught during processing");
+                Message(ex.ToString());
             } catch {
                 ;
             }

@@ -18,6 +18,8 @@ namespace VirtualRadar.Feed.Vatsim
     [FeedDecoder(typeof(VatsimFeedDecoderOptions))]
     public class VatsimFeedDecoder : IFeedDecoder
     {
+        private CommonFeedParser _CommonFeedParser;
+
         /// <summary>
         /// The options used to create the decoder.
         /// </summary>
@@ -25,6 +27,9 @@ namespace VirtualRadar.Feed.Vatsim
 
         /// <inheritdoc/>
         IFeedDecoderOptions IFeedDecoder.Options => Options;
+
+        /// <inheritdoc/>
+        public bool FeedContainsLookups => true;
 
         /// <summary>
         /// The standing data used by the decoder to make some educated guesses about the aircraft.
@@ -43,15 +48,30 @@ namespace VirtualRadar.Feed.Vatsim
             MessageReceived?.Invoke(this, message);
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<LookupByAircraftIdOutcome> LookupReceived;
+
+        /// <summary>
+        /// Raises <see cref="LookupReceived"/>.
+        /// </summary>
+        /// <param name="lookupOutcome"></param>
+        protected virtual void OnLookupReceived(LookupByAircraftIdOutcome lookupOutcome)
+        {
+            LookupReceived?.Invoke(this, lookupOutcome);
+        }
+
         /// <summary>
         /// Creates a new object.
         /// </summary>
         /// <param name="options"></param>
+        /// <param name="commonFeedParser"></param>
         public VatsimFeedDecoder(
-            VatsimFeedDecoderOptions options
+            VatsimFeedDecoderOptions options,
+            CommonFeedParser commonFeedParser
         )
         {
             Options = options;
+            _CommonFeedParser = commonFeedParser;
         }
 
         /// <inheritdoc/>
@@ -84,6 +104,7 @@ namespace VirtualRadar.Feed.Vatsim
 
             foreach(var pilot in filteredFeed.Pilots) {
                 GenerateMessagesForPilot(pilot);
+                GenerateLookupForPilot(pilot);
             }
 
             return Task.CompletedTask;
@@ -93,27 +114,20 @@ namespace VirtualRadar.Feed.Vatsim
         /// Converts VATSIM state into aircraft messages.
         /// </summary>
         /// <param name="pilot"></param>
-        /// <exception cref="NotImplementedException"></exception>
         private void GenerateMessagesForPilot(VatsimDataV3Pilot pilot)
         {
-            var pressureAltitude = Convert.Altitude.GeometricAltitudeToStandardPressureAltitudeFeet(
-                pilot.AltitudeGeometricFeet,
-                pilot.QnhMillibars,
-                roundToTwentyFiveFeetIncrements: true
-            );
+            var pilotState = _CommonFeedParser.BuildOrReusePilotState(pilot);
+            OnMessageReceived(pilotState.TransponderMessage);
+        }
 
-            var message = new TransponderMessage((uint)pilot.Cid) {
-                AltitudeFeet =          pressureAltitude,
-                AltitudeType =          AltitudeType.AirPressure,
-                Callsign =              pilot.Callsign,
-                GroundSpeedKnots =      pilot.GroundSpeedKnots,
-                GroundSpeedType =       SpeedType.GroundSpeed,
-                GroundTrackDegrees =    pilot.HeadingDegrees,
-                Location =              new(pilot.Latitude, pilot.Longitude),
-                Squawk =                pilot.Squawk,
-            };
-
-            OnMessageReceived(message);
+        /// <summary>
+        /// Converts VATSIM state into lookup outcomes.
+        /// </summary>
+        /// <param name="pilot"></param>
+        private void GenerateLookupForPilot(VatsimDataV3Pilot pilot)
+        {
+            var pilotState = _CommonFeedParser.BuildOrReusePilotState(pilot);
+            OnLookupReceived(pilotState.LookupOutcome);
         }
     }
 }
