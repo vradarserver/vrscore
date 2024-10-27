@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
 {
@@ -26,8 +27,8 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
         [MaxLength(80)]
         public string Name { get; set; }
 
-        [MaxLength(80)]
-        public Location Location { get; set; }
+        [MaxLength(80), Column("Location")]
+        public string Town { get; set; }
 
         public long CountryId { get; set; }
 
@@ -36,6 +37,24 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
         public double? Latitude { get; set; }
 
         public double? Longitude { get; set; }
+
+        private Location _Location;
+        private double? _LocationLatitude;
+        private double? _LocationLongitude;
+        [NotMapped]
+        public Location Location
+        {
+            get {
+                var result = _Location;
+                if(_LocationLatitude != Latitude || _LocationLongitude != Longitude) {
+                    _LocationLatitude = Latitude;
+                    _LocationLongitude = Longitude;
+                    result = Location.FromNullable(_LocationLatitude, _LocationLongitude);
+                    _Location = result;
+                }
+                return result;
+            }
+        }
 
         public int? Altitude { get; set; }
 
