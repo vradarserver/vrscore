@@ -8,37 +8,45 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.DependencyInjection;
-using VirtualRadar.Extensions;
-using VirtualRadar.Receivers;
+using VirtualRadar.Configuration;
 
-namespace VirtualRadar
+namespace VirtualRadar.Receivers
 {
-    /// <inheritdoc/>
-    public class VirtualRadarModule : IVirtualRadarModule
+    /// <summary>
+    /// Brings together all the different bits of the system that deal with receivers to load all of the
+    /// configured receivers, run them and then shut them down when they are no longer required.
+    /// </summary>
+    [Lifetime(Lifetime.Singleton)]
+    public class ReceiverEngine(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+        ISettings<MessageSourcesOptions> _MessageSourceSettings,
+        IReceiverFactory _ReceiverFactory,
+        ILog _Log
+        #pragma warning restore IDE1006
+    )
     {
-        /// <inheritdoc/>
-        public int Priority => -1;
-
-        [InjectedService]
-        public ReceiverEngine ReceiverEngine { get; set; }
-
-        /// <inheritdoc/>
-        public void RegisterServices(IServiceCollection services)
-        {
-            DependencyInjection.AddVirtualRadarGroup(services);
-        }
-
-        /// <inheritdoc/>
+        /// <summary>
+        /// Loads all of the receivers, instantiates them and runs them in the background.
+        /// </summary>
         public void Start()
         {
-            ReceiverEngine.Start();
+            foreach(var receiverOptions in _MessageSourceSettings.LatestValue.Receivers) {
+                try {
+                    _ReceiverFactory.FindOrBuild(receiverOptions);
+                } catch(Exception ex) {
+                    _Log.Exception(ex, $"Caught exception while trying to start receiver {receiverOptions.Name}");
+                }
+            }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Stops the receivers.
+        /// </summary>
         public void Stop()
         {
-            ReceiverEngine.Stop();
+            foreach(var receiver in _ReceiverFactory.Receivers) {
+                _ReceiverFactory.ShutDownReceiver(receiver);
+            }
         }
     }
 }

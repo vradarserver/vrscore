@@ -110,6 +110,7 @@ namespace VirtualRadar
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             services.AddLifetime<Receivers.IReceiverFactory, Receivers.ReceiverFactory>();
+            services.AddLifetime<Receivers.ReceiverEngine>();
 
             services.AddLifetime<StandingData.IRegistrationPrefixLookup,        StandingData.RegistrationPrefixLookup>();
             services.AddLifetime<StandingData.IStandingDataManager,             StandingData.StandingDataManager>();

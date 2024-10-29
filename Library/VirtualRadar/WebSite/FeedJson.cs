@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2013 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,37 +8,53 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.DependencyInjection;
-using VirtualRadar.Extensions;
+using System.Runtime.Serialization;
 using VirtualRadar.Receivers;
 
-namespace VirtualRadar
+namespace VirtualRadar.WebSite
 {
-    /// <inheritdoc/>
-    public class VirtualRadarModule : IVirtualRadarModule
+    /// <summary>
+    /// The JSON object that describes a data feed from a receiver.
+    /// </summary>
+    [DataContract]
+    public class FeedJson
     {
-        /// <inheritdoc/>
-        public int Priority => -1;
+        /// <summary>
+        /// Gets or sets the unique ID of the feed.
+        /// </summary>
+        [DataMember(Name="id", IsRequired=true)]
+        public int UniqueId { get; set; }
 
-        [InjectedService]
-        public ReceiverEngine ReceiverEngine { get; set; }
+        /// <summary>
+        /// Gets or sets the current name of the feed.
+        /// </summary>
+        [DataMember(Name="name", IsRequired=true)]
+        public string Name { get; set; }
 
-        /// <inheritdoc/>
-        public void RegisterServices(IServiceCollection services)
+        /// <summary>
+        /// Gets or sets a value indicating that a polar plot exists for the feed.
+        /// </summary>
+        [DataMember(Name="polarPlot", IsRequired=true)]
+        public bool HasPolarPlot { get; set; }
+
+        /// <summary>
+        /// Constructs a <see cref="FeedJson"/> object from a receiver interface.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <returns></returns>
+        public static FeedJson FromReceiver(IReceiver receiver)
         {
-            DependencyInjection.AddVirtualRadarGroup(services);
-        }
+            FeedJson result = null;
 
-        /// <inheritdoc/>
-        public void Start()
-        {
-            ReceiverEngine.Start();
-        }
+            if(receiver != null) {
+                result = new() {
+                    UniqueId =      -1,                 // TODO
+                    Name =          receiver.Name,
+                    HasPolarPlot =  false,              // TODO
+                };
+            }
 
-        /// <inheritdoc/>
-        public void Stop()
-        {
-            ReceiverEngine.Stop();
+            return result;
         }
     }
 }

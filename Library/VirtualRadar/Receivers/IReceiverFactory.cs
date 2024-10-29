@@ -17,6 +17,11 @@ namespace VirtualRadar.Receivers
     public interface IReceiverFactory
     {
         /// <summary>
+        /// Returns all active receivers.
+        /// </summary>
+        IReceiver[] Receivers { get; }
+
+        /// <summary>
         /// Returns the current options for the receiver name passed across.
         /// </summary>
         /// <param name="receiverName"></param>
@@ -69,5 +74,11 @@ namespace VirtualRadar.Receivers
         /// <param name="options"></param>
         /// <returns></returns>
         (bool Added, IReceiver Receiver) FindOrBuild(ReceiverOptions options);
+
+        /// <summary>
+        /// Shuts a receiver down.
+        /// </summary>
+        /// <param name="receiver"></param>
+        void ShutDownReceiver(IReceiver receiver);
     }
 }

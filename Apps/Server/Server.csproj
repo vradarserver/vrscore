@@ -22,6 +22,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Library\VirtualRadar.Database.EntityFramework\VirtualRadar.Database.EntityFramework.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
+        <ProjectReference Include="..\..\Library\VirtualRadar.Feed.Vatsim\VirtualRadar.Feed.Vatsim.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>
 

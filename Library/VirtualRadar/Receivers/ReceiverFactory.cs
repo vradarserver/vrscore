@@ -23,9 +23,11 @@ namespace VirtualRadar.Receivers
     /// <param name="_Settings"></param>
     /// <param name="_Log"></param>
     class ReceiverFactory(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         IServiceProvider _ServiceProvider,
         ISettingsStorage _Settings,
         ILog _Log
+        #pragma warning restore IDE1006
     ) : IReceiverFactory, IDisposable
     {
         private readonly object _SyncLock = new();
@@ -33,6 +35,16 @@ namespace VirtualRadar.Receivers
         private volatile List<Receiver> _Receivers = [];
         private readonly CallbackList<IReceiver> _ReceiverAddedCallbacks = new();
         private readonly CallbackList<IReceiver> _ReceiverShuttingDownCallbacks = new();
+
+        /// <inheritdoc/>
+        public IReceiver[] Receivers
+        {
+            get {
+                var receivers = _Receivers;
+                return receivers.ToArray();
+            }
+        }
+
 
         ~ReceiverFactory() => Dispose(false);
 
@@ -169,11 +181,15 @@ namespace VirtualRadar.Receivers
         /// <summary>
         /// Disposes of the receiver passed across, logging and swallowing any exceptions raised.
         /// </summary>
-        /// <param name="receiver"></param>
-        private void ShutDownReceiver(Receiver receiver)
+        /// <param name="receiverInterface"></param>
+        public void ShutDownReceiver(IReceiver receiverInterface)
         {
-            if(receiver != null) {
+            if(receiverInterface is Receiver receiver) {
                 try {
+                    lock(_SyncLock) {
+                        _Receivers.Remove(receiver);
+                    }
+
                     var aggregateException = _ReceiverShuttingDownCallbacks.InvokeWithoutExceptions(receiver);
                     if(aggregateException != null) {
                         _Log.Exception(
