@@ -46,5 +46,19 @@ namespace VirtualRadar.Server.ApiControllers
                 _ReceiverFactory.FindById(id)
             );
         }
+
+        /// <summary>
+        /// Returns the polar plot for a feed.
+        /// </summary>
+        /// <param name="feedId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("api/3.00/feeds/polar-plot/{feedId}")]
+        [Route("PolarPlot.json")]                       // pre-version 3 route
+        public object GetPolarPlot(int feedId = -1)
+        {
+            // TODO
+            return null;
+        }
     }
 }
