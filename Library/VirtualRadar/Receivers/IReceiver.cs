@@ -20,6 +20,8 @@ namespace VirtualRadar.Receivers
     {
         ReceiverOptions Options { get; }
 
+        int Id => Options.Id;
+
         string Name => Options.Name;
 
         bool Enabled => Options.Enabled;

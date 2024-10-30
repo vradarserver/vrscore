@@ -20,6 +20,8 @@ namespace VirtualRadar.Receivers
     /// </remarks>
     public class ReceiverOptions
     {
+        public int Id { get; init; }
+
         public string Name { get; init; }
 
         public bool Enabled { get; init; }
@@ -33,12 +35,14 @@ namespace VirtualRadar.Receivers
         }
 
         public ReceiverOptions(
+            int id,
             string name,
             bool enabled,
             IReceiverConnectorOptions connector,
             IReceiverFeedDecoderOptions feedDecoder
         )
         {
+            Id = id;
             Name = name;
             Enabled = enabled;
             Connector = connector;
@@ -46,6 +50,7 @@ namespace VirtualRadar.Receivers
         }
 
         public ReceiverOptions(ReceiverOptions source) : this(
+            id: source.Id,
             name: source.Name,
             enabled: source.Enabled,
             connector: source.Connector,
@@ -62,7 +67,8 @@ namespace VirtualRadar.Receivers
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is ReceiverOptions other) {
-                result =  Name == other.Name
+                result =  Id == other.Id
+                       && Name == other.Name
                        && Enabled == other.Enabled
                        && Object.Equals(Connector, other.Connector)
                        && Object.Equals(FeedDecoder, other.FeedDecoder);
@@ -71,16 +77,17 @@ namespace VirtualRadar.Receivers
             return result;
         }
 
-        public override int GetHashCode() => (Name ?? "").GetHashCode();
+        public override int GetHashCode() => Id.GetHashCode();
 
         public override string ToString()
         {
-            return $"{nameof(ReceiverOptions)} {{ " +
-                   $"{nameof(Name)} = {Name}, " +
-                   $"{nameof(Enabled)} = {Enabled}, " +
-                   $"{nameof(Connector)} = {Connector}, " +
-                   $"{nameof(FeedDecoder)} = {FeedDecoder} " +
-                   $"}}";
+            return $"{nameof(ReceiverOptions)} {{ "
+                + $" {nameof(Id)} = {Id},"
+                + $" {nameof(Name)} = {Name},"
+                + $" {nameof(Enabled)} = {Enabled},"
+                + $" {nameof(Connector)} = {Connector},"
+                + $" {nameof(FeedDecoder)} = {FeedDecoder}"
+                + " }";
         }
     }
 }

@@ -48,7 +48,7 @@ namespace VirtualRadar.WebSite
 
             if(receiver != null) {
                 result = new() {
-                    UniqueId =      -1,                 // TODO
+                    UniqueId =      receiver.Id,
                     Name =          receiver.Name,
                     HasPolarPlot =  false,              // TODO
                 };
