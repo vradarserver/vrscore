@@ -30,6 +30,7 @@ namespace VirtualRadar.Server.ApiControllers
         {
             return _ReceiverFactory
                 .Receivers
+                .Where(receiver => !receiver.Hidden)
                 .Select(receiver => FeedJson.FromReceiver(receiver))
                 .ToArray();
         }
@@ -42,9 +43,12 @@ namespace VirtualRadar.Server.ApiControllers
         [HttpGet, Route("api/3.00/feeds/{id}")]
         public FeedJson GetFeed(int id)
         {
-            return FeedJson.FromReceiver(
-                _ReceiverFactory.FindById(id)
-            );
+            var receiver = _ReceiverFactory.FindById(id);
+            if(receiver?.Hidden ?? false) {
+                receiver = null;
+            }
+
+            return FeedJson.FromReceiver(receiver);
         }
 
         /// <summary>

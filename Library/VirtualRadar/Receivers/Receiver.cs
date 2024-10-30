@@ -29,6 +29,8 @@ namespace VirtualRadar.Receivers
 
         public bool Enabled => Options.Enabled;
 
+        public bool Hidden => Options.Hidden;
+
         public IReceiveConnector Connector { get; }
 
         public IFeedDecoder FeedDecoder { get; }

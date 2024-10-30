@@ -26,6 +26,8 @@ namespace VirtualRadar.Receivers
 
         public bool Enabled { get; init; }
 
+        public bool Hidden { get; init; }
+
         public IReceiverConnectorOptions Connector { get; init; }
 
         public IReceiverFeedDecoderOptions FeedDecoder { get; init; }
@@ -38,6 +40,7 @@ namespace VirtualRadar.Receivers
             int id,
             string name,
             bool enabled,
+            bool hidden,
             IReceiverConnectorOptions connector,
             IReceiverFeedDecoderOptions feedDecoder
         )
@@ -45,6 +48,7 @@ namespace VirtualRadar.Receivers
             Id = id;
             Name = name;
             Enabled = enabled;
+            Hidden = hidden;
             Connector = connector;
             FeedDecoder = feedDecoder;
         }
@@ -53,6 +57,7 @@ namespace VirtualRadar.Receivers
             id: source.Id,
             name: source.Name,
             enabled: source.Enabled,
+            hidden: source.Hidden,
             connector: source.Connector,
             feedDecoder: source.FeedDecoder
         )
@@ -70,6 +75,7 @@ namespace VirtualRadar.Receivers
                 result =  Id == other.Id
                        && Name == other.Name
                        && Enabled == other.Enabled
+                       && Hidden == other.Hidden
                        && Object.Equals(Connector, other.Connector)
                        && Object.Equals(FeedDecoder, other.FeedDecoder);
             }
@@ -85,6 +91,7 @@ namespace VirtualRadar.Receivers
                 + $" {nameof(Id)} = {Id},"
                 + $" {nameof(Name)} = {Name},"
                 + $" {nameof(Enabled)} = {Enabled},"
+                + $" {nameof(Hidden)} = {Hidden},"
                 + $" {nameof(Connector)} = {Connector},"
                 + $" {nameof(FeedDecoder)} = {FeedDecoder}"
                 + " }";
