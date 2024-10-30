@@ -44,7 +44,14 @@ namespace VirtualRadar.Receivers
         /// </summary>
         /// <param name="receiverName"></param>
         /// <returns></returns>
-        IReceiver Find(string receiverName);
+        IReceiver FindByName(string receiverName);
+
+        /// <summary>
+        /// Returns a receiver previously created by <see cref="FindOrBuild"/> with the ID passed across.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        IReceiver FindById(int id);
 
         /// <summary>
         /// Registers a callback that is called whenever a receiver is added. The caller should keep the handle

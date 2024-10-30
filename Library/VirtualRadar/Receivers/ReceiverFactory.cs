@@ -117,7 +117,7 @@ namespace VirtualRadar.Receivers
         IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverOptions options) => Build(serviceProvider, options);
 
         /// <inheritdoc/>
-        public Receiver Find(string receiverName)
+        public IReceiver FindByName(string receiverName)
         {
             var receivers = _Receivers;
             return receivers.FirstOrDefault(receiver => String.Equals(
@@ -128,7 +128,11 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        IReceiver IReceiverFactory.Find(string receiverName) => Find(receiverName);
+        public IReceiver FindById(int id)
+        {
+            var receivers = _Receivers;
+            return receivers.FirstOrDefault(receiver => receiver.Id == id);
+        }
 
         /// <inheritdoc/>
         public ICallbackHandle ReceiverAddedCallback(Action<IReceiver> callback) => _ReceiverAddedCallbacks.Add(callback);
@@ -148,7 +152,7 @@ namespace VirtualRadar.Receivers
                         throw new InvalidOperationException($"Cannot build more receivers, {nameof(ReceiverFactory)} has been disposed");
                     }
 
-                    receiver = Find(options.Name);
+                    receiver = FindById(options.Id) as Receiver;
                     if(receiver == null || !receiver.Options.Equals(options)) {
                         var newReceivers = ShallowCollectionCopier.Copy(_Receivers);
                         if(receiver != null) {

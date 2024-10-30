@@ -33,5 +33,18 @@ namespace VirtualRadar.Server.ApiControllers
                 .Select(receiver => FeedJson.FromReceiver(receiver))
                 .ToArray();
         }
+
+        /// <summary>
+        /// Returns details for a single feed.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet, Route("api/3.00/feeds/{id}")]
+        public FeedJson GetFeed(int id)
+        {
+            return FeedJson.FromReceiver(
+                _ReceiverFactory.FindById(id)
+            );
+        }
     }
 }

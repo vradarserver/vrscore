@@ -20,11 +20,11 @@ namespace VirtualRadar.Receivers
     {
         ReceiverOptions Options { get; }
 
-        int Id => Options.Id;
+        int Id { get; }
 
-        string Name => Options.Name;
+        string Name { get; }
 
-        bool Enabled => Options.Enabled;
+        bool Enabled { get; }
 
         IReceiveConnector Connector { get; }
 
