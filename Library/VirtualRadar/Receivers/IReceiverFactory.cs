@@ -54,6 +54,14 @@ namespace VirtualRadar.Receivers
         IReceiver FindById(int id);
 
         /// <summary>
+        /// Returns a pre-built receiver that matches the configured default source. If there is no default
+        /// source, or if it cannot be found, then the first receiver is returned. If there are no receivers
+        /// then null is returned.
+        /// </summary>
+        /// <returns></returns>
+        IReceiver FindDefaultSource();
+
+        /// <summary>
         /// Registers a callback that is called whenever a receiver is added. The caller should keep the handle
         /// returned by this function and dispose of it when they themselves are disposed, otherwise they will
         /// tie themselves to the lifetime of this factory.

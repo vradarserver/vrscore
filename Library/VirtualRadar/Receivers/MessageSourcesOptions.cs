@@ -15,16 +15,13 @@ namespace VirtualRadar.Receivers
     /// <summary>
     /// Describes the options for all sources of aircraft messages.
     /// </summary>
-    /// <remarks>
-    /// This is a class because .NET 8 records equality comparisons don't work with arrays
-    /// and objects. If the situation changes in later versions of .NET then we can cut a
-    /// lot of code out of this.
-    /// </remarks>
     [Settings("MessageSources")]
     public class MessageSourcesOptions
     {
         private ReceiverOptions[] _Receivers = [];
         public ReceiverOptions[] Receivers { get; set; }
+
+        public int DefaultSourceId { get; set; }
 
         public MessageSourcesOptions()
         {
@@ -49,23 +46,27 @@ namespace VirtualRadar.Receivers
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is MessageSourcesOptions other) {
-                result = Receivers.SequenceEqual(other.Receivers);
+                result = DefaultSourceId == other.DefaultSourceId
+                      && Receivers.SequenceEqual(other.Receivers);
             }
 
             return result;
         }
 
-        public override int GetHashCode() => Receivers.Length.GetHashCode();
+        public override int GetHashCode() => HashCode.Combine(DefaultSourceId, Receivers.Length);
 
         public override string ToString()
         {
             var result = new StringBuilder();
 
-            result.AppendLine($"{nameof(MessageSourcesOptions)} {{ {nameof(Receivers)} = [");
+            result.AppendLine($"{nameof(MessageSourcesOptions)} {{");
+            result.AppendLine($"  {nameof(DefaultSourceId)} = {DefaultSourceId}");
+            result.AppendLine($"  {nameof(Receivers)} = [");
             foreach(var receiver in Receivers) {
-                result.AppendLine($"  {receiver}");
+                result.AppendLine($"    {receiver}");
             }
-            result.AppendLine($"] }}");
+            result.AppendLine("  ]");
+            result.AppendLine("}");
 
             return result.ToString();
         }

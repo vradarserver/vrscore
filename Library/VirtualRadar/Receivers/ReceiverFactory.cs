@@ -45,7 +45,6 @@ namespace VirtualRadar.Receivers
             }
         }
 
-
         ~ReceiverFactory() => Dispose(false);
 
         /// <inheritdoc/>
@@ -132,6 +131,15 @@ namespace VirtualRadar.Receivers
         {
             var receivers = _Receivers;
             return receivers.FirstOrDefault(receiver => receiver.Id == id);
+        }
+
+        /// <inheritdoc/>
+        public IReceiver FindDefaultSource()
+        {
+            var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
+            var receivers = _Receivers;
+            return FindById(messageSources.DefaultSourceId)
+                ?? receivers.FirstOrDefault();
         }
 
         /// <inheritdoc/>
