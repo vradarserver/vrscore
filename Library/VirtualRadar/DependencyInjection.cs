@@ -95,6 +95,7 @@ namespace VirtualRadar
             services.AddLifetime<IAircraftList,                 AircraftList>();
             services.AddLifetime<IAircraftOnlineLookupProvider, Services.AircraftOnlineLookup.LookupProvider>();
             services.AddLifetime<IAircraftOnlineLookupService,  Services.AircraftOnlineLookup.LookupService>();
+            services.AddLifetime<IClock,                        Services.Clock>();
             services.AddLifetime<IFileSystem,                   Services.FileSystem>();
             services.AddLifetime<IHttpClientService,            Services.HttpClientService>();
             services.AddLifetime<ILog,                          Services.LogService>();
