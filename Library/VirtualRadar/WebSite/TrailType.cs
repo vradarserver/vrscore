@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2013 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,44 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Linq.Expressions;
-using System.Reflection;
-
-namespace VirtualRadar.Reflection
+namespace VirtualRadar.WebSite
 {
     /// <summary>
-    /// Extracts information out of expressions.
+    /// An enumeration of the different trail types.
     /// </summary>
-    public static class ExpressionHelper
+    public enum TrailType : byte
     {
         /// <summary>
-        /// Returns the target of a property expression.
+        /// No trail is to be shown.
         /// </summary>
-        /// <param name="propertyExpression"></param>
-        /// <returns></returns>
-        public static PropertyInfo PropertyInfo(Expression propertyExpression)
-        {
-            var lambdaExpression = (LambdaExpression)propertyExpression;
-
-            var memberExpression = lambdaExpression.Body.NodeType == ExpressionType.Convert
-                ? ((UnaryExpression)lambdaExpression.Body).Operand as MemberExpression
-                : lambdaExpression.Body as MemberExpression;
-
-            return memberExpression?.Member as PropertyInfo;
-        }
+        None,
 
         /// <summary>
-        /// Returns the name of the target of a property expression.
+        /// Show the complete path taken by the aircraft.
         /// </summary>
-        /// <param name="propertyExpression"></param>
-        /// <returns></returns>
-        public static string PropertyName(Expression propertyExpression) => PropertyInfo(propertyExpression)?.Name;
+        Full,
 
         /// <summary>
-        /// Returns the type of the target of a property expression.
+        /// Show the path taken by the aircraft over the last so-many seconds.
         /// </summary>
-        /// <param name="propertyExpression"></param>
-        /// <returns></returns>
-        public static Type PropertyType(Expression propertyExpression) => PropertyInfo(propertyExpression)?.PropertyType;
+        Short,
+
+        /// <summary>
+        /// Show the entire path and all changes in altitude.
+        /// </summary>
+        FullAltitude,
+
+        /// <summary>
+        /// Show the path and changes in altitude over the last so-many seconds.
+        /// </summary>
+        ShortAltitude,
+
+        /// <summary>
+        /// Show the entire path and all changes in speed.
+        /// </summary>
+        FullSpeed,
+
+        /// <summary>
+        /// Show the path and changes in speed over the last so-many seconds.
+        /// </summary>
+        ShortSpeed,
     }
 }
