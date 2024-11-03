@@ -15,7 +15,7 @@ namespace VirtualRadar.Message
         /// <summary>
         /// The ID of the aircraft whose details have been looked up.
         /// </summary>
-        public uint AircraftId { get; set; }
+        public int AircraftId { get; set; }
 
         /// <summary>
         /// Creates a new object.
@@ -29,7 +29,7 @@ namespace VirtualRadar.Message
         /// </summary>
         /// <param name="aircraftId"></param>
         /// <param name="success"></param>
-        public LookupByAircraftIdOutcome(uint aircraftId, bool success)
+        public LookupByAircraftIdOutcome(int aircraftId, bool success)
         {
             AircraftId = aircraftId;
             Success = success;

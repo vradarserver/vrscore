@@ -16,7 +16,7 @@ namespace VirtualRadar
     class AircraftList : IAircraftList
     {
         private readonly object _SyncLock = new();
-        private readonly Dictionary<uint, Aircraft> _AircraftById = [];
+        private readonly Dictionary<int, Aircraft> _AircraftById = [];
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = [];
         private long _Stamp = 0L;
 

@@ -21,7 +21,7 @@ namespace VirtualRadar.Message
         /// The unique identifier of the aircraft that transmitted the message. For most sources this
         /// will be the ICAO24. Mandatory. Cannot change over the lifetime of the session.
         /// </summary>
-        public uint AircraftId { get; }
+        public int AircraftId { get; }
 
         /// <summary>
         /// The ICAO24 of the aircraft that transmitted the message.
@@ -179,7 +179,7 @@ namespace VirtualRadar.Message
         /// Creates a new object.
         /// </summary>
         /// <param name="aircraftId"></param>
-        public TransponderMessage(uint aircraftId)
+        public TransponderMessage(int aircraftId)
         {
             AircraftId = aircraftId;
         }

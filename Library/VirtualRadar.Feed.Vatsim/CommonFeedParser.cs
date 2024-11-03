@@ -58,7 +58,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// </summary>
         /// <param name="pilot"></param>
         /// <returns></returns>
-        public uint BuildAircraftId(VatsimDataV3Pilot pilot) => (uint)pilot.Cid;
+        public int BuildAircraftId(VatsimDataV3Pilot pilot) => pilot.Cid;
 
         /// <summary>
         /// Builds the messages and lookups for the pilot passed across.

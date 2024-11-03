@@ -28,7 +28,7 @@ namespace VirtualRadar
         /// that uniquely distinguishes one aircraft from another. It is established on receipt of the first
         /// message and never changes.
         /// </summary>
-        public uint Id { get; }
+        public int Id { get; }
 
         /// <summary>
         /// A value indicating when the aircraft was last changed. See <see cref="PostOffice"/> for the rules
@@ -119,7 +119,7 @@ namespace VirtualRadar
         /// Creates a new object.
         /// </summary>
         /// <param name="id"></param>
-        public Aircraft(uint id)
+        public Aircraft(int id)
         {
             Id = id;
         }
