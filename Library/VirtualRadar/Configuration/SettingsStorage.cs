@@ -3,8 +3,11 @@ using Newtonsoft.Json.Linq;
 
 namespace VirtualRadar.Configuration
 {
-    /// <inheritdoc/>
-    class SettingsStorage : ISettingsStorage
+    /// <summary>
+    /// Do not instantiate this directly. Instantitate <see cref="ISettingsStorage"/> via DI
+    /// instead. This is only public so that it can be unit tested.
+    /// </summary>
+    public class SettingsStorage : ISettingsStorage
     {
         class ParsedContent
         {
@@ -19,6 +22,7 @@ namespace VirtualRadar.Configuration
 
         private readonly IFileSystem _FileSystem;
         private readonly IWorkingFolder _WorkingFolder;
+        private readonly ISettingsConfiguration _SettingsConfiguration;
 
         private readonly object _SyncLock = new();
         private Dictionary<string, JObject> _Content;
@@ -34,13 +38,16 @@ namespace VirtualRadar.Configuration
         /// </summary>
         /// <param name="fileSystem"></param>
         /// <param name="workingFolder"></param>
+        /// <param name="settingsConfiguration"></param>
         public SettingsStorage(
             IFileSystem fileSystem,
-            IWorkingFolder workingFolder
+            IWorkingFolder workingFolder,
+            ISettingsConfiguration settingsConfiguration
         )
         {
             _FileSystem = fileSystem;
             _WorkingFolder = workingFolder;
+            _SettingsConfiguration = settingsConfiguration;
 
             _JsonDeserialiserSettings = new();
             _JsonDeserialiserSettings.Converters.Add(new SettingsProviderJsonConverter());
@@ -51,7 +58,7 @@ namespace VirtualRadar.Configuration
         {
             LoadContent();
 
-            var contentKey = ConfigurationConfig.GetKeyForOptionType(optionType);
+            var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
             var parsedContentKey = ParsedContentKey(contentKey, optionType);
 
             ParsedContent parsedContent;
@@ -103,7 +110,7 @@ namespace VirtualRadar.Configuration
 
                     _Content = [];
 
-                    var defaultKeys = ConfigurationConfig.GetDefaultKeys();
+                    var defaultKeys = _SettingsConfiguration.GetDefaultKeys();
                     foreach(var kvp in defaultKeys) {
                         _Content[kvp.Key] = kvp.Value;
                     }

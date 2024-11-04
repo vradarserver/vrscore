@@ -103,7 +103,8 @@ namespace VirtualRadar
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
-            services.AddLifetime<Configuration.ISettingsStorage, Configuration.SettingsStorage>();
+            services.AddLifetime<Configuration.ISettingsStorage,        Configuration.SettingsStorage>();
+            services.AddLifetime<Configuration.ISettingsConfiguration,  Configuration.SettingsConfiguration>();
 
             services.AddLifetime<Connection.ReceiveConnectorFactory, Connection.ReceiveConnectorFactory>();
 
