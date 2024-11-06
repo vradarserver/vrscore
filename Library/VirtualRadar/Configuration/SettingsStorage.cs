@@ -115,18 +115,15 @@ namespace VirtualRadar.Configuration
                         _Content[kvp.Key] = kvp.Value;
                     }
 
-                    var saveSettings = !_FileSystem.FileExists(_ContentFileName);
-                    if(!saveSettings) {
+                    if(_FileSystem.FileExists(_ContentFileName)) {
                         var json = _FileSystem.ReadAllText(_ContentFileName);
                         var loaded = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(json);
 
                         foreach(var kvp in _Content) {
                             if(!loaded.TryGetValue(kvp.Key, out var loadedContent)) {
-                                saveSettings = true;
                                 break;
                             }
                             if(!kvp.Value.Equals(loadedContent)) {
-                                saveSettings = true;
                                 break;
                             }
                         }
@@ -148,23 +145,54 @@ namespace VirtualRadar.Configuration
                             _Content[key] = actualContent;
                         }
                     }
-
-                    if(saveSettings) {
-                        SaveContent();
-                    }
                 }
             }
         }
 
-        private void SaveContent()
+        /// <inheritdoc/>
+        public void ChangeValue(Type optionType, object newValue)
+        {
+            ArgumentNullException.ThrowIfNull(optionType);
+            ArgumentNullException.ThrowIfNull(newValue);
+
+            var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
+            if(!optionType.IsAssignableFrom(newValue.GetType())) {
+                throw new InvalidOperationException(
+                      $"Cannot store a value of type {newValue.GetType().Name} against the entry for type "
+                    + $"{optionType.Name} under the key \"{contentKey}\""
+                );
+            }
+
+            LoadContent();
+
+            var parsedContentKey = ParsedContentKey(contentKey, optionType);
+
+            lock(_SyncLock) {
+                _Content[contentKey] = JObject.FromObject(newValue);
+                _ParsedContent[parsedContentKey] = new() {
+                    ParsedFromContentVersion = _ContentVersion,
+                    ParsedValue = newValue,
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ChangeValue<T>(T newValue) => ChangeValue(typeof(T), newValue);
+
+        /// <inheritdoc/>
+        public  void SaveChanges()
         {
             lock(_SyncLock) {
+                if(_Content == null) {
+                    LoadContent();
+                }
+
                 _FileSystem.CreateDirectoryIfNotExists(_WorkingFolder.Folder);
                 var contentFileName = _FileSystem.Combine(
                     _WorkingFolder.Folder,
                     FileName
                 );
-
+            
                 var json = JsonConvert.SerializeObject(_Content, Formatting.Indented);
                 _FileSystem.WriteAllText(contentFileName, json);
             }
