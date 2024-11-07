@@ -134,10 +134,7 @@ namespace VirtualRadar.Configuration
 
                             if(_Content.TryGetValue(key, out var defaultContent)) {
                                 if(defaultContent is JObject mergedContent) {
-                                    mergedContent.Merge(actualContent, new() {
-                                        MergeArrayHandling = MergeArrayHandling.Replace,
-                                        MergeNullValueHandling = MergeNullValueHandling.Merge
-                                    });
+                                    MergeJObjects(mergedContent, actualContent);
                                     actualContent = mergedContent;
                                 }
                             }
@@ -168,12 +165,27 @@ namespace VirtualRadar.Configuration
             var parsedContentKey = ParsedContentKey(contentKey, optionType);
 
             lock(_SyncLock) {
-                _Content[contentKey] = JObject.FromObject(newValue);
+                var newContent = JObject.FromObject(newValue);
+
+                if(_Content.TryGetValue(contentKey, out var currentContent)) {
+                    MergeJObjects(currentContent, newContent);
+                    newContent = currentContent;
+                }
+
+                _Content[contentKey] = newContent;
                 _ParsedContent[parsedContentKey] = new() {
                     ParsedFromContentVersion = _ContentVersion,
                     ParsedValue = newValue,
                 };
             }
+        }
+
+        private static void MergeJObjects(JObject mergeTarget, JObject mergeSource)
+        {
+            mergeTarget.Merge(mergeSource, new() {
+                MergeArrayHandling = MergeArrayHandling.Replace,
+                MergeNullValueHandling = MergeNullValueHandling.Merge
+            });
         }
 
         /// <inheritdoc/>

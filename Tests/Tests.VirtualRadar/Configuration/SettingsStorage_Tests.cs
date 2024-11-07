@@ -24,6 +24,30 @@ namespace Tests.VirtualRadar.Configuration
         record Options(int Id, string Name);
         readonly Options _DefaultOptions = new(0, null);
 
+        class ArrayOfStrings
+        {
+            public IReadOnlyList<string> Lines { get; }
+
+            public ArrayOfStrings(string[] lines)
+            {
+                Lines = lines;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var result = Object.ReferenceEquals(this, obj);
+                if(!result && obj is ArrayOfStrings other) {
+                    result = (Lines == null && other.Lines == null)
+                          || (Lines != null && other.Lines != null && Lines.SequenceEqual(other.Lines));
+                }
+                return result;
+            }
+
+            public override int GetHashCode() => HashCode.Combine(Lines);
+        }
+
+        readonly ArrayOfStrings _DefaultArrayOfStrings = new([]);
+
         private SettingsStorage _Service;
         private MockFileSystem _FileSystem;
         private MockWorkingFolder _WorkingFolder;
@@ -53,12 +77,14 @@ namespace Tests.VirtualRadar.Configuration
                 .Setup(r => r.GetDefaultKeys())
                 .Returns(() => ShallowCollectionCopier.Copy(_OptionKeyToDefaultValue));
 
-            _Service = new(
-                _FileSystem,
-                _WorkingFolder,
-                _SettingsConfig.Object
-            );
+            _Service = CreateService();
         }
+
+        private SettingsStorage CreateService() => new(
+            _FileSystem,
+            _WorkingFolder,
+            _SettingsConfig.Object
+        );
 
         private void SetupConfigForType<T>(string key, T defaultValue)
         {
@@ -277,6 +303,68 @@ namespace Tests.VirtualRadar.Configuration
             _Service.SaveChanges();
 
             AssertContent(@"{ ""options"": { ""Id"": 2, ""Name"": ""Gale"" } }");
+        }
+
+        [TestMethod]
+        public void SaveChanges_Merges_Unused_Existing_Values()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"", ""Title"": ""The Merciless"" } }");
+
+            _Service.ChangeValue<Options>(new(Id: 2, Name: "Foo"));
+            _Service.SaveChanges();
+
+            var content = _FileSystem.GetFileContentAsString(ExpectedSettingsFileName());
+            Assert.IsTrue(content.Contains(@"""Title"":"));
+            Assert.IsTrue(content.Contains(@"""The Merciless"""));
+        }
+
+        [TestMethod]
+        public void SaveChanges_Overwrites_Existing_Value_Types()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"" } }");
+
+            var expected = new Options(Id: 2, Name: "Foo");
+            _Service.ChangeValue<Options>(expected);
+            _Service.SaveChanges();
+
+            var newService = CreateService();
+            var actual = _Service.LatestValue<Options>();
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SaveChanges_Can_Overwrite_NonNull_With_Null()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"" } }");
+
+            var expected = new Options(Id: 2, Name: null);
+            _Service.ChangeValue<Options>(expected);
+            _Service.SaveChanges();
+
+            var newService = CreateService();
+            var actual = _Service.LatestValue<Options>();
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SaveChanges_Can_Overwrite_Array_Content()
+        {
+            SetupConfigForType<ArrayOfStrings>("strings", _DefaultArrayOfStrings);
+            SetupConfigFile(@"{ ""strings"": { ""Lines"": [ ""L1"", ""L2"" ] } }");
+
+            var expected = new ArrayOfStrings([ "J1" ]);
+            _Service.ChangeValue<ArrayOfStrings>(expected);
+            _Service.SaveChanges();
+
+            var newService = CreateService();
+            var actual = _Service.LatestValue<ArrayOfStrings>();
+
+            Assert.AreEqual(expected, actual);
         }
     }
 }
