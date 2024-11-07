@@ -19,12 +19,6 @@ namespace VirtualRadar.Configuration
     /// </summary>
     public class SettingsStorage : ISettingsStorage
     {
-        class ParsedContent
-        {
-            public long ParsedFromContentVersion;
-            public object ParsedValue;
-        }
-
         internal const string FileName = "Settings.json";
 
         private const string _Schema_Original = "1";
@@ -35,9 +29,8 @@ namespace VirtualRadar.Configuration
         private readonly ISettingsConfiguration _SettingsConfiguration;
 
         private readonly object _SyncLock = new();
-        private Dictionary<string, JObject> _Content;
-        private long _ContentVersion;
-        private readonly Dictionary<string, ParsedContent> _ParsedContent = [];
+        private Dictionary<string, JObject> _SettingKeyToJObject;
+        private readonly Dictionary<string, object> _ParsedContent = [];
         private string _ContentFileName;
         private JsonSerializerSettings _JsonDeserialiserSettings;
 
@@ -71,36 +64,28 @@ namespace VirtualRadar.Configuration
             var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
             var parsedContentKey = ParsedContentKey(contentKey, optionType);
 
-            ParsedContent parsedContent;
+            object result;
             lock(_SyncLock) {
-                _ParsedContent.TryGetValue(parsedContentKey, out parsedContent);
-
-                if(parsedContent?.ParsedFromContentVersion != _ContentVersion) {
-                    _Content.TryGetValue(contentKey, out var content);
-                    if(content == null) {
+                if(!_ParsedContent.TryGetValue(parsedContentKey, out result)) {
+                    _SettingKeyToJObject.TryGetValue(contentKey, out var fileJObject);
+                    if(fileJObject == null) {
                         throw new InvalidOperationException(
                             $"There is no default and no content stored for the \"{contentKey}\" key assigned to options of type {optionType.Name}"
                         );
                     }
+
                     var deserialised = JsonConvert.DeserializeObject(
-                        content.ToString(),
+                        fileJObject.ToString(),
                         optionType,
                         _JsonDeserialiserSettings
                     );
 
-                    if(Object.Equals(parsedContent?.ParsedValue, deserialised)) {
-                        parsedContent.ParsedFromContentVersion = _ContentVersion;
-                    } else {
-                        parsedContent = new() {
-                            ParsedFromContentVersion = _ContentVersion,
-                            ParsedValue = deserialised,
-                        };
-                        _ParsedContent[parsedContentKey] = parsedContent;
-                    }
+                    result = deserialised;
+                    _ParsedContent[parsedContentKey] = result;
                 }
             }
 
-            return parsedContent.ParsedValue;
+            return result;
         }
 
         /// <inheritdoc/>
@@ -108,48 +93,48 @@ namespace VirtualRadar.Configuration
 
         private void LoadContent()
         {
-            lock(_SyncLock) {
-                var contentFileName = _FileSystem.Combine(
-                    _WorkingFolder.Folder,
-                    FileName
-                );
+            var folder = _WorkingFolder.Folder;
+            var fileName = FileName;
+            var contentFileName = _FileSystem.Combine(folder, fileName);
 
-                if(_Content == null || _ContentFileName != contentFileName) {
-                    ++_ContentVersion;
-                    _ContentFileName = contentFileName;
+            bool contentNeedsLoading() => _SettingKeyToJObject == null
+                                       || _ContentFileName != contentFileName;
 
-                    _Content = [];
+            if(contentNeedsLoading()) {
+                lock(_SyncLock) {
+                    if(contentNeedsLoading()) {
+                        _ContentFileName = _FileSystem.Combine(_WorkingFolder.Folder, FileName);
+                        _SettingKeyToJObject = [];
 
-                    var defaultKeys = _SettingsConfiguration.GetDefaultKeys();
-                    foreach(var kvp in defaultKeys) {
-                        _Content[kvp.Key] = kvp.Value;
-                    }
-
-                    if(_FileSystem.FileExists(_ContentFileName)) {
-                        var json = _FileSystem.ReadAllText(_ContentFileName);
-                        var loaded = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(json);
-
-                        foreach(var kvp in _Content) {
-                            if(!loaded.TryGetValue(kvp.Key, out var loadedContent)) {
-                                break;
-                            }
-                            if(!kvp.Value.Equals(loadedContent)) {
-                                break;
-                            }
+                        var defaultKeys = _SettingsConfiguration.GetDefaultKeys();
+                        foreach(var kvp in defaultKeys) {
+                            _SettingKeyToJObject[kvp.Key] = kvp.Value;
                         }
 
-                        foreach(var kvp in loaded) {
-                            var key = kvp.Key;
-                            var actualContent = kvp.Value;
+                        if(_FileSystem.FileExists(_ContentFileName)) {
+                            var json = _FileSystem.ReadAllText(_ContentFileName);
+                            var loaded = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(json);
 
-                            if(_Content.TryGetValue(key, out var defaultContent)) {
-                                if(defaultContent is JObject mergedContent) {
-                                    MergeJObjects(mergedContent, actualContent);
-                                    actualContent = mergedContent;
+                            foreach(var kvp in _SettingKeyToJObject) {
+                                if(!loaded.TryGetValue(kvp.Key, out var loadedContent)) {
+                                    break;
+                                }
+                                if(!kvp.Value.Equals(loadedContent)) {
+                                    break;
                                 }
                             }
 
-                            _Content[key] = actualContent;
+                            foreach(var kvp in loaded) {
+                                var key = kvp.Key;
+                                var actualContent = kvp.Value;
+
+                                if(_SettingKeyToJObject.TryGetValue(key, out var currentJObject)) {
+                                    MergeJObjects(currentJObject, actualContent);
+                                    actualContent = currentJObject;
+                                }
+
+                                _SettingKeyToJObject[key] = actualContent;
+                            }
                         }
                     }
                 }
@@ -175,27 +160,16 @@ namespace VirtualRadar.Configuration
             var parsedContentKey = ParsedContentKey(contentKey, optionType);
 
             lock(_SyncLock) {
-                var newContent = JObject.FromObject(newValue);
+                var newJObject = JObject.FromObject(newValue);
 
-                if(_Content.TryGetValue(contentKey, out var currentContent)) {
-                    MergeJObjects(currentContent, newContent);
-                    newContent = currentContent;
+                if(_SettingKeyToJObject.TryGetValue(contentKey, out var currentJObject)) {
+                    MergeJObjects(currentJObject, newJObject);
+                    newJObject = currentJObject;
                 }
 
-                _Content[contentKey] = newContent;
-                _ParsedContent[parsedContentKey] = new() {
-                    ParsedFromContentVersion = _ContentVersion,
-                    ParsedValue = newValue,
-                };
+                _SettingKeyToJObject[contentKey] = newJObject;
+                _ParsedContent[parsedContentKey] = newValue;
             }
-        }
-
-        private static void MergeJObjects(JObject mergeTarget, JObject mergeSource)
-        {
-            mergeTarget.Merge(mergeSource, new() {
-                MergeArrayHandling = MergeArrayHandling.Replace,
-                MergeNullValueHandling = MergeNullValueHandling.Merge
-            });
         }
 
         /// <inheritdoc/>
@@ -205,7 +179,7 @@ namespace VirtualRadar.Configuration
         public  void SaveChanges()
         {
             lock(_SyncLock) {
-                if(_Content == null) {
+                if(_SettingKeyToJObject == null) {
                     LoadContent();
                 }
 
@@ -215,9 +189,17 @@ namespace VirtualRadar.Configuration
                     FileName
                 );
             
-                var json = JsonConvert.SerializeObject(_Content, Formatting.Indented);
+                var json = JsonConvert.SerializeObject(_SettingKeyToJObject, Formatting.Indented);
                 _FileSystem.WriteAllText(contentFileName, json);
             }
+        }
+
+        private static void MergeJObjects(JObject target, JObject source)
+        {
+            target.Merge(source, new() {
+                MergeArrayHandling = MergeArrayHandling.Replace,
+                MergeNullValueHandling = MergeNullValueHandling.Merge
+            });
         }
     }
 }
