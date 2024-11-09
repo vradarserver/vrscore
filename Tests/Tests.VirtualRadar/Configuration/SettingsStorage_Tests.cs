@@ -13,6 +13,7 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Tests.Mocks;
+using VirtualRadar;
 using VirtualRadar.Collections;
 using VirtualRadar.Configuration;
 
@@ -51,7 +52,8 @@ namespace Tests.VirtualRadar.Configuration
         private SettingsStorage _Service;
         private MockFileSystem _FileSystem;
         private MockWorkingFolder _WorkingFolder;
-        private Mock<ISettingsConfiguration> _SettingsConfig;
+        private Mock<ISettingsConfiguration> _MockSettingsConfig;
+        private Mock<ILog> _MockLog;
 
         private Dictionary<Type, string> _OptionTypeToKey;
         private Dictionary<string, JObject> _OptionKeyToDefaultValue;
@@ -64,8 +66,8 @@ namespace Tests.VirtualRadar.Configuration
 
             _OptionTypeToKey = [];
             _OptionKeyToDefaultValue = [];
-            _SettingsConfig = MockHelper.CreateMock<ISettingsConfiguration>();
-            _SettingsConfig
+            _MockSettingsConfig = MockHelper.CreateMock<ISettingsConfiguration>();
+            _MockSettingsConfig
                 .Setup(r => r.GetKeyForOptionType(It.IsAny<Type>()))
                 .Returns((Type type) => {
                     if(!_OptionTypeToKey.TryGetValue(type, out var result)) {
@@ -73,17 +75,25 @@ namespace Tests.VirtualRadar.Configuration
                     }
                     return result;
                 });
-            _SettingsConfig
+            _MockSettingsConfig
                 .Setup(r => r.GetDefaultKeys())
                 .Returns(() => ShallowCollectionCopier.Copy(_OptionKeyToDefaultValue));
+            _MockLog = MockHelper.CreateMock<ILog>();
 
             _Service = CreateService();
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            _Service.Dispose();
         }
 
         private SettingsStorage CreateService() => new(
             _FileSystem,
             _WorkingFolder,
-            _SettingsConfig.Object
+            _MockSettingsConfig.Object,
+            _MockLog.Object
         );
 
         private void SetupConfigForType<T>(string key, T defaultValue)
@@ -329,10 +339,10 @@ namespace Tests.VirtualRadar.Configuration
             _Service.ChangeValue<Options>(expected);
             _Service.SaveChanges();
 
-            var newService = CreateService();
-            var actual = _Service.LatestValue<Options>();
-
-            Assert.AreEqual(expected, actual);
+            using(var newService = CreateService()) {
+                var actual = _Service.LatestValue<Options>();
+                Assert.AreEqual(expected, actual);
+            }
         }
 
         [TestMethod]
@@ -345,10 +355,10 @@ namespace Tests.VirtualRadar.Configuration
             _Service.ChangeValue<Options>(expected);
             _Service.SaveChanges();
 
-            var newService = CreateService();
-            var actual = _Service.LatestValue<Options>();
-
-            Assert.AreEqual(expected, actual);
+            using(var newService = CreateService()) {
+                var actual = _Service.LatestValue<Options>();
+                Assert.AreEqual(expected, actual);
+            }
         }
 
         [TestMethod]
@@ -361,10 +371,88 @@ namespace Tests.VirtualRadar.Configuration
             _Service.ChangeValue<ArrayOfStrings>(expected);
             _Service.SaveChanges();
 
-            var newService = CreateService();
-            var actual = _Service.LatestValue<ArrayOfStrings>();
+            using(var newService = CreateService()) {
+                var actual = _Service.LatestValue<ArrayOfStrings>();
+                Assert.AreEqual(expected, actual);
+            }
+        }
 
-            Assert.AreEqual(expected, actual);
+        [TestMethod]
+        public void SettingsChangedCallback_Called_When_Settings_Are_Changed()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+
+            var expected = new Options(2, "Honky Tonk Badonkadonk");
+            var callCount = 0;
+            ValueChangedCallbackArgs actual = null;
+            using(_Service.AddValueChangedCallback(args => { actual = args; ++callCount; })) {
+                _Service.ChangeValue(expected);
+            }
+
+            Assert.AreEqual(1, callCount);
+            Assert.AreEqual("options", actual.Key);
+            Assert.AreEqual(expected, actual.Value);
+        }
+
+        [TestMethod]
+        public void SettingsChangedCallback_Not_Called_When_Settings_Are_Not_Changed()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+            var version1 = new Options(2, "Honky Tonk Badonkadonk");
+            var version2 = new Options(2, "Honky Tonk Badonkadonk");
+            _Service.ChangeValue(version1);
+
+            var callCount = 0;
+            ValueChangedCallbackArgs actual = null;
+            using(_Service.AddValueChangedCallback(args => { actual = args; ++callCount; })) {
+                _Service.ChangeValue(version2);
+            }
+
+            Assert.AreEqual(0, callCount);
+            Assert.IsNull(actual);
+        }
+
+        [TestMethod]
+        public void SettingsChangedCallback_Logs_Exceptions()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+
+            using(_Service.AddValueChangedCallback(_ => throw new InvalidOperationException())) {
+                _Service.ChangeValue(new Options(2,
+                    "Microsoft Visual Studio 2022's text editor is the most aggressively user-hostile " +
+                    "text editor that I have ever used. It is full of bugs that Microsoft will never " +
+                    "fix. Each release just adds more bugs and more bloat. No bug fix! Only m0are feeturZ."
+                ));
+            }
+
+            _MockLog.Verify(log => log.Exception(It.IsAny<Exception>(), It.IsAny<string>()), Times.Once());
+        }
+
+        [TestMethod]
+        public void SavedChangesCallback_Called_After_Settings_Save()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+
+            _Service.ChangeValue<Options>(new(2, "Gale"));
+            var callCount = 0;
+            using(_Service.AddSavedChangesCallback(_ => { ++callCount; })) {
+                _Service.SaveChanges();
+            }
+
+            Assert.AreEqual(1, callCount);
+        }
+
+        [TestMethod]
+        public void SavedChangesCallback_Logs_Exceptions()
+        {
+            SetupConfigForType<Options>("options", _DefaultOptions);
+
+            _Service.ChangeValue<Options>(new(2, "Gale"));
+            using(_Service.AddSavedChangesCallback(_ => throw new InvalidOperationException())) {
+                _Service.SaveChanges();
+            }
+
+            _MockLog.Verify(log => log.Exception(It.IsAny<Exception>(), It.IsAny<string>()), Times.Once());
         }
     }
 }

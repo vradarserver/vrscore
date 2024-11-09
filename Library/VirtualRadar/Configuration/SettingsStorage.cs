@@ -17,7 +17,7 @@ namespace VirtualRadar.Configuration
     /// Do not instantiate this directly. Instantitate <see cref="ISettingsStorage"/> via DI
     /// instead. This is only public so that it can be unit tested.
     /// </summary>
-    public class SettingsStorage : ISettingsStorage
+    public class SettingsStorage : ISettingsStorage, IDisposable
     {
         internal const string FileName = "Settings.json";
 
@@ -27,12 +27,15 @@ namespace VirtualRadar.Configuration
         private readonly IFileSystem _FileSystem;
         private readonly IWorkingFolder _WorkingFolder;
         private readonly ISettingsConfiguration _SettingsConfiguration;
+        private readonly ILog _Log;
 
         private readonly object _SyncLock = new();
         private Dictionary<string, JObject> _SettingKeyToJObject;
         private readonly Dictionary<string, object> _ParsedContent = [];
         private string _ContentFileName;
         private JsonSerializerSettings _JsonDeserialiserSettings;
+        private readonly CallbackList<ValueChangedCallbackArgs> _ValueChangedCallbacks = new();
+        private readonly CallbackList<EventArgs> _SavedChangesCallbacks = new();
 
         private static string ParsedContentKey(string key, Type parsedType) => $"{key}-{parsedType.Name}";
 
@@ -42,27 +45,74 @@ namespace VirtualRadar.Configuration
         /// <param name="fileSystem"></param>
         /// <param name="workingFolder"></param>
         /// <param name="settingsConfiguration"></param>
+        /// <param name="log"></param>
         public SettingsStorage(
             IFileSystem fileSystem,
             IWorkingFolder workingFolder,
-            ISettingsConfiguration settingsConfiguration
+            ISettingsConfiguration settingsConfiguration,
+            ILog log
         )
         {
             _FileSystem = fileSystem;
             _WorkingFolder = workingFolder;
             _SettingsConfiguration = settingsConfiguration;
+            _Log = log;
 
             _JsonDeserialiserSettings = new();
             _JsonDeserialiserSettings.Converters.Add(new SettingsProviderJsonConverter());
         }
 
+        /// <summary>
+        /// Finalises the object.
+        /// </summary>
+        ~SettingsStorage() => Dispose(false);
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes of or finalises the object.
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                _ValueChangedCallbacks.Dispose();
+                _SavedChangesCallbacks.Dispose();
+            }
+        }
+
+        /// <inheritdoc/>
+        public ICallbackHandle AddValueChangedCallback(Action<ValueChangedCallbackArgs> callback)
+        {
+            return _ValueChangedCallbacks.Add(callback);
+        }
+
+        /// <inheritdoc/>
+        public ICallbackHandle AddSavedChangesCallback(Action<EventArgs> callback)
+        {
+            return _SavedChangesCallbacks.Add(callback);
+        }
+
+        /// <inheritdoc/>
+        public TObject LatestValue<TObject>() => (TObject)LatestValue(typeof(TObject));
+
         /// <inheritdoc/>
         public object LatestValue(Type optionType)
         {
-            LoadContent();
-
             var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
+            return LatestValue(contentKey, optionType);
+        }
+
+        private object LatestValue(string contentKey, Type optionType)
+        {
             var parsedContentKey = ParsedContentKey(contentKey, optionType);
+
+            LoadContent();
 
             object result;
             lock(_SyncLock) {
@@ -87,9 +137,6 @@ namespace VirtualRadar.Configuration
 
             return result;
         }
-
-        /// <inheritdoc/>
-        public TObject LatestValue<TObject>() => (TObject)LatestValue(typeof(TObject));
 
         private void LoadContent()
         {
@@ -155,20 +202,31 @@ namespace VirtualRadar.Configuration
                 );
             }
 
-            LoadContent();
-
             var parsedContentKey = ParsedContentKey(contentKey, optionType);
 
+            var runCallbacks = false;
             lock(_SyncLock) {
-                var newJObject = JObject.FromObject(newValue);
+                var latestValue = LatestValue(contentKey, optionType);
+                if(!latestValue.Equals(newValue)) {
+                    var newJObject = JObject.FromObject(newValue);
 
-                if(_SettingKeyToJObject.TryGetValue(contentKey, out var currentJObject)) {
-                    MergeJObjects(currentJObject, newJObject);
-                    newJObject = currentJObject;
+                    if(_SettingKeyToJObject.TryGetValue(contentKey, out var currentJObject)) {
+                        MergeJObjects(currentJObject, newJObject);
+                        newJObject = currentJObject;
+                    }
+
+                    _SettingKeyToJObject[contentKey] = newJObject;
+                    _ParsedContent[parsedContentKey] = newValue;
+
+                    runCallbacks = true;
                 }
+            }
 
-                _SettingKeyToJObject[contentKey] = newJObject;
-                _ParsedContent[parsedContentKey] = newValue;
+            if(runCallbacks) {
+                var exception = _ValueChangedCallbacks.InvokeWithoutExceptions(new(contentKey, newValue));
+                if(exception != null) {
+                    _Log.Exception(exception, $"Thrown when running callbacks after setting the \"{contentKey}\" value to {newValue}");
+                }
             }
         }
 
@@ -178,19 +236,26 @@ namespace VirtualRadar.Configuration
         /// <inheritdoc/>
         public  void SaveChanges()
         {
+            string contentFileName = null;
+
             lock(_SyncLock) {
                 if(_SettingKeyToJObject == null) {
                     LoadContent();
                 }
 
                 _FileSystem.CreateDirectoryIfNotExists(_WorkingFolder.Folder);
-                var contentFileName = _FileSystem.Combine(
+                contentFileName = _FileSystem.Combine(
                     _WorkingFolder.Folder,
                     FileName
                 );
             
                 var json = JsonConvert.SerializeObject(_SettingKeyToJObject, Formatting.Indented);
                 _FileSystem.WriteAllText(contentFileName, json);
+            }
+
+            var exception = _SavedChangesCallbacks.InvokeWithoutExceptions(EventArgs.Empty);
+            if(exception != null) {
+                _Log.Exception(exception, $"Thrown when running callbacks after saving settings to {contentFileName}");
             }
         }
 
