@@ -48,11 +48,11 @@ namespace VirtualRadar
                     // that might have multiple aircraft with the same ICAO24.
                     var aircraftIcao24 = aircraft.Icao24.Value;
                     if(originalIcao24 != aircraftIcao24) {
-                        if(originalIcao24.IsValid && originalIcao24 > 0) {
-                            _AircraftByIcao24.Remove(originalIcao24);
+                        if((originalIcao24?.IsValid ?? false) && originalIcao24 > 0) {
+                            _AircraftByIcao24.Remove(originalIcao24.Value);
                         }
-                        if(aircraftIcao24.IsValid && aircraftIcao24 > 0) {
-                            _AircraftByIcao24[aircraftIcao24] = aircraft;
+                        if((aircraftIcao24?.IsValid ?? false) && aircraftIcao24 > 0) {
+                            _AircraftByIcao24[aircraftIcao24.Value] = aircraft;
                         }
                     }
                 }

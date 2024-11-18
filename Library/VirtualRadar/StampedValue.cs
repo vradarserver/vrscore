@@ -68,6 +68,23 @@ namespace VirtualRadar
                 : false;
         }
 
+        /// <summary>
+        /// As per <see cref="SetIfNotDefault(T, long)"/> except this takes a value of a different
+        /// type and, if that value is not the default for its type, then the conversion value is
+        /// called to cast to the type held by the aircraft and then that value is assigned.
+        /// </summary>
+        /// <typeparam name="TRaw"></typeparam>
+        /// <param name="newValue"></param>
+        /// <param name="stamp"></param>
+        /// <param name="toValue"></param>
+        /// <returns></returns>
+        public bool SetIfNotDefault<TRaw>(TRaw newValue, long stamp, Func<TRaw, T> toValue)
+        {
+            return !EqualityComparer<TRaw>.Default.Equals(newValue, default)
+                ? Set(toValue(newValue), stamp)
+                : false;
+        }
+
         protected virtual void SetChangedValue(T newValue, long stamp)
         {
             if(Stamp > stamp) {
@@ -81,11 +98,34 @@ namespace VirtualRadar
         }
 
         /// <summary>
-        /// True if the stamp passed across is earlier than the stamp on this object.
+        /// If the stamp passed across is lower than <see cref="Stamp"/> then the <see cref="unchangedValue"/>
+        /// is returned, otherwise <see cref="Value"/> is returned.
         /// </summary>
-        /// <param name="stamp"></param>
+        /// <param name="previousValueStamp"></param>
+        /// <param name="unchangedValue"></param>
         /// <returns></returns>
-        public bool HasChangedSince(long stamp) => Stamp > stamp;
+        public T ValueIfChanged(long previousValueStamp, T unchangedValue = default)
+        {
+            return Stamp > previousValueStamp
+                ? Value
+                : unchangedValue;
+        }
+
+        /// <summary>
+        /// As per <see cref="ValueIfChanged(long, T)"/> except this takes a callback to convert the aircraft
+        /// value to another type. The callback is only called when the stamp indicates that the value has
+        /// changed.
+        /// </summary>
+        /// <typeparam name="TCon"></typeparam>
+        /// <param name="previousValueStamp"></param>
+        /// <param name="toValue"></param>
+        /// <returns></returns>
+        public TCon ValueIfChanged<TCon>(long previousValueStamp, Func<T, TCon> toValue, TCon unchangedValue = default)
+        {
+            return Stamp > previousValueStamp
+                ? toValue(Value)
+                : unchangedValue;
+        }
 
         /// <inheritdoc/>
         public override string ToString() => $"[{Stamp}]:{Value}";

@@ -86,10 +86,15 @@ namespace VirtualRadar.WebSite
             var aircraftList = state.Receiver?.AircraftList;
             if(aircraftList != null) {
                 var allAircraft = aircraftList.ToArray(out stamp);
+                var oldStamp = state.Args.PreviousDataVersion;
 
                 foreach(var aircraft in allAircraft) {
                     state.Json.Aircraft.Add(new() {
-                        UniqueId = aircraft.Id,
+                        UniqueId =          aircraft.Id,
+                        Altitude =          aircraft.AltitudeFeet.ValueIfChanged(oldStamp),
+                        AltitudeType =      aircraft.AltitudeType.ValueIfChanged(oldStamp, v => (int?)v),
+                        Callsign =          aircraft.Callsign.ValueIfChanged(oldStamp),
+                        CallsignIsSuspect = aircraft.CallsignIsSuspect.ValueIfChanged(oldStamp),
                     });
                 }
             }

@@ -50,15 +50,17 @@ namespace VirtualRadar
 
         public StampedTimedValue<long> CountMessagesReceived { get; } = new();
 
-        public StampedValue<Icao24> Icao24 { get; } = new();
+        public StampedValue<Icao24?> Icao24 { get; } = new();
 
         public StampedValue<int?> SignalLevel { get; } = new();
 
         public StampedValue<string> Callsign { get; } = new();
 
+        public StampedValue<bool?> CallsignIsSuspect { get; } = new();
+
         public StampedValue<int?> AltitudeFeet { get; } = new();
 
-        public StampedValue<AltitudeType> AltitudeType { get; } = new();
+        public StampedValue<AltitudeType?> AltitudeType { get; } = new();
 
         public StampedTimedValue<float?> AirPressureInHg { get; } = new();
 
@@ -66,21 +68,21 @@ namespace VirtualRadar
 
         public StampedValue<float?> GroundSpeedKnots { get; } = new();
 
-        public StampedValue<SpeedType> GroundSpeedType { get; } = new();
+        public StampedValue<SpeedType?> GroundSpeedType { get; } = new();
 
         public StampedTimedValue<Location> Location { get; } = new();
 
-        public StampedValue<bool> IsTisb { get; } = new();
+        public StampedValue<bool?> IsTisb { get; } = new();
 
         public StampedValue<float?> GroundTrackDegrees { get; } = new();
 
-        public StampedValue<bool> GroundTrackIsHeading { get; } = new();
+        public StampedValue<bool?> GroundTrackIsHeading { get; } = new();
 
         public StampedValue<float?> TargetHeadingDegrees { get; } = new();
 
         public StampedValue<int?> VerticalRateFeetPerMinute { get; } = new();
 
-        public StampedValue<AltitudeType> VerticalRateType { get; } = new();
+        public StampedValue<AltitudeType?> VerticalRateType { get; } = new();
 
         public StampedValue<int?> Squawk { get; } = new();
 
@@ -151,6 +153,7 @@ namespace VirtualRadar
                 AltitudeFeet                .CopyTo(result.AltitudeFeet);
                 AltitudeType                .CopyTo(result.AltitudeType);
                 Callsign                    .CopyTo(result.Callsign);
+                CallsignIsSuspect           .CopyTo(result.CallsignIsSuspect);
                 CountMessagesReceived       .CopyTo(result.CountMessagesReceived);
                 GroundSpeedKnots            .CopyTo(result.GroundSpeedKnots);
                 GroundSpeedType             .CopyTo(result.GroundSpeedType);
@@ -210,23 +213,24 @@ namespace VirtualRadar
                     var stamp = PostOffice.GetStamp();
 
                     // TRANSMITTED VALUES
-                    changed = AltitudeFeet              .SetIfNotDefault(   message.AltitudeFeet, stamp)                || changed;
-                    changed = AltitudeType              .Set(               message.AltitudeType, stamp)                || changed;
-                    changed = Callsign                  .SetIfNotDefault(   message.Callsign, stamp)                    || changed;
-                    changed = GroundSpeedKnots          .SetIfNotDefault(   message.GroundSpeedKnots, stamp)            || changed;
-                    changed = GroundSpeedType           .Set(               message.GroundSpeedType, stamp)             || changed;
-                    changed = GroundTrackDegrees        .SetIfNotDefault(   message.GroundTrackDegrees, stamp)          || changed;
-                    changed = GroundTrackIsHeading      .Set(               message.GroundTrackIsHeading, stamp)        || changed;
-                    changed = Icao24                    .Set(               message.Icao24, stamp)                      || changed;
-                    changed = IdentActive               .SetIfNotDefault(   message.IdentActive, stamp)                 || changed;
-                    changed = IsTisb                    .Set(               message.IsTisb, stamp)                      || changed;
-                    changed = Location                  .SetIfNotDefault(   message.Location, stamp)                    || changed;
-                    changed = SignalLevel               .SetIfNotDefault(   message.SignalLevel, stamp)                 || changed;
-                    changed = Squawk                    .SetIfNotDefault(   message.Squawk, stamp)                      || changed;
-                    changed = TargetAltitudeFeet        .SetIfNotDefault(   message.TargetAltitudeFeet, stamp)          || changed;
-                    changed = TargetHeadingDegrees      .SetIfNotDefault(   message.TargetHeadingDegrees, stamp)        || changed;
-                    changed = VerticalRateType          .Set(               message.VerticalRateType, stamp)            || changed;
-                    changed = VerticalRateFeetPerMinute .SetIfNotDefault(   message.VerticalRateFeetPerMinute, stamp)   || changed;
+                    changed = AltitudeFeet              .SetIfNotDefault(message.AltitudeFeet, stamp)              || changed;
+                    changed = AltitudeType              .SetIfNotDefault(message.AltitudeType, stamp)              || changed;
+                    changed = Callsign                  .SetIfNotDefault(message.Callsign, stamp)                  || changed;
+                    changed = CallsignIsSuspect         .SetIfNotDefault(message.CallsignIsSuspect, stamp)         || changed;
+                    changed = GroundSpeedKnots          .SetIfNotDefault(message.GroundSpeedKnots, stamp)          || changed;
+                    changed = GroundSpeedType           .SetIfNotDefault(message.GroundSpeedType, stamp)           || changed;
+                    changed = GroundTrackDegrees        .SetIfNotDefault(message.GroundTrackDegrees, stamp)        || changed;
+                    changed = GroundTrackIsHeading      .SetIfNotDefault(message.GroundTrackIsHeading, stamp)      || changed;
+                    changed = Icao24                    .SetIfNotDefault(message.Icao24, stamp)                    || changed;
+                    changed = IdentActive               .SetIfNotDefault(message.IdentActive, stamp)               || changed;
+                    changed = IsTisb                    .SetIfNotDefault(message.IsTisb, stamp)                    || changed;
+                    changed = Location                  .SetIfNotDefault(message.Location, stamp)                  || changed;
+                    changed = SignalLevel               .SetIfNotDefault(message.SignalLevel, stamp)               || changed;
+                    changed = Squawk                    .SetIfNotDefault(message.Squawk, stamp)                    || changed;
+                    changed = TargetAltitudeFeet        .SetIfNotDefault(message.TargetAltitudeFeet, stamp)        || changed;
+                    changed = TargetHeadingDegrees      .SetIfNotDefault(message.TargetHeadingDegrees, stamp)      || changed;
+                    changed = VerticalRateType          .SetIfNotDefault(message.VerticalRateType, stamp)          || changed;
+                    changed = VerticalRateFeetPerMinute .SetIfNotDefault(message.VerticalRateFeetPerMinute, stamp) || changed;
 
                     if(changed) {
                         SetStamp(stamp);

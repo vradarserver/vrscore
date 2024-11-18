@@ -399,5 +399,59 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual("0", json.LastDataVersion);
         }
+
+        [TestMethod]
+        [DataRow(1425, true, 1425)]
+        [DataRow(1425, false, null)]
+        public void Build_Sets_Aircraft_Altitude(int? value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.AltitudeFeet = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Altitude);
+        }
+
+        [TestMethod]
+        [DataRow(AltitudeType.Radar, true,  (int)AltitudeType.Radar)]
+        [DataRow(AltitudeType.Radar, false, null)]
+        public void Build_Sets_Aircraft_AltitudeType(AltitudeType value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.AltitudeType = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].AltitudeType);
+        }
+
+        [TestMethod]
+        [DataRow("AGW123", true,  "AGW123")]
+        [DataRow("AGW123", false, null)]
+        public void Build_Sets_Aircraft_Callsign(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Callsign = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Callsign);
+        }
+
+        [TestMethod]
+        [DataRow(true,  true,  true)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  false, null)]
+        [DataRow(false, false, null)]
+        public void Build_Sets_Aircraft_CallsignIsSuspect(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.CallsignIsSuspect = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].CallsignIsSuspect);
+        }
     }
 }
