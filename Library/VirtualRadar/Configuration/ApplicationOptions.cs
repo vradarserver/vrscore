@@ -1,11 +1,10 @@
 ﻿using System.Reflection;
-using VirtualRadar.Reflection;
 
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// A settings object that the application is expected to provide when initialising
-    /// the library.
+    /// A standard Microsoft Options object that the application is expected to provide when initialising the
+    /// library.
     /// </summary>
     public class ApplicationOptions
     {

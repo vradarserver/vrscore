@@ -11,12 +11,13 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The setting for the <see cref="ILog"/> service implementations.
+    /// A standard Microsoft Options object that the application can optionally provide to control logging.
     /// </summary>
-    [Settings("Log")]
-    public record LogSettings(
-        int MaximumLines = 1000
-    )
+    public class LogOptions
     {
+        /// <summary>
+        /// The maximum number of lines to keep in the VRS log file.
+        /// </summary>
+        public int MaximumLines { get; set; } = 1000;
     }
 }
