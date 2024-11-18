@@ -1,7 +1,9 @@
-﻿# VirtualRadar.Connection Namespace
+# VirtualRadar.Connection Namespace
 
-The classes here are concerned with providing an abstract way to establish
-a stream to remote feeds.
+The classes here are concerned with providing an abstract way to establish a
+stream to remote feeds.
+
+
 
 ## TcpConnector : IConnector
 

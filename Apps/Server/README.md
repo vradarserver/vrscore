@@ -1,3 +1,3 @@
-﻿# VirtualRadar.Server
+# VirtualRadar.Server
 
 The local web server.
