@@ -128,9 +128,10 @@ namespace VirtualRadar
         }
 
         /// <inheritdoc/>
-        public Aircraft[] ToArray()
+        public Aircraft[] ToArray(out long arrayStamp)
         {
             lock(_SyncLock) {
+                arrayStamp = Stamp;
                 var result = _AircraftById
                     .Values
                     .OfType<Aircraft>()

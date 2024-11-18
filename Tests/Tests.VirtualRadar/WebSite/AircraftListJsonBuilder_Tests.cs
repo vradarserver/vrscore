@@ -27,6 +27,7 @@ namespace Tests.VirtualRadar.WebSite
         private Mock<IReceiverFactory> _ReceiverFactory;
         private Mock<IReceiver> _Receiver;
         private List<Aircraft> _AllAircraft;
+        private long _AircraftListToArrayStamp;
         private Mock<IAircraftList> _AircraftList;
         private List<Mock<IReceiver>> _AllReceivers;
         private MockSettings<AircraftMapSettings> _AircraftMapSettings;
@@ -42,8 +43,14 @@ namespace Tests.VirtualRadar.WebSite
             _Filter = new();
 
             _AllAircraft = [];
+            _AircraftListToArrayStamp = 0L;
             _AircraftList = MockHelper.CreateMock<IAircraftList>();
-            _AircraftList.Setup(r => r.ToArray()).Returns(() => _AllAircraft.ToArray());
+            _AircraftList
+                .Setup(r => r.ToArray(out It.Ref<long>.IsAny))
+                .Returns((out long stamp) => {
+                    stamp = _AircraftListToArrayStamp;
+                    return _AllAircraft.ToArray();
+                });
 
             _AllReceivers = [];
             _Receiver = SetupReceiver("Mock Receiver", receiver: null, aircraftList: _AircraftList);
@@ -223,30 +230,6 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_LastDataVersion_Taken_From_Stamp_When_Empty()
-        {
-            _AircraftList.SetupGet(r => r.Stamp).Returns(123L);
-
-            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
-
-            Assert.AreEqual("123", json.LastDataVersion);
-        }
-
-        [TestMethod]
-        public void Build_LastDataVersion_Taken_From_Aircraft_If_Present()
-        {
-            _AircraftList.SetupGet(r => r.Stamp).Returns(205L); // <-- this might be the case if the stamp is read after the aircraft list has been parsed...
-
-            SetupAircraft(stamp: 200L, fillMessage: message => {
-                message.Icao24 = new(0x123456);
-            });
-
-            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
-
-            Assert.AreEqual("200", json.LastDataVersion);
-        }
-
-        [TestMethod]
         public void Build_Sets_ServerTime_Correctly()
         {
             // In earlier versions of VRS this was the actual server time but with code to ensure that
@@ -382,6 +365,39 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(1, json.Source);
+        }
+
+        [TestMethod]
+        public void Build_Returns_Aircraft_In_List()
+        {
+            var aircraft1 = SetupAircraft();
+            var aircraft2 = SetupAircraft();
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(2, json.Aircraft.Count);
+            Assert.IsTrue(json.Aircraft.Any(aircraft => aircraft.UniqueId == aircraft1.Id));
+            Assert.IsTrue(json.Aircraft.Any(aircraft => aircraft.UniqueId == aircraft2.Id));
+        }
+
+        [TestMethod]
+        public void Build_Sets_LastDataVersion_From_AircraftList_Stamp()
+        {
+            _AircraftListToArrayStamp = 1234L;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual("1234", json.LastDataVersion);
+        }
+
+        [TestMethod]
+        public void Build_Sets_LastDataVersion_To_Zero_If_Receiver_Is_Missing()
+        {
+            _Receiver = null;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual("0", json.LastDataVersion);
         }
     }
 }

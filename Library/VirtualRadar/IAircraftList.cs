@@ -72,7 +72,9 @@ namespace VirtualRadar
         /// <summary>
         /// Returns a copy of the contents of the aircraft list.
         /// </summary>
+        /// <param name="arrayStamp">The value of <see cref="Stamp"/> at the point where the
+        /// array is built.</param>
         /// <returns></returns>
-        Aircraft[] ToArray();
+        Aircraft[] ToArray(out long arrayStamp);
     }
 }

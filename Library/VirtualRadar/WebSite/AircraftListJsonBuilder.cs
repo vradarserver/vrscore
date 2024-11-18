@@ -32,6 +32,7 @@ namespace VirtualRadar.WebSite
         // set of latest settings throughout the build.
         record BuildState(
             AircraftListJsonBuilderArgs Args,
+            IReceiver                   Receiver,
             AircraftMapSettings         AircraftMapSettings,
             AircraftPictureSettings     AircraftPictureSettings,
             InternetClientSettings      InternetClientSettings,
@@ -56,6 +57,7 @@ namespace VirtualRadar.WebSite
 
             var state = new BuildState(
                 args,
+                receiver,
                 _AircraftMapSettings.LatestValue,
                 _AircraftPictureSettings.LatestValue,
                 _InternetClientSettings.LatestValue,
@@ -63,24 +65,36 @@ namespace VirtualRadar.WebSite
                 new()
             );
 
-            var listStamp = receiver?.AircraftList.Stamp ?? 0L;
             state.Json.ShortTrailLengthSeconds =    state.AircraftMapSettings.ShortTrailLengthSeconds;
             state.Json.Source =                     1; // <-- for backwards compatability, we don't have the concept of fake and/or flight sim aircraft lists in VRS Core
             state.Json.SourceFeedId =               args.ReceiverId;
             state.Json.LastDataVersion =            receiver?.AircraftList.Stamp.ToString();
             state.Json.ServerTime =                 PostOffice.GetStamp();
 
+            AddAircraft(state);
             AddFeeds(state);
             AddFlags(state);
             AddPictures(state);
 
-            // TODO: This needs doing properly, it's only here to make the unit test work
-            var aircraftStamp = (receiver?.AircraftList.ToArray() ?? [])
-                .DefaultIfEmpty()
-                .Max(aircraft => aircraft?.Stamp ?? 0L);
-            state.Json.LastDataVersion = (aircraftStamp == 0 ? listStamp : aircraftStamp).ToString();
-
             return state.Json;
+        }
+
+        private void AddAircraft(BuildState state)
+        {
+            var stamp = 0L;
+
+            var aircraftList = state.Receiver?.AircraftList;
+            if(aircraftList != null) {
+                var allAircraft = aircraftList.ToArray(out stamp);
+
+                foreach(var aircraft in allAircraft) {
+                    state.Json.Aircraft.Add(new() {
+                        UniqueId = aircraft.Id,
+                    });
+                }
+            }
+
+            state.Json.LastDataVersion = stamp.ToString(CultureInfo.InvariantCulture);
         }
 
         private void AddFeeds(BuildState state)
