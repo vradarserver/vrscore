@@ -54,6 +54,16 @@ namespace VirtualRadar.Receivers
         IReceiver FindById(int id);
 
         /// <summary>
+        /// As per <see cref="FindById(int)"/> except this version can fall back to the default receiver if
+        /// the specified ID is invalid or is not to be shown to web site users.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="ignoreInvisibleFeeds"></param>
+        /// <param name="fallbackToDefaultFeed"></param>
+        /// <returns></returns>
+        IReceiver FindById(int id, bool ignoreInvisibleReceivers, bool fallbackToDefaultReceiver);
+
+        /// <summary>
         /// Returns a pre-built receiver that matches the configured default source. If there is no default
         /// source, or if it cannot be found, then the first receiver is returned. If there are no receivers
         /// then null is returned.

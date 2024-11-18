@@ -15,6 +15,10 @@ namespace VirtualRadar.WebSite
     /// <summary>
     /// The list of aircraft that is sent to the browser as a JSON file.
     /// </summary>
+    /// <remarks>
+    /// This is backwards compatible with earlier versions of VRS. In those versions the messages sources were
+    /// publically called feeds. When you see "feed" mentioned here it translates to a Receiver in the source.
+    /// </remarks>
     [DataContract]
     public class AircraftListJson
     {
@@ -34,9 +38,9 @@ namespace VirtualRadar.WebSite
         /// Gets or sets the ID of the feed that this aircraft list is showing.
         /// </summary>
         /// <remarks>
-        /// It's entirely possible that this ID number does not correspond with any feed in <see cref="Feeds"/> - this
-        /// can happen when reporting on the Flight Simulator X feed, or when the feed requested by the website no
-        /// longer exists on the server.
+        /// It's entirely possible that this ID number does not correspond with any feed in <see
+        /// cref="Feeds"/> - this can happen when reporting on the Flight Simulator X feed, or when the feed
+        /// requested by the website no longer exists on the server.
         /// </remarks>
         [DataMember(Name="srcFeed")]
         public int SourceFeedId { get; set; }

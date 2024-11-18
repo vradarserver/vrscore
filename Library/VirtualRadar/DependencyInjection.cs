@@ -119,6 +119,7 @@ namespace VirtualRadar
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
             services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();
 
+            services.AddLifetime<WebSite.IAircraftListJsonBuilder, WebSite.AircraftListJsonBuilder>();
 
             Configuration.ConfigurationConfig.RegisterAssembly(services);
             Connection.ReceiveConnectorConfig.RegisterAssembly();

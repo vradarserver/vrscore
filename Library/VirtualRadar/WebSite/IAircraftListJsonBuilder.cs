@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2015 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,37 +8,30 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar
+namespace VirtualRadar.WebSite
 {
     /// <summary>
-    /// Maintains a central stamp that only ever increments.
+    /// The interface for an object that can build an <see cref="AircraftListJson"/> object
+    /// from an <see cref="IAircraftList"/> object's list of aircraft.
     /// </summary>
-    /// <remarks>
-    /// Many objects related to the aircraft state carry a stamp value. This is a 64-bit number that is
-    /// greater than zero. A new stamp is requested when applying changes to the aircraft state. The new stamp
-    /// value will always be greater than the old stamp value. All stamped objects share the same source of
-    /// stamps (I.E. this static object).Therefore if you have a stamp value then you can compare it to stamps
-    /// on other objects to determine which stamped values have changed since your held stamp value was
-    /// established.
-    /// </remarks>
-    public static class PostOffice
+    [Lifetime(Lifetime.Singleton)]
+    public interface IAircraftListJsonBuilder
     {
-        private static long _Stamp = 0;
-
         /// <summary>
-        /// Returns a new stamp. Each successive call to this will return a value that
-        /// is higher than the last. This is thread safe.
+        /// Returns a fully-formed <see cref="AircraftListJson"/> from the arguments passed across.
         /// </summary>
+        /// <param name="args">The build criteria.</param>
+        /// <param name="ignoreInvisibleSources">
+        /// True if sources that are hidden from the web site should be ignored.
+        /// </param>
+        /// <param name="fallbackToDefaultSource">
+        /// True if the default source should be used if the requested source is unavailable for any reason.
+        /// </param>
         /// <returns></returns>
-        public static long GetStamp() => Interlocked.Increment(ref _Stamp);
-
-        /// <summary>
-        /// Sets a stamp for unit testing.
-        /// </summary>
-        /// <param name="stamp"></param>
-        public static void SetNextStampForUnitTest(long stamp)
-        {
-            _Stamp = stamp - 1;
-        }
+        AircraftListJson Build(
+            AircraftListJsonBuilderArgs args,
+            bool ignoreInvisibleSources,
+            bool fallbackToDefaultSource
+        );
     }
 }

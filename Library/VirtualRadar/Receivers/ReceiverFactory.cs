@@ -134,6 +134,21 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
+        public IReceiver FindById(int id, bool ignoreInvisibleReceivers, bool fallbackToDefaultReceiver)
+        {
+            var result = FindById(id);
+
+            if(result == null || (result.Hidden && ignoreInvisibleReceivers)) {
+                result = FindDefaultSource();
+                if((result?.Hidden ?? false) && ignoreInvisibleReceivers) {
+                    result = null;
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
         public IReceiver FindDefaultSource()
         {
             var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
