@@ -92,16 +92,33 @@ namespace VirtualRadar.WebSite
                 foreach(var aircraft in allAircraft) {
                     var aircraftJson = new AircraftJson() {
                         UniqueId =              aircraft.Id,
-                        Altitude =              aircraft.AltitudeFeet       .ValueIfChanged(oldStamp),
-                        AltitudeType =          aircraft.AltitudeType       .ValueIfChanged(oldStamp, v => (int?)v),
-                        Callsign =              aircraft.Callsign           .ValueIfChanged(oldStamp),
-                        CallsignIsSuspect =     aircraft.CallsignIsSuspect  .ValueIfChanged(oldStamp),
-                        ConstructionNumber =    aircraft.ConstructionNumber .ValueIfChanged(oldStamp),
-                        Emergency =             aircraft.SquawkIsEmergency  .ValueIfChanged(oldStamp),
-                        Squawk =                aircraft.Squawk             .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
+                        AirPressureInHg =       aircraft.AirPressureInHg        .ValueIfChanged(oldStamp),
+                        Altitude =              aircraft.AltitudePressureFeet   .ValueIfChanged(oldStamp),
+                        AltitudeType =          aircraft.AltitudeType           .ValueIfChanged(oldStamp, v => (int?)v),
+                        Callsign =              aircraft.Callsign               .ValueIfChanged(oldStamp),
+                        CallsignIsSuspect =     aircraft.CallsignIsSuspect      .ValueIfChanged(oldStamp),
+                        ConstructionNumber =    aircraft.ConstructionNumber     .ValueIfChanged(oldStamp),
+                        Emergency =             aircraft.SquawkIsEmergency      .ValueIfChanged(oldStamp),
+                        EnginePlacement =       aircraft.EnginePlacement        .ValueIfChanged(oldStamp, v => (int?)v),
+                        EngineType =            aircraft.EngineType             .ValueIfChanged(oldStamp, v => (int?)v),
+                        GeometricAltitude =     aircraft.AltitudeRadarFeet      .ValueIfChanged(oldStamp),
+                        GroundSpeed =           aircraft.GroundSpeedKnots       .ValueIfChanged(oldStamp),
+                        Icao24Country =         aircraft.Icao24Country          .ValueIfChanged(oldStamp),
+                        Squawk =                aircraft.Squawk                 .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
                     };
+                    if(aircraft.FirstStamp > oldStamp) {
+                        aircraftJson.FirstSeen = aircraft.FirstMessageReceivedUtc;
+                    }
                     if(aircraft.Stamp > oldStamp) {
                         aircraftJson.CountMessagesReceived = aircraft.CountMessagesReceived;
+                    }
+                    if(state.Args.AlwaysShowIcao || aircraft.Icao24.Stamp > oldStamp) {
+                        aircraftJson.Icao24 = (aircraft.Icao24.Value?.IsValid ?? false)
+                            ? aircraft.Icao24.Value?.ToString()
+                            : "";
+                        aircraftJson.Icao24Invalid = aircraft.Icao24.Value == null
+                            ? null
+                            : !aircraft.Icao24.Value.Value.IsValid;
                     }
                     AddRoute(state, aircraftJson, aircraft.Route);
                     state.Json.Aircraft.Add(aircraftJson);

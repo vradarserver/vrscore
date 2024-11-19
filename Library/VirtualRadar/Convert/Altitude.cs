@@ -18,38 +18,76 @@ namespace VirtualRadar.Convert
         /// <summary>
         /// The standard air pressure that transponders report altitudes at.
         /// </summary>
-        public const int StandardAirPressureMillibars = 1013;
+        public const int StandardPressureMillibars = 1013;
 
         /// <summary>
-        /// Converts from an altitude measured in feet above mean sea level and the air pressure
-        /// measured in millibars at mean sea level into a normalised pressure altitude for 1013
-        /// millibars QNH.
+        /// The standard air pressure that transponders report altitudes at.
         /// </summary>
-        /// <param name="altitudeFeetAboveMeanSeaLevel">
-        /// The altitude in feet AMSL.
-        /// </param>
-        /// <param name="airPressureMillibarsAtMeanSeaLevel">
-        /// The QNH air pressure in mb.
-        /// </param>
-        /// <param name="roundToTwentyFiveFeetIncrements">
-        /// True to reproduce the standard behaviour of Mode-S transponders to report the standard
-        /// altitude in increments of 25 feet.
-        /// </param>
+        public const float StandardPressureInchesMercury = 29.92F;
+
+        /// <summary>
+        /// Takes a standard pressure altitude and pressure setting, and returns the geometric altitude.
+        /// </summary>
+        /// <param name="pressureAltitudeFeet"></param>
+        /// <param name="airPressure"></param>
+        /// <param name="airPressureUnit"></param>
         /// <returns></returns>
-        public static int GeometricAltitudeToStandardPressureAltitudeFeet(
-            int altitudeFeetAboveMeanSeaLevel,
-            int airPressureMillibarsAtMeanSeaLevel,
-            bool roundToTwentyFiveFeetIncrements
+        public static int? PressureAltitudeToGeometricAltitude(
+            int? pressureAltitudeFeet,
+            float? airPressure,
+            AirPressureUnit airPressureUnit
         )
         {
-            var standardAltitude = ((1013 - airPressureMillibarsAtMeanSeaLevel) * 30)
-                + altitudeFeetAboveMeanSeaLevel;
+            var result = pressureAltitudeFeet;
 
-            if(roundToTwentyFiveFeetIncrements) {
-                standardAltitude = (int)(((double)standardAltitude / 25.0) + 0.5) * 25;
+            if(result != null && airPressure != null) {
+                var airPressureInHg = Convert.AirPressure.FromTo(
+                    airPressure.Value,
+                    airPressureUnit,
+                    AirPressureUnit.InchesMercury
+                );
+                if(airPressureInHg > 0 && airPressureInHg != StandardPressureInchesMercury) {
+                    result = (int)(0.5F + (pressureAltitudeFeet - 1000 * (StandardPressureInchesMercury - airPressureInHg)));
+                }
             }
 
-            return standardAltitude;
+            return result;
+        }
+
+        /// <summary>
+        /// Takes a geometric altitude and air pressure reading and returns the pressure altitude.
+        /// </summary>
+        /// <param name="geometricAltitudeFeet"></param>
+        /// <param name="airPressure"></param>
+        /// <param name="airPressureUnit"></param>
+        /// <param name="roundTo25FeetIncrements"></param>
+        /// <returns></returns>
+        public static int? GeometricAltitudeToPressureAltitude(
+            int? geometricAltitudeFeet,
+            float? airPressure,
+            AirPressureUnit airPressureUnit,
+            bool roundTo25FeetIncrements
+        )
+        {
+            var result = geometricAltitudeFeet;
+
+            if(result != null && airPressure != null) {
+                var airPressureInHg = Convert.AirPressure.FromTo(
+                    airPressure.Value,
+                    airPressureUnit,
+                    AirPressureUnit.InchesMercury
+                );
+
+                if(airPressureInHg > 0 && airPressureInHg != StandardPressureInchesMercury) {
+                    result = (int)(0.5F + (geometricAltitudeFeet + 1000 * (StandardPressureInchesMercury - airPressureInHg)));
+                }
+            }
+
+            if(roundTo25FeetIncrements) {
+                result = (int)(((float)result / 25F) + 0.5F) * 25;
+            }
+
+            return result;
         }
     }
 }

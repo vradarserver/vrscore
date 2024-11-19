@@ -32,6 +32,11 @@ namespace VirtualRadar
         public int Id { get; }
 
         /// <summary>
+        /// The <see cref="Stamp"/> value as-of when the aircraft was first seen.
+        /// </summary>
+        public long FirstStamp { get; private set; }
+
+        /// <summary>
         /// A value indicating when the aircraft was last changed. See <see cref="PostOffice"/> for the rules
         /// about how this value is established, and what you can infer from it.
         /// </summary>
@@ -41,6 +46,9 @@ namespace VirtualRadar
         {
             ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(newStamp, Stamp);
             Stamp = newStamp;
+            if(FirstStamp == 0L) {
+                FirstStamp = Stamp;
+            }
         }
 
         //
@@ -59,11 +67,34 @@ namespace VirtualRadar
 
         public StampedValue<bool?> CallsignIsSuspect { get; } = new();
 
-        public StampedValue<int?> AltitudeFeet { get; } = new();
+        /// <summary>
+        /// The altitude in feet at standard pressure. This is always the pressure altitude, even if the
+        /// aircraft is transmitting radar altitudes.
+        /// </summary>
+        /// <remarks>
+        /// If the aircraft is transmitting radar altitudes and the air pressure for the aircraft is not known
+        /// then this is set to the radar altitude in 25 foot increments.
+        /// </remarks>
+        public StampedValue<int?> AltitudePressureFeet { get; } = new();
 
+        /// <summary>
+        /// The altitude in feet above mean sea level. This is always the radar altitude, even if the aircraft
+        /// is transmitting pressure altitudes.
+        /// </summary>
+        /// <remarks>
+        /// If the aircraft is transmitting standard pressure altitudes and the air pressure for the aircraft
+        /// is not known then this is set to the pressure altitude.
+        /// </remarks>
+        public StampedValue<int?> AltitudeRadarFeet { get; } = new();
+
+        /// <summary>
+        /// The type of altitude being transmitted by the aircraft.
+        /// </summary>
         public StampedValue<AltitudeType?> AltitudeType { get; } = new();
 
-        public StampedTimedValue<float?> AirPressureInHg { get; } = new();
+        public StampedValue<float?> AirPressureInHg { get; } = new();
+
+        public StampedTimedValue<DateTime?> AirPressureLookedUpUtc { get; } = new();
 
         public StampedValue<int?> TargetAltitudeFeet { get; } = new();
 
@@ -100,6 +131,12 @@ namespace VirtualRadar
         public StampedValue<string> Registration { get; } = new();
 
         public StampedValue<string> Country { get; } = new();
+
+        public StampedValue<EnginePlacement?> EnginePlacement { get; } = new();
+
+        public StampedValue<EngineType?> EngineType { get; } = new();
+
+        public StampedValue<string> Icao24Country { get; } = new();
 
         public StampedValue<string> ModelIcao { get; } = new();
 
@@ -150,13 +187,15 @@ namespace VirtualRadar
         {
             lock(_SyncLock) {
                 var result = new Aircraft(Id) {
+                    FirstStamp =              FirstStamp,
                     Stamp =                   Stamp,
                     FirstMessageReceivedUtc = FirstMessageReceivedUtc,
                 };
 
                 // TRANSMITTED VALUES
                 AirPressureInHg             .CopyTo(result.AirPressureInHg);
-                AltitudeFeet                .CopyTo(result.AltitudeFeet);
+                AltitudePressureFeet        .CopyTo(result.AltitudePressureFeet);
+                AltitudeRadarFeet           .CopyTo(result.AltitudeRadarFeet);
                 AltitudeType                .CopyTo(result.AltitudeType);
                 Callsign                    .CopyTo(result.Callsign);
                 CallsignIsSuspect           .CopyTo(result.CallsignIsSuspect);
@@ -180,6 +219,9 @@ namespace VirtualRadar
                 // LOOKED-UP VALUES
                 ConstructionNumber          .CopyTo(result.ConstructionNumber);
                 Country                     .CopyTo(result.Country);
+                EnginePlacement             .CopyTo(result.EnginePlacement);
+                EngineType                  .CopyTo(result.EngineType);
+                Icao24Country               .CopyTo(result.Icao24Country);
                 LookupAgeUtc                .CopyTo(result.LookupAgeUtc);
                 Manufacturer                .CopyTo(result.Manufacturer);
                 Model                       .CopyTo(result.Model);
@@ -222,7 +264,6 @@ namespace VirtualRadar
                     var stamp = PostOffice.GetStamp();
 
                     // TRANSMITTED VALUES
-                    changed = AltitudeFeet              .SetIfNotDefault(message.AltitudeFeet, stamp)              || changed;
                     changed = AltitudeType              .SetIfNotDefault(message.AltitudeType, stamp)              || changed;
                     changed = Callsign                  .SetIfNotDefault(message.Callsign, stamp)                  || changed;
                     changed = CallsignIsSuspect         .SetIfNotDefault(message.CallsignIsSuspect, stamp)         || changed;
@@ -241,13 +282,27 @@ namespace VirtualRadar
                     changed = VerticalRateType          .SetIfNotDefault(message.VerticalRateType, stamp)          || changed;
                     changed = VerticalRateFeetPerMinute .SetIfNotDefault(message.VerticalRateFeetPerMinute, stamp) || changed;
 
+                    if(message.AltitudeFeet != null) {
+                        switch(message.AltitudeType ?? VirtualRadar.AltitudeType.AirPressure) {
+                            case VirtualRadar.AltitudeType.AirPressure:
+                                changed = AltitudePressureFeet.Set(message.AltitudeFeet, stamp) || changed;
+                                break;
+                            case VirtualRadar.AltitudeType.Radar:
+                                changed = AltitudeRadarFeet.Set(message.AltitudeFeet, stamp) || changed;
+                                break;
+                            default:
+                                throw new NotImplementedException();
+                        }
+                        changed = CalculateAirPressures(stamp) || changed;
+                    }
+
                     if(Squawk.Stamp == stamp) {
-                        SquawkIsEmergency.Set(
+                        changed = SquawkIsEmergency.Set(
                                Squawk.Value == 7500
                             || Squawk.Value == 7600
                             || Squawk.Value == 7700,
                             stamp
-                        );
+                        ) || changed;
                     }
 
                     if(changed) {
@@ -275,8 +330,12 @@ namespace VirtualRadar
                     var stamp = PostOffice.GetStamp();
 
                     // LOOKED-UP VALUES
+                    changed = AirPressureInHg    .SetIfNotDefault(lookup.AirPressureInHg, stamp)    || changed;
                     changed = ConstructionNumber .SetIfNotDefault(lookup.ConstructionNumber, stamp) || changed;
                     changed = Country            .SetIfNotDefault(lookup.Country, stamp)            || changed;
+                    changed = EnginePlacement    .SetIfNotDefault(lookup.EnginePlacement, stamp)    || changed;
+                    changed = EngineType         .SetIfNotDefault(lookup.EngineType, stamp)         || changed;
+                    changed = Icao24Country      .SetIfNotDefault(lookup.Icao24Country, stamp)      || changed;
                     changed = LookupAgeUtc       .SetIfNotDefault(lookup.SourceAgeUtc, stamp)       || changed;
                     changed = Manufacturer       .SetIfNotDefault(lookup.Manufacturer, stamp)       || changed;
                     changed = Model              .SetIfNotDefault(lookup.Model, stamp)              || changed;
@@ -290,10 +349,48 @@ namespace VirtualRadar
                     changed = UserTag            .SetIfNotDefault(lookup.UserTag, stamp)            || changed;
                     changed = YearFirstFlight    .SetIfNotDefault(lookup.YearFirstFlight, stamp)    || changed;
 
+                    if(lookup.AirPressureLookupAttempted ?? false) {
+                        changed = AirPressureLookedUpUtc.Set(DateTime.UtcNow, stamp) || changed;
+                    }
+                    if(lookup.AirPressureInHg != null) {
+                        changed = CalculateAirPressures(stamp) || changed;
+                    }
+
                     if(changed) {
                         SetStamp(stamp);
                     }
                 }
+            }
+
+            return changed;
+        }
+
+        private bool CalculateAirPressures(long stamp)
+        {
+            var changed = false;
+
+            switch(AltitudeType.Value ?? VirtualRadar.AltitudeType.AirPressure) {
+                case VirtualRadar.AltitudeType.AirPressure:
+                    changed = AltitudeRadarFeet.Set(
+                        Convert.Altitude.PressureAltitudeToGeometricAltitude(
+                            AltitudePressureFeet.Value,
+                            AirPressureInHg.Value,
+                            AirPressureUnit.InchesMercury
+                        ),
+                        stamp
+                    );
+                    break;
+                case VirtualRadar.AltitudeType.Radar:
+                    changed = AltitudePressureFeet.Set(
+                        Convert.Altitude.GeometricAltitudeToPressureAltitude(
+                            AltitudeRadarFeet.Value,
+                            AirPressureInHg.Value,
+                            AirPressureUnit.InchesMercury,
+                            roundTo25FeetIncrements: true
+                        ),
+                        stamp
+                    );
+                    break;
             }
 
             return changed;

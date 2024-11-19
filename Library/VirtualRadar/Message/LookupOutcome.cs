@@ -35,11 +35,17 @@ namespace VirtualRadar.Message
 
         public string Country { get; set; }
 
+        public EnginePlacement? EnginePlacement { get; set; }
+
+        public EngineType? EngineType { get; set; }
+
         public string ModelIcao { get; set; }
 
         public string Manufacturer { get; set; }
 
         public string Model { get; set; }
+
+        public string Icao24Country { get; set; }
 
         public string OperatorIcao { get; set; }
 
@@ -54,5 +60,16 @@ namespace VirtualRadar.Message
         public string UserTag { get; set; }
 
         public int? YearFirstFlight { get; set; }
+
+        /// <summary>
+        /// True if this lookup was an attempt to lookup the aircraft's air pressure. Always set this
+        /// for air pressure lookups, even if the attempt was unsuccessful.
+        /// </summary>
+        public bool? AirPressureLookupAttempted { get; set; }
+
+        /// <summary>
+        /// The air pressure in inches of mercury at sea level under the aircraft's current location.
+        /// </summary>
+        public float? AirPressureInHg { get; set; }
     }
 }

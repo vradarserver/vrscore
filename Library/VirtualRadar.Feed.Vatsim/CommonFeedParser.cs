@@ -81,10 +81,11 @@ namespace VirtualRadar.Feed.Vatsim
             var aircraftId = BuildAircraftId(pilot);
             var remarks = new RemarksParser(pilot.FlightPlan?.Remarks);
 
-            var pressureAltitude = Convert.Altitude.GeometricAltitudeToStandardPressureAltitudeFeet(
+            var pressureAltitude = Convert.Altitude.GeometricAltitudeToPressureAltitude(
                 pilot.AltitudeGeometricFeet,
                 pilot.QnhMillibars,
-                roundToTwentyFiveFeetIncrements: true
+                AirPressureUnit.Millibar,
+                roundTo25FeetIncrements: true
             );
 
             var transponderMessage = new TransponderMessage(aircraftId) {

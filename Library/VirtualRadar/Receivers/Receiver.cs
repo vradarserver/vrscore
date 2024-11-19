@@ -138,9 +138,9 @@ namespace VirtualRadar.Receivers
         {
             Interlocked.Increment(ref _CountMessagesReceived);
             if(AircraftList.ApplyMessage(args).AddedAircraft) {
-                if(!args.SuppressLookup) {
+                if(!args.SuppressLookup && (args.Icao24?.IsValid ?? false)) {
                     var lookupService = _AircraftLookupService;
-                    lookupService?.Lookup(args.Icao24);
+                    lookupService?.Lookup(args.Icao24.Value);
                 }
             }
         }
