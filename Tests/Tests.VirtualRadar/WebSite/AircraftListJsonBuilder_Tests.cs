@@ -14,6 +14,7 @@ using VirtualRadar;
 using VirtualRadar.Configuration;
 using VirtualRadar.Message;
 using VirtualRadar.Receivers;
+using VirtualRadar.StandingData;
 using VirtualRadar.WebSite;
 
 namespace Tests.VirtualRadar.WebSite
@@ -111,16 +112,17 @@ namespace Tests.VirtualRadar.WebSite
             LookupOutcome lookup = null
         )
         {
-            id ??= _AllAircraft.DefaultIfEmpty().Max(aircraft => aircraft?.Id ?? 0) + 1;
-            aircraft ??= new(id.Value);
-            Assert.AreEqual(id.Value, aircraft.Id);
+            if(aircraft == null) {
+                id ??= _AllAircraft.DefaultIfEmpty().Max(aircraft => aircraft?.Id ?? 0) + 1;
+                aircraft = new(id.Value);
+            }
 
             if(!_AllAircraft.Contains(aircraft)) {
                 _AllAircraft.Add(aircraft);
             }
 
             if(fillMessage != null) {
-                var message = new TransponderMessage(id.Value);
+                var message = new TransponderMessage(aircraft.Id);
                 fillMessage(message);
                 if(stamp != null) {
                     PostOffice.SetNextStampForUnitTest(stamp.Value);
@@ -131,10 +133,38 @@ namespace Tests.VirtualRadar.WebSite
                 if(stamp != null) {
                     PostOffice.SetNextStampForUnitTest(stamp.Value);
                 }
+                lookup.Success = true;
                 aircraft.CopyFromLookup(lookup);
             }
 
             return aircraft;
+        }
+
+        private static Route SetupRoute(Airport fromAirport, Airport toAirport, Airport[] stopovers = null)
+        {
+            var result = new Route() {
+                From =      fromAirport,
+                To =        toAirport,
+            };
+            result.Stopovers.AddRange(stopovers ?? []);
+            return result;
+        }
+
+        private static Airport SetupAirport(string icao, string iata)
+        {
+            return new() {
+                IcaoCode = icao,
+                IataCode = iata,
+            };
+        }
+
+        private static Route LHR_SIN_SYD()
+        {
+            return SetupRoute(
+                fromAirport: SetupAirport("EGLL", "LHR"),
+                toAirport:   SetupAirport("YSSY", "SYD"),
+                stopovers:   [ SetupAirport("WSSS", "SIN"), ]
+            );
         }
 
         [TestMethod]
@@ -452,6 +482,78 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(expected, json.Aircraft[0].CallsignIsSuspect);
+        }
+
+        [TestMethod]
+        [DataRow("A1", true,  "A1")]
+        [DataRow("A1", false, null)]
+        public void Build_Sets_Aircraft_ConstructionNumber(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { ConstructionNumber = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].ConstructionNumber);
+        }
+
+        [TestMethod]
+        public void Build_Sets_Aircraft_CountMessagesReceived()
+        {
+            SetupAircraft(fillMessage: m => m.Icao24 = new(0x123456));
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(1, json.Aircraft[0].CountMessagesReceived);
+        }
+
+        [TestMethod]
+        [DataRow(AirportCodeType.Iata, true,  "SYD")]
+        [DataRow(AirportCodeType.Icao, true,  "YSSY")]
+        [DataRow(AirportCodeType.Iata, false, null)]
+        [DataRow(AirportCodeType.Icao, false, null)]
+        public void Build_Sets_Aircraft_Destination(AirportCodeType showType, bool hasChanged, string expected)
+        {
+            _AircraftMapSettings.Value = new(PreferredAirportCodeType: showType);
+            SetupAircraft(stamp: 2, lookup: new() { Route = LHR_SIN_SYD() });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Destination);
+        }
+
+        [TestMethod]
+        [DataRow(1234, true, "1234")]
+        [DataRow(1,    true, "0001")]
+        [DataRow(1234, false, null)]
+        public void Build_Sets_Aircraft_Squawk(int? value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Squawk = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Squawk);
+        }
+
+        [TestMethod]
+        [DataRow(null, 7500, true,  true)]
+        [DataRow(7500, 7501, true,  false)]
+        [DataRow(null, 7600, true,  true)]
+        [DataRow(7600, 7601, true,  false)]
+        [DataRow(null, 7700, true,  true)]
+        [DataRow(7700, 7701, true,  false)]
+        [DataRow(7500, 7500, false, null)]
+        public void Build_Sets_Aircraft_IsEmergency(int? oldSquawk, int? squawk, bool hasChanged, bool? expected)
+        {
+            var aircraft = SetupAircraft(stamp: 1, fillMessage: m => m.Squawk = oldSquawk);
+            SetupAircraft(aircraft, stamp: 2, fillMessage: m => m.Squawk = squawk);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Emergency);
         }
     }
 }

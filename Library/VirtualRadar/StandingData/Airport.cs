@@ -65,5 +65,24 @@ namespace VirtualRadar.StandingData
 
             return result.ToString();
         }
+
+        /// <summary>
+        /// Returns the preferred code if present, otherwise the non-prefferred code.
+        /// If both codes are missing then an empty string is returned.
+        /// </summary>
+        /// <param name="preferred"></param>
+        /// <returns></returns>
+        public string PreferredAirportCode(AirportCodeType preferred)
+        {
+            var result = preferred == AirportCodeType.Iata
+                ? IataCode
+                : IcaoCode;
+            if(String.IsNullOrEmpty(result)) {
+                result = preferred == AirportCodeType.Iata
+                    ? IcaoCode
+                    : IataCode;
+            }
+            return result ?? "";
+        }
     }
 }

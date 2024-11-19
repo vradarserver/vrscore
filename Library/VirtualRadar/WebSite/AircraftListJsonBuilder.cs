@@ -10,6 +10,7 @@
 
 using VirtualRadar.Configuration;
 using VirtualRadar.Receivers;
+using VirtualRadar.StandingData;
 
 namespace VirtualRadar.WebSite
 {
@@ -89,13 +90,21 @@ namespace VirtualRadar.WebSite
                 var oldStamp = state.Args.PreviousDataVersion;
 
                 foreach(var aircraft in allAircraft) {
-                    state.Json.Aircraft.Add(new() {
-                        UniqueId =          aircraft.Id,
-                        Altitude =          aircraft.AltitudeFeet.ValueIfChanged(oldStamp),
-                        AltitudeType =      aircraft.AltitudeType.ValueIfChanged(oldStamp, v => (int?)v),
-                        Callsign =          aircraft.Callsign.ValueIfChanged(oldStamp),
-                        CallsignIsSuspect = aircraft.CallsignIsSuspect.ValueIfChanged(oldStamp),
-                    });
+                    var aircraftJson = new AircraftJson() {
+                        UniqueId =              aircraft.Id,
+                        Altitude =              aircraft.AltitudeFeet       .ValueIfChanged(oldStamp),
+                        AltitudeType =          aircraft.AltitudeType       .ValueIfChanged(oldStamp, v => (int?)v),
+                        Callsign =              aircraft.Callsign           .ValueIfChanged(oldStamp),
+                        CallsignIsSuspect =     aircraft.CallsignIsSuspect  .ValueIfChanged(oldStamp),
+                        ConstructionNumber =    aircraft.ConstructionNumber .ValueIfChanged(oldStamp),
+                        Emergency =             aircraft.SquawkIsEmergency  .ValueIfChanged(oldStamp),
+                        Squawk =                aircraft.Squawk             .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
+                    };
+                    if(aircraft.Stamp > oldStamp) {
+                        aircraftJson.CountMessagesReceived = aircraft.CountMessagesReceived;
+                    }
+                    AddRoute(state, aircraftJson, aircraft.Route);
+                    state.Json.Aircraft.Add(aircraftJson);
                 }
             }
 
@@ -135,6 +144,15 @@ namespace VirtualRadar.WebSite
                 state.Json.ShowPictures = IsDirectoryConfiguredAndExists(
                     state.AircraftPictureSettings.LocalPicturesFolder
                 );
+            }
+        }
+
+        private void AddRoute(BuildState state, AircraftJson aircraftJson, StampedValue<Route> route)
+        {
+            var preferredCodeType = state.AircraftMapSettings.PreferredAirportCodeType;
+
+            if(route.Stamp > state.Args.PreviousDataVersion && route.Value != null) {
+                aircraftJson.Destination = route.Value.To?.PreferredAirportCode(preferredCodeType);
             }
         }
 

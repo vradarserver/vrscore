@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using VirtualRadar.Message;
+using VirtualRadar.StandingData;
 
 namespace VirtualRadar
 {
@@ -86,6 +87,8 @@ namespace VirtualRadar
 
         public StampedValue<int?> Squawk { get; } = new();
 
+        public StampedValue<bool?> SquawkIsEmergency { get; } = new();
+
         public StampedValue<bool?> IdentActive { get; } = new();
 
         //
@@ -110,12 +113,15 @@ namespace VirtualRadar
 
         public StampedValue<string> Serial { get; } = new();
 
+        public StampedValue<string> ConstructionNumber { get; } = new();
+
         public StampedValue<string> UserNotes { get; } = new();
 
         public StampedValue<string> UserTag { get; } = new();
 
         public StampedValue<int?> YearFirstFlight { get; } = new();
 
+        public StampedValue<Route> Route { get; } = new();
 
         /// <summary>
         /// Creates a new object.
@@ -165,12 +171,14 @@ namespace VirtualRadar
                 Location                    .CopyTo(result.Location);
                 SignalLevel                 .CopyTo(result.SignalLevel);
                 Squawk                      .CopyTo(result.Squawk);
+                SquawkIsEmergency           .CopyTo(result.SquawkIsEmergency);
                 TargetAltitudeFeet          .CopyTo(result.TargetAltitudeFeet);
                 TargetHeadingDegrees        .CopyTo(result.TargetHeadingDegrees);
                 VerticalRateType            .CopyTo(result.VerticalRateType);
                 VerticalRateFeetPerMinute   .CopyTo(result.VerticalRateFeetPerMinute);
 
                 // LOOKED-UP VALUES
+                ConstructionNumber          .CopyTo(result.ConstructionNumber);
                 Country                     .CopyTo(result.Country);
                 LookupAgeUtc                .CopyTo(result.LookupAgeUtc);
                 Manufacturer                .CopyTo(result.Manufacturer);
@@ -179,6 +187,7 @@ namespace VirtualRadar
                 Operator                    .CopyTo(result.Operator);
                 OperatorIcao                .CopyTo(result.OperatorIcao);
                 Registration                .CopyTo(result.Registration);
+                Route                       .CopyTo(result.Route);
                 Serial                      .CopyTo(result.Serial);
                 UserNotes                   .CopyTo(result.UserNotes);
                 UserTag                     .CopyTo(result.UserTag);
@@ -232,6 +241,15 @@ namespace VirtualRadar
                     changed = VerticalRateType          .SetIfNotDefault(message.VerticalRateType, stamp)          || changed;
                     changed = VerticalRateFeetPerMinute .SetIfNotDefault(message.VerticalRateFeetPerMinute, stamp) || changed;
 
+                    if(Squawk.Stamp == stamp) {
+                        SquawkIsEmergency.Set(
+                               Squawk.Value == 7500
+                            || Squawk.Value == 7600
+                            || Squawk.Value == 7700,
+                            stamp
+                        );
+                    }
+
                     if(changed) {
                         SetStamp(stamp);
                         CountMessagesReceived.Set(CountMessagesReceived + 1, stamp);
@@ -257,18 +275,20 @@ namespace VirtualRadar
                     var stamp = PostOffice.GetStamp();
 
                     // LOOKED-UP VALUES
-                    changed = Country           .SetIfNotDefault(lookup.Country, stamp)         || changed;
-                    changed = LookupAgeUtc      .SetIfNotDefault(lookup.SourceAgeUtc, stamp)    || changed;
-                    changed = Manufacturer      .SetIfNotDefault(lookup.Manufacturer, stamp)    || changed;
-                    changed = Model             .SetIfNotDefault(lookup.Model, stamp)           || changed;
-                    changed = ModelIcao         .SetIfNotDefault(lookup.ModelIcao, stamp)       || changed;
-                    changed = Operator          .SetIfNotDefault(lookup.Operator, stamp)        || changed;
-                    changed = OperatorIcao      .SetIfNotDefault(lookup.OperatorIcao, stamp)    || changed;
-                    changed = Registration      .SetIfNotDefault(lookup.Registration, stamp)    || changed;
-                    changed = Serial            .SetIfNotDefault(lookup.Serial, stamp)          || changed;
-                    changed = UserNotes         .SetIfNotDefault(lookup.UserNotes, stamp)       || changed;
-                    changed = UserTag           .SetIfNotDefault(lookup.UserTag, stamp)         || changed;
-                    changed = YearFirstFlight   .SetIfNotDefault(lookup.YearFirstFlight, stamp) || changed;
+                    changed = ConstructionNumber .SetIfNotDefault(lookup.ConstructionNumber, stamp) || changed;
+                    changed = Country            .SetIfNotDefault(lookup.Country, stamp)            || changed;
+                    changed = LookupAgeUtc       .SetIfNotDefault(lookup.SourceAgeUtc, stamp)       || changed;
+                    changed = Manufacturer       .SetIfNotDefault(lookup.Manufacturer, stamp)       || changed;
+                    changed = Model              .SetIfNotDefault(lookup.Model, stamp)              || changed;
+                    changed = ModelIcao          .SetIfNotDefault(lookup.ModelIcao, stamp)          || changed;
+                    changed = Operator           .SetIfNotDefault(lookup.Operator, stamp)           || changed;
+                    changed = OperatorIcao       .SetIfNotDefault(lookup.OperatorIcao, stamp)       || changed;
+                    changed = Registration       .SetIfNotDefault(lookup.Registration, stamp)       || changed;
+                    changed = Route              .SetIfNotDefault(lookup.Route, stamp)              || changed;
+                    changed = Serial             .SetIfNotDefault(lookup.Serial, stamp)             || changed;
+                    changed = UserNotes          .SetIfNotDefault(lookup.UserNotes, stamp)          || changed;
+                    changed = UserTag            .SetIfNotDefault(lookup.UserTag, stamp)            || changed;
+                    changed = YearFirstFlight    .SetIfNotDefault(lookup.YearFirstFlight, stamp)    || changed;
 
                     if(changed) {
                         SetStamp(stamp);

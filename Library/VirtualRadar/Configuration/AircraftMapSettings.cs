@@ -15,6 +15,7 @@ namespace VirtualRadar.Configuration
     /// </summary>
     [Settings("AircraftMap")]
     public record AircraftMapSettings(
+        AirportCodeType PreferredAirportCodeType = AirportCodeType.Iata,
         int ShortTrailLengthSeconds = 30
     )
     {
