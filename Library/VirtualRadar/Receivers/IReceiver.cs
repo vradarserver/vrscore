@@ -28,6 +28,8 @@ namespace VirtualRadar.Receivers
 
         bool Hidden { get; }
 
+        CancellationToken ConnectionCancellationToken { get; }
+
         IReceiveConnector Connector { get; }
 
         IFeedDecoder FeedDecoder { get; }
@@ -39,5 +41,7 @@ namespace VirtualRadar.Receivers
         long CountMessagesReceived { get; }
 
         bool MatchesOptions(ReceiverOptions other) => Options.Equals(other);
+
+        void Start();
     }
 }

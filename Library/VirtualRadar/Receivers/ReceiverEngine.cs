@@ -32,7 +32,8 @@ namespace VirtualRadar.Receivers
         {
             foreach(var receiverOptions in _MessageSourceSettings.LatestValue.Receivers) {
                 try {
-                    _ReceiverFactory.FindOrBuild(receiverOptions);
+                    (_, var receiver) = _ReceiverFactory.FindOrBuild(receiverOptions);
+                    receiver.Start();
                 } catch(Exception ex) {
                     _Log.Exception(ex, $"Caught exception while trying to start receiver {receiverOptions.Name}");
                 }

@@ -21,26 +21,40 @@ namespace VirtualRadar.Receivers
     {
         private IAircraftOnlineLookupService _AircraftLookupService;
 
+        /// <inheritdoc/>
         public ReceiverOptions Options { get; }
 
+        /// <inheritdoc/>
         public int Id => Options.Id;
 
+        /// <inheritdoc/>
         public string Name => Options.Name;
 
+        /// <inheritdoc/>
         public bool Enabled => Options.Enabled;
 
+        /// <inheritdoc/>
         public bool Hidden => Options.Hidden;
 
+        private CancellationTokenSource _ConnectionCancellationTokenSource = new();
+        /// <inheritdoc/>
+        public CancellationToken ConnectionCancellationToken => _ConnectionCancellationTokenSource.Token;
+
+        /// <inheritdoc/>
         public IReceiveConnector Connector { get; }
 
+        /// <inheritdoc/>
         public IFeedDecoder FeedDecoder { get; }
 
+        /// <inheritdoc/>
         public IAircraftList AircraftList { get; } = new AircraftList();
 
         private long _CountPacketsReceived;
+        /// <inheritdoc/>
         public long CountPacketsReceived => _CountPacketsReceived;
 
         private long _CountMessagesReceived;
+        /// <inheritdoc/>
         public long CountMessagesReceived => _CountMessagesReceived;
 
         /// <summary>
@@ -96,6 +110,12 @@ namespace VirtualRadar.Receivers
                 Connector.PacketReceived -= Connector_PacketReceived;
                 FeedDecoder.MessageReceived -= FeedDecoder_MessageReceived;
             }
+        }
+
+        /// <inheritdoc/>
+        public void Start()
+        {
+            Task.Run(() => Connector.OpenAsync(ConnectionCancellationToken));
         }
 
         private void AircraftLookupService_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> args)
