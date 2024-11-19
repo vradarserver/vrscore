@@ -484,10 +484,12 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        [DataRow(true,  true,  true)]
+        [DataRow(null,  true,  null)]
         [DataRow(false, true,  false)]
-        [DataRow(true,  false, null)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
         [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
         public void Build_Sets_Aircraft_CallsignIsSuspect(bool? value, bool hasChanged, bool? expected)
         {
             SetupAircraft(stamp: 2, fillMessage: m => m.CallsignIsSuspect = value);
@@ -717,6 +719,23 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(expected, json.Aircraft[0].Icao24Invalid);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_IdentActive(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.IdentActive = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].IdentActive);
         }
     }
 }

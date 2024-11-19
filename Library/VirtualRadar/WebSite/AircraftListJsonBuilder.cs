@@ -104,6 +104,7 @@ namespace VirtualRadar.WebSite
                         GeometricAltitude =     aircraft.AltitudeRadarFeet      .ValueIfChanged(oldStamp),
                         GroundSpeed =           aircraft.GroundSpeedKnots       .ValueIfChanged(oldStamp),
                         Icao24Country =         aircraft.Icao24Country          .ValueIfChanged(oldStamp),
+                        IdentActive =           aircraft.IdentActive            .ValueIfChanged(oldStamp),
                         Squawk =                aircraft.Squawk                 .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
                     };
                     if(aircraft.FirstStamp > oldStamp) {
