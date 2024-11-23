@@ -305,7 +305,7 @@ namespace VirtualRadar.WebSite
 
         /// <summary>
         /// Gets or sets the number of engines that the aircraft has - note that this is a copy of the ICAO8643 engine count which is not
-        /// always a number!
+        /// always a number.
         /// </summary>
         [DataMember(Name="Engines", IsRequired=false, EmitDefaultValue=false)]
         public string NumberOfEngines { get; set; }
@@ -421,10 +421,10 @@ namespace VirtualRadar.WebSite
         public string YearBuilt { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating that the aircraft was seen on a SatCom feed.
+        /// [DEFUNCT] Gets or sets a value indicating that the aircraft was seen on a SatCom feed.
         /// </summary>
         [DataMember(Name="Sat", EmitDefaultValue=false)]
-        public bool IsSatcomFeed { get; set; }
+        public bool? IsSatcomFeed { get; set; }
 
         /// <summary>
         /// Gets or sets a list of coordinates representing the full trail for the aircraft. If <see cref="ResetTrail"/>

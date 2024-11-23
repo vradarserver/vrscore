@@ -47,9 +47,19 @@ namespace VirtualRadar.Message
 
         public string Icao24Country { get; set; }
 
+        public bool? IsCharterFlight { get; set; }
+
+        public bool? IsMilitary { get; set; }
+
+        public bool? IsPositioningFlight { get; set; }
+
+        public string NumberOfEngines { get; set; }
+
         public string OperatorIcao { get; set; }
 
         public string Operator { get; set; }
+
+        public LookupImageFile AircraftPicture { get; set; }
 
         public Route Route { get; set; }
 
@@ -68,7 +78,7 @@ namespace VirtualRadar.Message
         public bool? AirPressureLookupAttempted { get; set; }
 
         /// <summary>
-        /// The air pressure in inches of mercury at sea level under the aircraft's current location.
+        /// The air pressure in inches of mercury at sea level at the aircraft's current location.
         /// </summary>
         public float? AirPressureInHg { get; set; }
     }

@@ -63,6 +63,8 @@ namespace VirtualRadar
 
         public StampedValue<int?> SignalLevel { get; } = new();
 
+        public StampedValue<bool?> SignalLevelSent { get; } = new();
+
         public StampedValue<string> Callsign { get; } = new();
 
         public StampedValue<bool?> CallsignIsSuspect { get; } = new();
@@ -91,6 +93,8 @@ namespace VirtualRadar
         /// The type of altitude being transmitted by the aircraft.
         /// </summary>
         public StampedValue<AltitudeType?> AltitudeType { get; } = new();
+
+        public StampedValue<bool?> OnGround { get; } = new();
 
         public StampedValue<float?> AirPressureInHg { get; } = new();
 
@@ -138,15 +142,25 @@ namespace VirtualRadar
 
         public StampedValue<string> Icao24Country { get; } = new();
 
+        public StampedValue<bool?> IsCharterFlight { get; } = new();
+
+        public StampedValue<bool?> IsMilitary { get; } = new();
+
+        public StampedValue<bool?> IsPositioningFlight { get; } = new();
+
         public StampedValue<string> ModelIcao { get; } = new();
 
         public StampedValue<string> Manufacturer { get; } = new();
 
         public StampedValue<string> Model { get; } = new();
 
+        public StampedValue<string> NumberOfEngines { get; } = new();
+
         public StampedValue<string> OperatorIcao { get; } = new();
 
         public StampedValue<string> Operator { get; } = new();
+
+        public StampedValue<LookupImageFile> AircraftPicture { get; } = new();
 
         public StampedValue<string> Serial { get; } = new();
 
@@ -208,7 +222,9 @@ namespace VirtualRadar
                 IdentActive                 .CopyTo(result.IdentActive);
                 IsTisb                      .CopyTo(result.IsTisb);
                 Location                    .CopyTo(result.Location);
+                OnGround                    .CopyTo(result.OnGround);
                 SignalLevel                 .CopyTo(result.SignalLevel);
+                SignalLevelSent             .CopyTo(result.SignalLevelSent);
                 Squawk                      .CopyTo(result.Squawk);
                 SquawkIsEmergency           .CopyTo(result.SquawkIsEmergency);
                 TargetAltitudeFeet          .CopyTo(result.TargetAltitudeFeet);
@@ -222,12 +238,17 @@ namespace VirtualRadar
                 EnginePlacement             .CopyTo(result.EnginePlacement);
                 EngineType                  .CopyTo(result.EngineType);
                 Icao24Country               .CopyTo(result.Icao24Country);
+                IsCharterFlight             .CopyTo(result.IsCharterFlight);
+                IsMilitary                  .CopyTo(result.IsMilitary);
+                IsPositioningFlight         .CopyTo(result.IsPositioningFlight);
                 LookupAgeUtc                .CopyTo(result.LookupAgeUtc);
                 Manufacturer                .CopyTo(result.Manufacturer);
                 Model                       .CopyTo(result.Model);
                 ModelIcao                   .CopyTo(result.ModelIcao);
+                NumberOfEngines             .CopyTo(result.NumberOfEngines);
                 Operator                    .CopyTo(result.Operator);
                 OperatorIcao                .CopyTo(result.OperatorIcao);
+                AircraftPicture             .CopyTo(result.AircraftPicture);
                 Registration                .CopyTo(result.Registration);
                 Route                       .CopyTo(result.Route);
                 Serial                      .CopyTo(result.Serial);
@@ -275,7 +296,9 @@ namespace VirtualRadar
                     changed = IdentActive               .SetIfNotDefault(message.IdentActive, stamp)               || changed;
                     changed = IsTisb                    .SetIfNotDefault(message.IsTisb, stamp)                    || changed;
                     changed = Location                  .SetIfNotDefault(message.Location, stamp)                  || changed;
+                    changed = OnGround                  .SetIfNotDefault(message.OnGround, stamp)                  || changed;
                     changed = SignalLevel               .SetIfNotDefault(message.SignalLevel, stamp)               || changed;
+                    changed = SignalLevelSent           .SetIfNotDefault(message.SignalLevelSent, stamp)           || changed;
                     changed = Squawk                    .SetIfNotDefault(message.Squawk, stamp)                    || changed;
                     changed = TargetAltitudeFeet        .SetIfNotDefault(message.TargetAltitudeFeet, stamp)        || changed;
                     changed = TargetHeadingDegrees      .SetIfNotDefault(message.TargetHeadingDegrees, stamp)      || changed;
@@ -330,24 +353,29 @@ namespace VirtualRadar
                     var stamp = PostOffice.GetStamp();
 
                     // LOOKED-UP VALUES
-                    changed = AirPressureInHg    .SetIfNotDefault(lookup.AirPressureInHg, stamp)    || changed;
-                    changed = ConstructionNumber .SetIfNotDefault(lookup.ConstructionNumber, stamp) || changed;
-                    changed = Country            .SetIfNotDefault(lookup.Country, stamp)            || changed;
-                    changed = EnginePlacement    .SetIfNotDefault(lookup.EnginePlacement, stamp)    || changed;
-                    changed = EngineType         .SetIfNotDefault(lookup.EngineType, stamp)         || changed;
-                    changed = Icao24Country      .SetIfNotDefault(lookup.Icao24Country, stamp)      || changed;
-                    changed = LookupAgeUtc       .SetIfNotDefault(lookup.SourceAgeUtc, stamp)       || changed;
-                    changed = Manufacturer       .SetIfNotDefault(lookup.Manufacturer, stamp)       || changed;
-                    changed = Model              .SetIfNotDefault(lookup.Model, stamp)              || changed;
-                    changed = ModelIcao          .SetIfNotDefault(lookup.ModelIcao, stamp)          || changed;
-                    changed = Operator           .SetIfNotDefault(lookup.Operator, stamp)           || changed;
-                    changed = OperatorIcao       .SetIfNotDefault(lookup.OperatorIcao, stamp)       || changed;
-                    changed = Registration       .SetIfNotDefault(lookup.Registration, stamp)       || changed;
-                    changed = Route              .SetIfNotDefault(lookup.Route, stamp)              || changed;
-                    changed = Serial             .SetIfNotDefault(lookup.Serial, stamp)             || changed;
-                    changed = UserNotes          .SetIfNotDefault(lookup.UserNotes, stamp)          || changed;
-                    changed = UserTag            .SetIfNotDefault(lookup.UserTag, stamp)            || changed;
-                    changed = YearFirstFlight    .SetIfNotDefault(lookup.YearFirstFlight, stamp)    || changed;
+                    changed = AirPressureInHg    .SetIfNotDefault(lookup.AirPressureInHg, stamp)     || changed;
+                    changed = ConstructionNumber .SetIfNotDefault(lookup.ConstructionNumber, stamp)  || changed;
+                    changed = Country            .SetIfNotDefault(lookup.Country, stamp)             || changed;
+                    changed = EnginePlacement    .SetIfNotDefault(lookup.EnginePlacement, stamp)     || changed;
+                    changed = EngineType         .SetIfNotDefault(lookup.EngineType, stamp)          || changed;
+                    changed = Icao24Country      .SetIfNotDefault(lookup.Icao24Country, stamp)       || changed;
+                    changed = IsCharterFlight    .SetIfNotDefault(lookup.IsCharterFlight, stamp)     || changed;
+                    changed = IsMilitary         .SetIfNotDefault(lookup.IsMilitary, stamp)          || changed;
+                    changed = IsPositioningFlight.SetIfNotDefault(lookup.IsPositioningFlight, stamp) || changed;
+                    changed = LookupAgeUtc       .SetIfNotDefault(lookup.SourceAgeUtc, stamp)        || changed;
+                    changed = Manufacturer       .SetIfNotDefault(lookup.Manufacturer, stamp)        || changed;
+                    changed = Model              .SetIfNotDefault(lookup.Model, stamp)               || changed;
+                    changed = ModelIcao          .SetIfNotDefault(lookup.ModelIcao, stamp)           || changed;
+                    changed = NumberOfEngines    .SetIfNotDefault(lookup.NumberOfEngines, stamp)     || changed;
+                    changed = Operator           .SetIfNotDefault(lookup.Operator, stamp)            || changed;
+                    changed = OperatorIcao       .SetIfNotDefault(lookup.OperatorIcao, stamp)        || changed;
+                    changed = AircraftPicture    .SetIfNotDefault(lookup.AircraftPicture, stamp)     || changed;
+                    changed = Registration       .SetIfNotDefault(lookup.Registration, stamp)        || changed;
+                    changed = Route              .SetIfNotDefault(lookup.Route, stamp)               || changed;
+                    changed = Serial             .SetIfNotDefault(lookup.Serial, stamp)              || changed;
+                    changed = UserNotes          .SetIfNotDefault(lookup.UserNotes, stamp)           || changed;
+                    changed = UserTag            .SetIfNotDefault(lookup.UserTag, stamp)             || changed;
+                    changed = YearFirstFlight    .SetIfNotDefault(lookup.YearFirstFlight, stamp)     || changed;
 
                     if(lookup.AirPressureLookupAttempted ?? false) {
                         changed = AirPressureLookedUpUtc.Set(DateTime.UtcNow, stamp) || changed;

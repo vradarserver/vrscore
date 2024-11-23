@@ -8,23 +8,25 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Convert
+namespace VirtualRadar.Message
 {
     /// <summary>
-    /// Time conversions.
+    /// Describes an image that is known to exist on disk.
     /// </summary>
-    public static class Time
+    /// <param name="FileName">If this is null or empty then the image does not exist.</param>
+    /// <param name="HeightPixels">If this is zero then the image does not exist.</param>
+    /// <param name="WidthPixels">If this is zero then the image does not exist.</param>
+    public record LookupImageFile(
+        string FileName,
+        int HeightPixels,
+        int WidthPixels
+    )
     {
         /// <summary>
-        /// The number of Win32 / .NET ticks in one second.
+        /// True if any of the other properties indicate that the image does not exist.
         /// </summary>
-        public const long TicksInSecond = 10000000L;
-
-        /// <summary>
-        /// The start of the Unix epoc at UTC.
-        /// </summary>
-        public static readonly DateTime UnixEpocUtc = new(
-            1970, 1, 1, 0, 0, 0, DateTimeKind.Utc
-        );
+        public bool DoesNotExist => HeightPixels == 0
+                                 || WidthPixels == 0
+                                 || String.IsNullOrEmpty(FileName);
     }
 }

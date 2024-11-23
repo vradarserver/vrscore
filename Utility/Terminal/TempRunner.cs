@@ -68,8 +68,8 @@ namespace VirtualRadar.Utility.Terminal
                     if(receiver == null) {
                         feedDecoder.MessageReceived += (_, message) => {
                             var applyOutcome = aircraftList.ApplyMessage(message);
-                            if(applyOutcome.AddedAircraft) {
-                                _AircraftLookupService.Lookup(message.Icao24);
+                            if(applyOutcome.AddedAircraft && message.Icao24 != null) {
+                                _AircraftLookupService.Lookup(message.Icao24.Value);
                             }
                         };
                     }

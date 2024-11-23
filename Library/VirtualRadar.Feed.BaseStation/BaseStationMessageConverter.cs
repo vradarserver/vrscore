@@ -45,15 +45,16 @@ namespace VirtualRadar.Feed.BaseStation
                         GroundSpeedKnots =          baseStationMessage.GroundSpeed,
                         GroundSpeedType =           SpeedType.GroundSpeed,
                         IdentActive =               baseStationMessage.IdentActive,
-                        IsMlat =                    false,
                         IsTisb =                    false,
                         Location =                  Location.FromLatLng(baseStationMessage.Latitude, baseStationMessage.Longitude),
                         MessageReceived =           baseStationMessage.MessageGenerated,
                         OnGround =                  baseStationMessage.OnGround,
                         Squawk =                    baseStationMessage.Squawk,
                         VerticalRateFeetPerMinute = baseStationMessage.VerticalRate,
-                        VerticalRateType =          AltitudeType.AirPressure
-                    } ];
+                        VerticalRateType =          AltitudeType.AirPressure,
+                        SignalLevel =               0,
+                        SignalLevelSent =           false
+                    }];
                 }
             }
 

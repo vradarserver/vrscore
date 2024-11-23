@@ -540,20 +540,6 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        [DataRow(1234, true, "1234")]
-        [DataRow(1,    true, "0001")]
-        [DataRow(1234, false, null)]
-        public void Build_Sets_Aircraft_Squawk(int? value, bool hasChanged, string expected)
-        {
-            SetupAircraft(stamp: 2, fillMessage: m => m.Squawk = value);
-            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
-
-            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
-
-            Assert.AreEqual(expected, json.Aircraft[0].Squawk);
-        }
-
-        [TestMethod]
         [DataRow(null, 7500, true,  true)]
         [DataRow(7500, 7501, true,  false)]
         [DataRow(null, 7600, true,  true)]
@@ -561,7 +547,7 @@ namespace Tests.VirtualRadar.WebSite
         [DataRow(null, 7700, true,  true)]
         [DataRow(7700, 7701, true,  false)]
         [DataRow(7500, 7500, false, null)]
-        public void Build_Sets_Aircraft_IsEmergency(int? oldSquawk, int? squawk, bool hasChanged, bool? expected)
+        public void Build_Sets_Aircraft_Emergency(int? oldSquawk, int? squawk, bool hasChanged, bool? expected)
         {
             var aircraft = SetupAircraft(stamp: 1, fillMessage: m => m.Squawk = oldSquawk);
             SetupAircraft(aircraft, stamp: 2, fillMessage: m => m.Squawk = squawk);
@@ -570,25 +556,6 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(expected, json.Aircraft[0].Emergency);
-        }
-
-        [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
-        public void Build_Sets_Aircraft_FirstSeen(bool hasChanged)
-        {
-            SetupAircraft(stamp: 2, fillMessage: m => m.Icao24 = new(1));
-            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
-
-            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
-
-            var actual = json.Aircraft[0].FirstSeen;
-            if(!hasChanged) {
-                Assert.IsNull(actual);
-            } else {
-                Assert.IsNotNull(actual);
-                Assert.AreEqual(DateTime.UtcNow.Ticks, actual.Value.Ticks, Time.TicksInSecond);
-            }
         }
 
         [TestMethod]
@@ -620,6 +587,25 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void Build_Sets_Aircraft_FirstSeen(bool hasChanged)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Icao24 = new(1));
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            var actual = json.Aircraft[0].FirstSeen;
+            if(!hasChanged) {
+                Assert.IsNull(actual);
+            } else {
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(DateTime.UtcNow.Ticks, actual.Value.Ticks, Time.TicksInSecond);
+            }
+        }
+
+        [TestMethod]
         [DataRow(1425, true, 1425)]
         [DataRow(1425, false, null)]
         public void Build_Sets_Aircraft_GeometricAltitude(int? value, bool hasChanged, int? expected)
@@ -646,6 +632,45 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(expected, json.Aircraft[0].GroundSpeed);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_HasPicture(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { AircraftPicture = value == null
+                ? null
+                : value.Value
+                    ? new LookupImageFile("/foo", 1, 1)
+                    : new LookupImageFile("", 0, 0)
+            });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].HasPicture);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_HasSignalLevel(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.SignalLevelSent = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].HasSignalLevel);
         }
 
         [TestMethod]
@@ -736,6 +761,331 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(expected, json.Aircraft[0].IdentActive);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_IsCharterFlight(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { IsCharterFlight = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].IsCharterFlight);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_IsMilitary(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { IsMilitary = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].IsMilitary);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_IsPositioningFlight(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { IsPositioningFlight = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].IsPositioningFlight);
+        }
+
+        [TestMethod]
+        public void Build_Sets_Aircraft_IsSatcomFeed_Always_Null()
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Icao24 = new(1));
+            _Args.PreviousDataVersion = 1;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.IsNull(json.Aircraft[0].IsSatcomFeed);
+        }
+
+        [TestMethod]
+        [DataRow(51.234, true,  51.234)]
+        [DataRow(51.234, false, null)]
+        public void Build_Sets_Aircraft_Latitude(double value, bool hasChanged, double? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Location = new(value, 0));
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Latitude);
+        }
+
+        [TestMethod]
+        [DataRow(51.234, true,  51.234)]
+        [DataRow(51.234, false, null)]
+        public void Build_Sets_Aircraft_Longitude(double value, bool hasChanged, double? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Location = new(0, value));
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Longitude);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_Manufacturer(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { Manufacturer = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Manufacturer);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_Model(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { Model = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Model);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_NumberOfEngines(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { NumberOfEngines = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].NumberOfEngines);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_OnGround(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.OnGround = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].OnGround);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_Operator(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { Operator = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Operator);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_OperatorIcao(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { OperatorIcao = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].OperatorIcao);
+        }
+
+        [TestMethod]
+        [DataRow(AirportCodeType.Iata, true,  "LHR")]
+        [DataRow(AirportCodeType.Icao, true,  "EGLL")]
+        [DataRow(AirportCodeType.Iata, false, null)]
+        [DataRow(AirportCodeType.Icao, false, null)]
+        public void Build_Sets_Aircraft_Origin(AirportCodeType showType, bool hasChanged, string expected)
+        {
+            _AircraftMapSettings.Value = new(PreferredAirportCodeType: showType);
+            SetupAircraft(stamp: 2, lookup: new() { Route = LHR_SIN_SYD() });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Origin);
+        }
+
+        [TestMethod]
+        [DataRow(100, true,  100)]
+        [DataRow(100, false, null)]
+        public void Build_Sets_Aircraft_PictureHeight(int? value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { AircraftPicture = value == null ? null : new(
+                FileName: "/foo",
+                WidthPixels: 1,
+                HeightPixels: value.Value
+            )});
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].PictureHeight);
+        }
+
+        [TestMethod]
+        [DataRow(100, true,  100)]
+        [DataRow(100, false, null)]
+        public void Build_Sets_Aircraft_PictureWidth(int? value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { AircraftPicture = value == null ? null : new(
+                FileName: "/foo",
+                WidthPixels: value.Value,
+                HeightPixels: 1
+            )});
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].PictureWidth);
+        }
+
+        [TestMethod]
+        public void Build_Sets_Aircraft_PositionIsMlat_To_Null()
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Icao24 = new(1));
+            _Args.PreviousDataVersion = 1;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.IsNull(json.Aircraft[0].PositionIsMlat);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void Build_Sets_Aircraft_Position_Time_To_Milliseconds_After_Unix_Epoc(bool hasChanged)
+        {
+            var expected = (long)(DateTime.UtcNow - Time.UnixEpocUtc).TotalMilliseconds;
+            SetupAircraft(stamp: 2, fillMessage: m => m.Location = new(1, 1));
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            if(hasChanged) {
+                Assert.AreEqual(expected, json.Aircraft[0].PositionTime ?? 0L, 1000L);
+            } else {
+                Assert.IsNull(json.Aircraft[0].PositionTime);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void Build_Sets_Aircraft_ReceiverId_To_Receiver_Used(bool previousDataVersionSent)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Icao24 = new(1));
+            _Args.PreviousDataVersion = previousDataVersionSent ? 1 : -1;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            if(!previousDataVersionSent) {
+                Assert.AreEqual(_Receiver.Object.Id, json.Aircraft[0].ReceiverId);
+            } else {
+                Assert.IsNull(json.Aircraft[0].ReceiverId);
+            }
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_Registration(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { Registration = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Registration);
+        }
+
+        [TestMethod]
+        [DataRow(100, true,  100)]
+        [DataRow(100, false, null)]
+        public void Build_Sets_Aircraft_SignalLevel(int? value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => {
+                m.SignalLevel = value;
+                m.SignalLevelSent = true;
+            });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].SignalLevel);
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow(false)]
+        public void Build_Sets_Aircraft_SignalLevel_Null_If_SignalLevelSent_Is_Not_True(bool? signalLevelSent)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => {
+                m.SignalLevel = 1;
+                m.SignalLevelSent = signalLevelSent;
+            });
+            _Args.PreviousDataVersion = 1;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.IsNull(json.Aircraft[0].SignalLevel);
+        }
+
+        [TestMethod]
+        [DataRow(1234, true, "1234")]
+        [DataRow(1,    true, "0001")]
+        [DataRow(1234, false, null)]
+        public void Build_Sets_Aircraft_Squawk(int? value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.Squawk = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Squawk);
         }
     }
 }

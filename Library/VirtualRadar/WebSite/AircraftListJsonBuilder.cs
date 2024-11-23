@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using VirtualRadar.Configuration;
+using VirtualRadar.Convert;
 using VirtualRadar.Receivers;
 using VirtualRadar.StandingData;
 
@@ -103,10 +104,24 @@ namespace VirtualRadar.WebSite
                         EngineType =            aircraft.EngineType             .ValueIfChanged(oldStamp, v => (int?)v),
                         GeometricAltitude =     aircraft.AltitudeRadarFeet      .ValueIfChanged(oldStamp),
                         GroundSpeed =           aircraft.GroundSpeedKnots       .ValueIfChanged(oldStamp),
+                        HasSignalLevel =        aircraft.SignalLevelSent        .ValueIfChanged(oldStamp),
                         Icao24Country =         aircraft.Icao24Country          .ValueIfChanged(oldStamp),
                         IdentActive =           aircraft.IdentActive            .ValueIfChanged(oldStamp),
+                        IsCharterFlight =       aircraft.IsCharterFlight        .ValueIfChanged(oldStamp),
+                        IsMilitary =            aircraft.IsMilitary             .ValueIfChanged(oldStamp),
+                        IsPositioningFlight =   aircraft.IsPositioningFlight    .ValueIfChanged(oldStamp),
+                        Manufacturer =          aircraft.Manufacturer           .ValueIfChanged(oldStamp),
+                        Model =                 aircraft.Model                  .ValueIfChanged(oldStamp),
+                        NumberOfEngines =       aircraft.NumberOfEngines        .ValueIfChanged(oldStamp),
+                        OnGround =              aircraft.OnGround               .ValueIfChanged(oldStamp),
+                        Operator =              aircraft.Operator               .ValueIfChanged(oldStamp),
+                        OperatorIcao =          aircraft.OperatorIcao           .ValueIfChanged(oldStamp),
+                        Registration =          aircraft.Registration           .ValueIfChanged(oldStamp),
                         Squawk =                aircraft.Squawk                 .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
                     };
+                    if(state.Args.PreviousDataVersion <= 0) {
+                        aircraftJson.ReceiverId = state.Receiver?.Id ?? 0;
+                    }
                     if(aircraft.FirstStamp > oldStamp) {
                         aircraftJson.FirstSeen = aircraft.FirstMessageReceivedUtc;
                     }
@@ -121,6 +136,15 @@ namespace VirtualRadar.WebSite
                             ? null
                             : !aircraft.Icao24.Value.Value.IsValid;
                     }
+                    if((aircraft.SignalLevelSent.Value ?? false) && aircraft.SignalLevel.Stamp > oldStamp) {
+                        aircraftJson.SignalLevel = aircraft.SignalLevel.Value;
+                    }
+                    if(aircraft.Location.Stamp > oldStamp) {
+                        aircraftJson.Latitude =     aircraft.Location.Value?.Latitude;
+                        aircraftJson.Longitude =    aircraft.Location.Value?.Longitude;
+                        aircraftJson.PositionTime = (long)(aircraft.Location.LastChangedUtc - Time.UnixEpocUtc).TotalMilliseconds;
+                    }
+                    AddPicture(state, aircraftJson, aircraft);
                     AddRoute(state, aircraftJson, aircraft.Route);
                     state.Json.Aircraft.Add(aircraftJson);
                 }
@@ -165,12 +189,23 @@ namespace VirtualRadar.WebSite
             }
         }
 
+        private void AddPicture(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
+        {
+            var lookupImage = aircraft.AircraftPicture.Value;
+            if(aircraft.AircraftPicture.Stamp > state.Args.PreviousDataVersion) {
+                aircraftJson.HasPicture =    !lookupImage?.DoesNotExist;
+                aircraftJson.PictureHeight = lookupImage?.HeightPixels;
+                aircraftJson.PictureWidth =  lookupImage?.WidthPixels;
+            }
+        }
+
         private void AddRoute(BuildState state, AircraftJson aircraftJson, StampedValue<Route> route)
         {
             var preferredCodeType = state.AircraftMapSettings.PreferredAirportCodeType;
 
             if(route.Stamp > state.Args.PreviousDataVersion && route.Value != null) {
                 aircraftJson.Destination = route.Value.To?.PreferredAirportCode(preferredCodeType);
+                aircraftJson.Origin =      route.Value.From?.PreferredAirportCode(preferredCodeType);
             }
         }
 
