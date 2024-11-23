@@ -65,6 +65,8 @@ namespace VirtualRadar.Message
 
         public string Serial { get; set; }
 
+        public Species? Species { get; set; }
+
         public string UserNotes { get; set; }
 
         public string UserTag { get; set; }

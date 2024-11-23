@@ -1075,6 +1075,33 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
+        [DataRow(Species.None,       true,  0)]
+        [DataRow(Species.Helicopter, true,  4)]
+        [DataRow(Species.Helicopter, false, null)]
+        public void Build_Sets_Aircraft_Species(Species value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { Species = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Species);
+        }
+
+        [TestMethod]
+        [DataRow(SpeedType.TrueAirSpeed, true,  3)]
+        [DataRow(SpeedType.TrueAirSpeed, false, null)]
+        public void Build_Sets_Aircraft_SpeedType(SpeedType value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.GroundSpeedType = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].SpeedType);
+        }
+
+        [TestMethod]
         [DataRow(1234, true, "1234")]
         [DataRow(1,    true, "0001")]
         [DataRow(1234, false, null)]

@@ -117,6 +117,8 @@ namespace VirtualRadar.WebSite
                         Operator =              aircraft.Operator               .ValueIfChanged(oldStamp),
                         OperatorIcao =          aircraft.OperatorIcao           .ValueIfChanged(oldStamp),
                         Registration =          aircraft.Registration           .ValueIfChanged(oldStamp),
+                        Species =               aircraft.Species                .ValueIfChanged(oldStamp, v => (int?)v),
+                        SpeedType =             aircraft.GroundSpeedType        .ValueIfChanged(oldStamp, v => (int?)v),
                         Squawk =                aircraft.Squawk                 .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
                     };
                     if(state.Args.PreviousDataVersion <= 0) {

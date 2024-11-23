@@ -164,6 +164,8 @@ namespace VirtualRadar
 
         public StampedValue<string> Serial { get; } = new();
 
+        public StampedValue<Species?> Species { get; } = new();
+
         public StampedValue<string> ConstructionNumber { get; } = new();
 
         public StampedValue<string> UserNotes { get; } = new();
@@ -252,6 +254,7 @@ namespace VirtualRadar
                 Registration                .CopyTo(result.Registration);
                 Route                       .CopyTo(result.Route);
                 Serial                      .CopyTo(result.Serial);
+                Species                     .CopyTo(result.Species);
                 UserNotes                   .CopyTo(result.UserNotes);
                 UserTag                     .CopyTo(result.UserTag);
                 YearFirstFlight             .CopyTo(result.YearFirstFlight);
@@ -373,6 +376,7 @@ namespace VirtualRadar
                     changed = Registration       .SetIfNotDefault(lookup.Registration, stamp)        || changed;
                     changed = Route              .SetIfNotDefault(lookup.Route, stamp)               || changed;
                     changed = Serial             .SetIfNotDefault(lookup.Serial, stamp)              || changed;
+                    changed = Species            .SetIfNotDefault(lookup.Species, stamp)             || changed;
                     changed = UserNotes          .SetIfNotDefault(lookup.UserNotes, stamp)           || changed;
                     changed = UserTag            .SetIfNotDefault(lookup.UserTag, stamp)             || changed;
                     changed = YearFirstFlight    .SetIfNotDefault(lookup.YearFirstFlight, stamp)     || changed;
