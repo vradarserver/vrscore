@@ -1183,5 +1183,109 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual(expected, json.Aircraft[0].TransponderType);
         }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_Type(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { ModelIcao = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Type);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void Build_Sets_Aircraft_UniqueId_Unconditionally(bool hasChanged)
+        {
+            SetupAircraft(stamp: 2, id: 7, fillMessage: m => m.Icao24 = new(1));
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(7, json.Aircraft[0].UniqueId);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_UserNotes(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { UserNotes = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].UserNotes);
+        }
+
+        [TestMethod]
+        [DataRow("A", true,  "A")]
+        [DataRow("A", false, null)]
+        public void Build_Sets_Aircraft_UserTag(string value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { UserTag = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].UserTag);
+        }
+
+        [TestMethod]
+        [DataRow(1425, true,  1425)]
+        [DataRow(1425, false, null)]
+        public void Build_Sets_Aircraft_VerticalRate(int? value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.VerticalRateFeetPerMinute = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].VerticalRate);
+        }
+
+        [TestMethod]
+        [DataRow(AltitudeType.Radar, true,  1)]
+        [DataRow(AltitudeType.Radar, false, null)]
+        public void Build_Sets_Aircraft_VerticalRateType(AltitudeType value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.VerticalRateType = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].VerticalRateType);
+        }
+
+        [TestMethod]
+        [DataRow(WakeTurbulenceCategory.Heavy, true,  3)]
+        [DataRow(WakeTurbulenceCategory.Heavy, false, null)]
+        public void Build_Sets_Aircraft_WakeTurbulenceCategory(WakeTurbulenceCategory value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { WakeTurbulenceCategory = value });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].WakeTurbulenceCategory);
+        }
+
+        [TestMethod]
+        [DataRow(2021, true,  "2021")]
+        [DataRow(2021, false, null)]
+        public void Build_Sets_Aircraft_YearBuilt(int? value, bool hasChanged, string expected)
+        {
+            SetupAircraft(stamp: 2, lookup: new() { YearBuilt = 2021 });
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].YearBuilt);
+        }
     }
 }

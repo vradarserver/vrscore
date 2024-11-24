@@ -66,7 +66,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
             Operator =      lookupOutcome.Operator;
             OperatorIcao =  lookupOutcome.OperatorIcao;
             Serial =        lookupOutcome.Serial;
-            YearBuilt =     lookupOutcome.YearFirstFlight;
+            YearBuilt =     lookupOutcome.YearBuilt;
 
             UpdatedUtc = utcNow;
             if(CreatedUtc == default) {
@@ -90,7 +90,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
                 result.OperatorIcao =       OperatorIcao;
                 result.Registration =       Registration;
                 result.Serial =             Serial;
-                result.YearFirstFlight =    YearBuilt;
+                result.YearBuilt =    YearBuilt;
             }
 
             return result;

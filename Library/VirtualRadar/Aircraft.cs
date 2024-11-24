@@ -174,7 +174,9 @@ namespace VirtualRadar
 
         public StampedValue<string> UserTag { get; } = new();
 
-        public StampedValue<int?> YearFirstFlight { get; } = new();
+        public StampedValue<WakeTurbulenceCategory?> WakeTurbulenceCategory { get; } = new();
+
+        public StampedValue<int?> YearBuilt { get; } = new();
 
         public StampedValue<Route> Route { get; } = new();
 
@@ -260,7 +262,8 @@ namespace VirtualRadar
                 Species                     .CopyTo(result.Species);
                 UserNotes                   .CopyTo(result.UserNotes);
                 UserTag                     .CopyTo(result.UserTag);
-                YearFirstFlight             .CopyTo(result.YearFirstFlight);
+                WakeTurbulenceCategory      .CopyTo(result.WakeTurbulenceCategory);
+                YearBuilt                   .CopyTo(result.YearBuilt);
 
                 return result;
             }
@@ -365,30 +368,31 @@ namespace VirtualRadar
                     var stamp = PostOffice.GetStamp();
 
                     // LOOKED-UP VALUES
-                    changed = AirPressureInHg    .SetIfNotDefault(lookup.AirPressureInHg, stamp)     || changed;
-                    changed = ConstructionNumber .SetIfNotDefault(lookup.ConstructionNumber, stamp)  || changed;
-                    changed = Country            .SetIfNotDefault(lookup.Country, stamp)             || changed;
-                    changed = EnginePlacement    .SetIfNotDefault(lookup.EnginePlacement, stamp)     || changed;
-                    changed = EngineType         .SetIfNotDefault(lookup.EngineType, stamp)          || changed;
-                    changed = Icao24Country      .SetIfNotDefault(lookup.Icao24Country, stamp)       || changed;
-                    changed = IsCharterFlight    .SetIfNotDefault(lookup.IsCharterFlight, stamp)     || changed;
-                    changed = IsMilitary         .SetIfNotDefault(lookup.IsMilitary, stamp)          || changed;
-                    changed = IsPositioningFlight.SetIfNotDefault(lookup.IsPositioningFlight, stamp) || changed;
-                    changed = LookupAgeUtc       .SetIfNotDefault(lookup.SourceAgeUtc, stamp)        || changed;
-                    changed = Manufacturer       .SetIfNotDefault(lookup.Manufacturer, stamp)        || changed;
-                    changed = Model              .SetIfNotDefault(lookup.Model, stamp)               || changed;
-                    changed = ModelIcao          .SetIfNotDefault(lookup.ModelIcao, stamp)           || changed;
-                    changed = NumberOfEngines    .SetIfNotDefault(lookup.NumberOfEngines, stamp)     || changed;
-                    changed = Operator           .SetIfNotDefault(lookup.Operator, stamp)            || changed;
-                    changed = OperatorIcao       .SetIfNotDefault(lookup.OperatorIcao, stamp)        || changed;
-                    changed = AircraftPicture    .SetIfNotDefault(lookup.AircraftPicture, stamp)     || changed;
-                    changed = Registration       .SetIfNotDefault(lookup.Registration, stamp)        || changed;
-                    changed = Route              .SetIfNotDefault(lookup.Route, stamp)               || changed;
-                    changed = Serial             .SetIfNotDefault(lookup.Serial, stamp)              || changed;
-                    changed = Species            .SetIfNotDefault(lookup.Species, stamp)             || changed;
-                    changed = UserNotes          .SetIfNotDefault(lookup.UserNotes, stamp)           || changed;
-                    changed = UserTag            .SetIfNotDefault(lookup.UserTag, stamp)             || changed;
-                    changed = YearFirstFlight    .SetIfNotDefault(lookup.YearFirstFlight, stamp)     || changed;
+                    changed = AirPressureInHg       .SetIfNotDefault(lookup.AirPressureInHg, stamp)        || changed;
+                    changed = ConstructionNumber    .SetIfNotDefault(lookup.ConstructionNumber, stamp)     || changed;
+                    changed = Country               .SetIfNotDefault(lookup.Country, stamp)                || changed;
+                    changed = EnginePlacement       .SetIfNotDefault(lookup.EnginePlacement, stamp)        || changed;
+                    changed = EngineType            .SetIfNotDefault(lookup.EngineType, stamp)             || changed;
+                    changed = Icao24Country         .SetIfNotDefault(lookup.Icao24Country, stamp)          || changed;
+                    changed = IsCharterFlight       .SetIfNotDefault(lookup.IsCharterFlight, stamp)        || changed;
+                    changed = IsMilitary            .SetIfNotDefault(lookup.IsMilitary, stamp)             || changed;
+                    changed = IsPositioningFlight   .SetIfNotDefault(lookup.IsPositioningFlight, stamp)    || changed;
+                    changed = LookupAgeUtc          .SetIfNotDefault(lookup.SourceAgeUtc, stamp)           || changed;
+                    changed = Manufacturer          .SetIfNotDefault(lookup.Manufacturer, stamp)           || changed;
+                    changed = Model                 .SetIfNotDefault(lookup.Model, stamp)                  || changed;
+                    changed = ModelIcao             .SetIfNotDefault(lookup.ModelIcao, stamp)              || changed;
+                    changed = NumberOfEngines       .SetIfNotDefault(lookup.NumberOfEngines, stamp)        || changed;
+                    changed = Operator              .SetIfNotDefault(lookup.Operator, stamp)               || changed;
+                    changed = OperatorIcao          .SetIfNotDefault(lookup.OperatorIcao, stamp)           || changed;
+                    changed = AircraftPicture       .SetIfNotDefault(lookup.AircraftPicture, stamp)        || changed;
+                    changed = Registration          .SetIfNotDefault(lookup.Registration, stamp)           || changed;
+                    changed = Route                 .SetIfNotDefault(lookup.Route, stamp)                  || changed;
+                    changed = Serial                .SetIfNotDefault(lookup.Serial, stamp)                 || changed;
+                    changed = Species               .SetIfNotDefault(lookup.Species, stamp)                || changed;
+                    changed = UserNotes             .SetIfNotDefault(lookup.UserNotes, stamp)              || changed;
+                    changed = UserTag               .SetIfNotDefault(lookup.UserTag, stamp)                || changed;
+                    changed = WakeTurbulenceCategory.SetIfNotDefault(lookup.WakeTurbulenceCategory, stamp) || changed;
+                    changed = YearBuilt             .SetIfNotDefault(lookup.YearBuilt, stamp)              || changed;
 
                     if(lookup.AirPressureLookupAttempted ?? false) {
                         changed = AirPressureLookedUpUtc.Set(DateTime.UtcNow, stamp) || changed;

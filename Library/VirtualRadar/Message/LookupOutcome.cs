@@ -71,7 +71,9 @@ namespace VirtualRadar.Message
 
         public string UserTag { get; set; }
 
-        public int? YearFirstFlight { get; set; }
+        public WakeTurbulenceCategory? WakeTurbulenceCategory { get; set; }
+
+        public int? YearBuilt { get; set; }
 
         /// <summary>
         /// True if this lookup was an attempt to lookup the aircraft's air pressure. Always set this

@@ -82,7 +82,7 @@ namespace VirtualRadar.Utility.CLIConsole
                 }
                 await WriteLine($"{found.Icao24.ToString()} Reg [{found.Registration}] Model [{found.ModelIcao}] [{found.Manufacturer}] [{found.Model}]");
                 await WriteLine($"       Operator [{found.OperatorIcao}] [{found.Operator}]");
-                await WriteLine($"       Country [{found.Country}] Serial [{found.Serial}] Year built [{found.YearFirstFlight}]");
+                await WriteLine($"       Country [{found.Country}] Serial [{found.Serial}] Year built [{found.YearBuilt}]");
             }
             await WriteLine();
             await WriteLine("MISSING");

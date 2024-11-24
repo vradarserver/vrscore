@@ -107,7 +107,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                                     Registration =      sdmAircraft.Registration,
                                     Serial =            sdmAircraft.Serial,
                                     SourceAgeUtc =      sourceAge,
-                                    YearFirstFlight =   sdmAircraft.YearBuilt,
+                                    YearBuilt =   sdmAircraft.YearBuilt,
                                 });
                             }
                         }
