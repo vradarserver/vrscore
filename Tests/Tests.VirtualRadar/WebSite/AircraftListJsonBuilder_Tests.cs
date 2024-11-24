@@ -1114,5 +1114,74 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual(expected, json.Aircraft[0].Squawk);
         }
+
+        [TestMethod]
+        [DataRow(100, true,  100)]
+        [DataRow(100, false, null)]
+        public void Build_Sets_Aircraft_TargetAltitude(int? value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.TargetAltitudeFeet = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].TargetAltitude);
+        }
+
+        [TestMethod]
+        [DataRow(12.34F, true,  12.34F)]
+        [DataRow(12.34F, false, null)]
+        public void Build_Sets_Aircraft_TargetTrack(float? value, bool hasChanged, float? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.TargetHeadingDegrees = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].TargetTrack);
+        }
+
+        [TestMethod]
+        [DataRow(12.34F, true,  12.34F)]
+        [DataRow(12.34F, false, null)]
+        public void Build_Sets_Aircraft_Track(float? value, bool hasChanged, float? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.GroundTrackDegrees = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].Track);
+        }
+
+        [TestMethod]
+        [DataRow(null,  true,  null)]
+        [DataRow(false, true,  false)]
+        [DataRow(true,  true,  true)]
+        [DataRow(null,  false, null)]
+        [DataRow(false, false, null)]
+        [DataRow(true,  false, null)]
+        public void Build_Sets_Aircraft_TrackIsHeading(bool? value, bool hasChanged, bool? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.GroundTrackIsHeading = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].TrackIsHeading);
+        }
+
+        [TestMethod]
+        [DataRow(TransponderType.Adsb2, true,  5)]
+        [DataRow(TransponderType.Adsb2, false, null)]
+        public void Build_Sets_Aircraft_TransponderType(TransponderType value, bool hasChanged, int? expected)
+        {
+            SetupAircraft(stamp: 2, fillMessage: m => m.TransponderType = value);
+            _Args.PreviousDataVersion = hasChanged ? 1 : 2;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expected, json.Aircraft[0].TransponderType);
+        }
     }
 }

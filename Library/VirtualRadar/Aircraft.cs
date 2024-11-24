@@ -126,6 +126,8 @@ namespace VirtualRadar
 
         public StampedValue<bool?> IdentActive { get; } = new();
 
+        public StampedValue<TransponderType?> TransponderType { get; } = new();
+
         //
         //                              LOOKUP OUTCOME(S)
         //
@@ -231,6 +233,7 @@ namespace VirtualRadar
                 SquawkIsEmergency           .CopyTo(result.SquawkIsEmergency);
                 TargetAltitudeFeet          .CopyTo(result.TargetAltitudeFeet);
                 TargetHeadingDegrees        .CopyTo(result.TargetHeadingDegrees);
+                TransponderType             .CopyTo(result.TransponderType);
                 VerticalRateType            .CopyTo(result.VerticalRateType);
                 VerticalRateFeetPerMinute   .CopyTo(result.VerticalRateFeetPerMinute);
 
@@ -307,6 +310,12 @@ namespace VirtualRadar
                     changed = TargetHeadingDegrees      .SetIfNotDefault(message.TargetHeadingDegrees, stamp)      || changed;
                     changed = VerticalRateType          .SetIfNotDefault(message.VerticalRateType, stamp)          || changed;
                     changed = VerticalRateFeetPerMinute .SetIfNotDefault(message.VerticalRateFeetPerMinute, stamp) || changed;
+
+                    if(message.TransponderType != null) {
+                        if(TransponderType.Value?.IsSupercededBy(message.TransponderType.Value) ?? true) {
+                            changed = TransponderType.Set(message.TransponderType, stamp) || changed;
+                        }
+                    }
 
                     if(message.AltitudeFeet != null) {
                         switch(message.AltitudeType ?? VirtualRadar.AltitudeType.AirPressure) {

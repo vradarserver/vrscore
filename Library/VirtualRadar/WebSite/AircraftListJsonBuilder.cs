@@ -120,6 +120,11 @@ namespace VirtualRadar.WebSite
                         Species =               aircraft.Species                .ValueIfChanged(oldStamp, v => (int?)v),
                         SpeedType =             aircraft.GroundSpeedType        .ValueIfChanged(oldStamp, v => (int?)v),
                         Squawk =                aircraft.Squawk                 .ValueIfChanged(oldStamp, v => v?.ToString("0000")),
+                        TargetAltitude =        aircraft.TargetAltitudeFeet     .ValueIfChanged(oldStamp),
+                        TargetTrack =           aircraft.TargetHeadingDegrees   .ValueIfChanged(oldStamp),
+                        Track =                 aircraft.GroundTrackDegrees     .ValueIfChanged(oldStamp),
+                        TrackIsHeading =        aircraft.GroundTrackIsHeading   .ValueIfChanged(oldStamp),
+                        TransponderType =       aircraft.TransponderType        .ValueIfChanged(oldStamp, v => (int?)v),
                     };
                     if(state.Args.PreviousDataVersion <= 0) {
                         aircraftJson.ReceiverId = state.Receiver?.Id ?? 0;
