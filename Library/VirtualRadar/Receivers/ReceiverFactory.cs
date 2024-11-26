@@ -33,8 +33,8 @@ namespace VirtualRadar.Receivers
         private readonly object _SyncLock = new();
         private bool _Disposed;
         private volatile List<Receiver> _Receivers = [];
-        private readonly CallbackList<IReceiver> _ReceiverAddedCallbacks = new();
-        private readonly CallbackList<IReceiver> _ReceiverShuttingDownCallbacks = new();
+        private readonly CallbackWithParamList<IReceiver> _ReceiverAddedCallbacks = new();
+        private readonly CallbackWithParamList<IReceiver> _ReceiverShuttingDownCallbacks = new();
 
         /// <inheritdoc/>
         public IReceiver[] Receivers

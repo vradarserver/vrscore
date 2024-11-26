@@ -21,9 +21,9 @@
         /// <summary>
         /// Adds a callback that is called whenever <see cref="SaveChanges"/> saves some changes.
         /// </summary>
-        /// <param name="callback">A callback that is passed an empty EventArgs.</param>
+        /// <param name="callback"></param>
         /// <returns>A handle that must be disposed of whenever the caller is disposed.</returns>
-        ICallbackHandle AddSavedChangesCallback(Action<EventArgs> callback);
+        ICallbackHandle AddSavedChangesCallback(Action callback);
 
         /// <summary>
         /// Returns the current value of the type passed across, assuming that the type uniquely identifies a

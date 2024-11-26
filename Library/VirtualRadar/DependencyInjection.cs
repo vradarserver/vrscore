@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using VirtualRadar.Configuration;
 using VirtualRadar.Extensions;
 using VirtualRadar.Reflection;
+using VirtualRadar.TileServer;
 
 namespace VirtualRadar
 {
@@ -118,6 +119,10 @@ namespace VirtualRadar
             services.AddLifetime<StandingData.IStandingDataManager,             StandingData.StandingDataManager>();
             services.AddLifetime<StandingData.IStandingDataOverridesRepository, StandingData.StandingDataOverridesRepository>();
             services.AddLifetime<StandingData.IStandingDataUpdater,             StandingData.StandingDataUpdater>();
+
+            services.AddLifetime<TileServer.IDownloadedTileServerSettingsDownloader,    DownloadedTileServerSettingsDownloader>();
+            services.AddLifetime<TileServer.IDownloadedTileServerSettingsManager,       DownloadedTileServerSettingsManager>();
+            services.AddLifetime<TileServer.IDownloadedTileServerSettingsStorage,       DownloadedTileServerSettingsStorage>();
 
             services.AddLifetime<WebSite.IAircraftListJsonBuilder, WebSite.AircraftListJsonBuilder>();
 

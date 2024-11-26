@@ -29,6 +29,7 @@ dotnet_diagnostic.CA1806.severity = none        # Keeps wanting me to spam the s
 dotnet_diagnostic.IDE0055.severity = none       # Stop vandalising columns.
 dotnet_diagnostic.IDE0066.severity = none       # Stop trying to make switch expressions happen.
 dotnet_diagnostic.IDE0290.severity = none       # Stop banging on about primary constructors.
+dotnet_diagnostic.SYSLIB1045.severity = none    # Turn off the Regex precompilation spam, it's especially annoying on static Regex fields
 
 ###############################
 # Naming Conventions          #

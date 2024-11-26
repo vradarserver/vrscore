@@ -30,7 +30,7 @@ namespace VirtualRadar.Feed.Vatsim
         #pragma warning restore IDE1006
     ) : IVatsimDownloader
     {
-        private CallbackList<VatsimDataV3> _DataDownloadedCallbacks = new();
+        private CallbackWithParamList<VatsimDataV3> _DataDownloadedCallbacks = new();
         private object _SyncLock = new();       // <-- CallbackLists are already threadsafe, this is not used to gate access to those
         private System.Timers.Timer _Timer;     // <-- null if the timer has never been started or if it has been disposed
         private Status _Status;                 // <-- VATSIM status data, holds list of round-robin URLs to fetch from

@@ -8,43 +8,18 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.DependencyInjection;
-using VirtualRadar.Extensions;
-using VirtualRadar.Receivers;
-using VirtualRadar.TileServer;
-
 namespace VirtualRadar
 {
-    /// <inheritdoc/>
-    public class VirtualRadarModule : IVirtualRadarModule
+    /// <summary>
+    /// Methods that extend the <see cref="MapProvider"/> enum.
+    /// </summary>
+    public static class MapProviderExtensions
     {
-        /// <inheritdoc/>
-        public int Priority => -1;
-
-        [InjectedService]
-        public ReceiverEngine ReceiverEngine { get; set; }
-
-        [InjectedService]
-        public IDownloadedTileServerSettingsManager TileServerSettingsManager { get; set; }
-
-        /// <inheritdoc/>
-        public void RegisterServices(IServiceCollection services)
-        {
-            DependencyInjection.AddVirtualRadarGroup(services);
-        }
-
-        /// <inheritdoc/>
-        public void Start()
-        {
-            ReceiverEngine.Start();
-            TileServerSettingsManager.Start();
-        }
-
-        /// <inheritdoc/>
-        public void Stop()
-        {
-            TileServerSettingsManager.Stop();
-            ReceiverEngine.Stop();
-        }
+        /// <summary>
+        /// Returns true if the map provider uses tile servers.
+        /// </summary>
+        /// <param name="mapProvider"></param>
+        /// <returns></returns>
+        public static bool UsesTileServer(this MapProvider mapProvider) => mapProvider == MapProvider.Leaflet;
     }
 }

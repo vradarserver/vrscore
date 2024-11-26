@@ -8,43 +8,27 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.Extensions.DependencyInjection;
-using VirtualRadar.Extensions;
-using VirtualRadar.Receivers;
-using VirtualRadar.TileServer;
+using VirtualRadar.Configuration;
 
-namespace VirtualRadar
+namespace VirtualRadar.TileServer
 {
-    /// <inheritdoc/>
-    public class VirtualRadarModule : IVirtualRadarModule
+    /// <summary>
+    /// Configuration associated with the downloading and selection of tile server settings.
+    /// </summary>
+    /// <param name="DownloadUrl">The URL to download settings from.</param>
+    /// <param name="FolderOverride">
+    /// The folder to store the downloaded settings in. If null or empty then the normal working folder is
+    /// used.
+    /// </param>
+    [Settings("TileServer")]
+    public record TileServerSettings(
+        string DownloadUrl = "http://sdm.virtualradarserver.co.uk/api/1.01/tile-servers",
+        string FolderOverride = null,
+        int BlockingDownloadTimeoutSeconds = 10,
+        int BackgroundDownloadTimeoutSeconds = 60,
+        int BackoffPeriodSeconds = 60,
+        int RefetchPeriodHours = 24
+    )
     {
-        /// <inheritdoc/>
-        public int Priority => -1;
-
-        [InjectedService]
-        public ReceiverEngine ReceiverEngine { get; set; }
-
-        [InjectedService]
-        public IDownloadedTileServerSettingsManager TileServerSettingsManager { get; set; }
-
-        /// <inheritdoc/>
-        public void RegisterServices(IServiceCollection services)
-        {
-            DependencyInjection.AddVirtualRadarGroup(services);
-        }
-
-        /// <inheritdoc/>
-        public void Start()
-        {
-            ReceiverEngine.Start();
-            TileServerSettingsManager.Start();
-        }
-
-        /// <inheritdoc/>
-        public void Stop()
-        {
-            TileServerSettingsManager.Stop();
-            ReceiverEngine.Stop();
-        }
     }
 }

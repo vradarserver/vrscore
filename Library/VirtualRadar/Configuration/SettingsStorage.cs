@@ -34,8 +34,8 @@ namespace VirtualRadar.Configuration
         private readonly Dictionary<string, object> _ParsedContent = [];
         private string _ContentFileName;
         private JsonSerializerSettings _JsonDeserialiserSettings;
-        private readonly CallbackList<ValueChangedCallbackArgs> _ValueChangedCallbacks = new();
-        private readonly CallbackList<EventArgs> _SavedChangesCallbacks = new();
+        private readonly CallbackWithParamList<ValueChangedCallbackArgs> _ValueChangedCallbacks = new();
+        private readonly CallbackNoParamList _SavedChangesCallbacks = new();
 
         private static string ParsedContentKey(string key, Type parsedType) => $"{key}-{parsedType.Name}";
 
@@ -93,7 +93,7 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public ICallbackHandle AddSavedChangesCallback(Action<EventArgs> callback)
+        public ICallbackHandle AddSavedChangesCallback(Action callback)
         {
             return _SavedChangesCallbacks.Add(callback);
         }
@@ -253,7 +253,7 @@ namespace VirtualRadar.Configuration
                 _FileSystem.WriteAllText(contentFileName, json);
             }
 
-            var exception = _SavedChangesCallbacks.InvokeWithoutExceptions(EventArgs.Empty);
+            var exception = _SavedChangesCallbacks.InvokeWithoutExceptions();
             if(exception != null) {
                 _Log.Exception(exception, $"Thrown when running callbacks after saving settings to {contentFileName}");
             }

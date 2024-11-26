@@ -435,7 +435,7 @@ namespace Tests.VirtualRadar.Configuration
 
             _Service.ChangeValue<Options>(new(2, "Gale"));
             var callCount = 0;
-            using(_Service.AddSavedChangesCallback(_ => { ++callCount; })) {
+            using(_Service.AddSavedChangesCallback(() => { ++callCount; })) {
                 _Service.SaveChanges();
             }
 
@@ -448,7 +448,7 @@ namespace Tests.VirtualRadar.Configuration
             SetupConfigForType<Options>("options", _DefaultOptions);
 
             _Service.ChangeValue<Options>(new(2, "Gale"));
-            using(_Service.AddSavedChangesCallback(_ => throw new InvalidOperationException())) {
+            using(_Service.AddSavedChangesCallback(() => throw new InvalidOperationException())) {
                 _Service.SaveChanges();
             }
 
