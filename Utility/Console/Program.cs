@@ -36,6 +36,7 @@ namespace VirtualRadar.Utility.CLIConsole
                         .AddTransient<CommandRunner_Lookup,             CommandRunner_Lookup>()
                         .AddTransient<CommandRunner_Open,               CommandRunner_Open>()
                         .AddTransient<CommandRunner_RecordFeed,         CommandRunner_RecordFeed>()
+                        .AddTransient<CommandRunner_Settings,           CommandRunner_Settings>()
                         .AddTransient<CommandRunner_ShowModules,        CommandRunner_ShowModules>()
                         .AddTransient<CommandRunner_ShowVersion,        CommandRunner_ShowVersion>()
                         .AddTransient<CommandRunner_StandingData,       CommandRunner_StandingData>()
@@ -53,6 +54,7 @@ namespace VirtualRadar.Utility.CLIConsole
                             case Command.Lookup:                commandRunner = services.GetRequiredService<CommandRunner_Lookup>(); break;
                             case Command.Open:                  commandRunner = services.GetRequiredService<CommandRunner_Open>(); break;
                             case Command.RecordFeed:            commandRunner = services.GetRequiredService<CommandRunner_RecordFeed>(); break;
+                            case Command.Settings:              commandRunner = services.GetRequiredService<CommandRunner_Settings>(); break;
                             case Command.ShowModules:           commandRunner = services.GetRequiredService<CommandRunner_ShowModules>(); break;
                             case Command.ShowVersion:           commandRunner = services.GetRequiredService<CommandRunner_ShowVersion>(); break;
                             case Command.StandingData:          commandRunner = services.GetRequiredService<CommandRunner_StandingData>(); break;

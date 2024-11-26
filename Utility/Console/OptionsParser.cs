@@ -81,6 +81,9 @@ namespace VirtualRadar.Utility.CLIConsole
                     case "-save":
                         result.SaveFileName = UseNextArg(arg, nextArg, ref i);
                         break;
+                    case "settings":
+                        result.Command = ParseCommand(result, Command.Settings);
+                        break;
                     case "-show":
                         result.Show = true;
                         break;
@@ -179,6 +182,7 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  dumpFeed <filename> Load and dump a recorded feed");
             Console.WriteLine($"  showModules         Show loaded module information");
             Console.WriteLine($"  standingdata        Download and dump standing data");
+            Console.WriteLine($"  settings            Display / update the settings file");
             Console.WriteLine();
             Console.WriteLine($"CONNECT OPTIONS");
             Console.WriteLine($"  -address <address>  Address to connect to [{defaults.Address}]");
@@ -203,6 +207,9 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"  -update             Update standing data [{defaults.Update}]");
             Console.WriteLine($"  -list entity        List contents of: {String.Join(", ", Enum.GetNames<StandingDataEntity>())} [{defaults.List}]");
             Console.WriteLine($"  -code <string>      The code to pass to -list calls that need it [{defaults.Code}]");
+            Console.WriteLine();
+            Console.WriteLine($"SETTINGS OPTIONS");
+            Console.WriteLine($"  -update             Load and then re-save the settings [{defaults.Update}]");
 
             if (!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();

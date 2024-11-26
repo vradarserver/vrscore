@@ -87,6 +87,14 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
+        public string SettingsLocation()
+        {
+            var folder = _WorkingFolder.Folder;
+            var fileName = FileName;
+            return _FileSystem.Combine(folder, fileName);
+        }
+
+        /// <inheritdoc/>
         public ICallbackHandle AddValueChangedCallback(Action<ValueChangedCallbackArgs> callback)
         {
             return _ValueChangedCallbacks.Add(callback);
@@ -140,9 +148,7 @@ namespace VirtualRadar.Configuration
 
         private void LoadContent()
         {
-            var folder = _WorkingFolder.Folder;
-            var fileName = FileName;
-            var contentFileName = _FileSystem.Combine(folder, fileName);
+            var contentFileName = SettingsLocation();
 
             bool contentNeedsLoading() => _SettingKeyToJObject == null
                                        || _ContentFileName != contentFileName;

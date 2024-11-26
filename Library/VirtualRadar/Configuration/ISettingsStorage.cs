@@ -8,6 +8,13 @@
     public interface ISettingsStorage
     {
         /// <summary>
+        /// Returns a description of where the settings are being stored - a database instance, a filename,
+        /// whatever.
+        /// </summary>
+        /// <returns></returns>
+        string SettingsLocation();
+
+        /// <summary>
         /// Adds a callback that is called whenever <see cref="ChangeValue"/> changes a value associated with
         /// a key.
         /// </summary>

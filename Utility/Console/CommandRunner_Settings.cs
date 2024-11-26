@@ -8,30 +8,34 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Configuration;
+
 namespace VirtualRadar.Utility.CLIConsole
 {
-    enum Command
+    class CommandRunner_Settings(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+        ISettingsStorage _SettingsStorage,
+        Options _Options,
+        HeaderService _Header
+        #pragma warning restore IDE1006
+    ) : CommandRunner
     {
-        None,
+        public override async Task<bool> Run()
+        {
+            await _Header.OutputCopyright();
+            await _Header.OutputTitle("Settings");
+            await _Header.OutputOptions(
+                ("Update", _Options.Update.ToString())
+            );
 
-        ConnectListener,
+            await WriteLine($"Using {_SettingsStorage.SettingsLocation()}");
 
-        DumpFeed,
+            if (_Options.Update) {
+                await WriteLine($"Resaving settings with new entries, this will not overwrite existing entries");
+                _SettingsStorage.SaveChanges();
+            }
 
-        List,
-
-        Lookup,
-
-        Open,
-
-        Settings,
-
-        RecordFeed,
-
-        ShowModules,
-
-        ShowVersion,
-
-        StandingData,
+            return true;
+        }
     }
 }
