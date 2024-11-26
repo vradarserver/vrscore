@@ -14,14 +14,13 @@ namespace VirtualRadar
     /// A disposable handle to a callback. Disposing of this releases the callback. The owner of the
     /// callback must dispose of this when they are disposed.
     /// </summary>
-    /// <typeparam name="TArgs"></typeparam>
-    public class CallbackHandle<TArgs> : ICallbackHandle
+    public class CallbackNoParamHandle : ICallbackHandle
     {
-        private CallbackList<TArgs> _Owner;
+        private CallbackNoParamList _Owner;
 
-        private readonly Action<TArgs> _Callback;
+        private readonly Action _Callback;
 
-        internal CallbackHandle(CallbackList<TArgs> owner, Action<TArgs> callback)
+        internal CallbackNoParamHandle(CallbackNoParamList owner, Action callback)
         {
             ArgumentNullException.ThrowIfNull(owner);
             ArgumentNullException.ThrowIfNull(callback);
@@ -30,7 +29,7 @@ namespace VirtualRadar
             _Callback = callback;
         }
 
-        ~CallbackHandle() => Dispose(false);
+        ~CallbackNoParamHandle() => Dispose(false);
 
         public void Dispose()
         {
@@ -49,10 +48,10 @@ namespace VirtualRadar
 
         internal void ReleaseOwner() => _Owner = null;
 
-        internal void Invoke(TArgs args)
+        internal void Invoke()
         {
             if(_Owner != null) {
-                _Callback(args);
+                _Callback();
             }
         }
     }

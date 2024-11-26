@@ -62,7 +62,7 @@ namespace VirtualRadar
         /// <typeparam name="TArgs"></typeparam>
         /// <param name="handle"></param>
         /// <returns></returns>
-        public CallbackHandle<TArgs> Add<TArgs>(CallbackHandle<TArgs> handle)
+        public ICallbackHandle Add(ICallbackHandle handle)
         {
             ArgumentNullException.ThrowIfNull(handle);
 

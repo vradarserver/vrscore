@@ -14,11 +14,11 @@ namespace VirtualRadar
     /// A threadsafe collection of <see cref="CallbackHandle"/> objects and methods to call them sequentially.
     /// </summary>
     /// <typeparam name="TArgs"></typeparam>
-    public class CallbackList<TArgs> : IDisposable
+    public class CallbackWithParamList<TArgs> : IDisposable
     {
         private readonly object _SyncLock = new();
         private bool _Disposed;
-        private readonly List<CallbackHandle<TArgs>> _CallbackHandles = [];
+        private readonly List<CallbackWithParamHandle<TArgs>> _CallbackHandles = [];
 
         /// <summary>
         /// Returns the number of callbacks currently registered.
@@ -33,7 +33,7 @@ namespace VirtualRadar
         }
 
         // Finaliser
-        ~CallbackList() => Dispose(false);
+        ~CallbackWithParamList() => Dispose(false);
 
         /// <inheritdoc />
         public void Dispose()
@@ -62,7 +62,7 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="callback">The delegate to call.</param>
         /// <returns></returns>
-        public CallbackHandle<TArgs> Add(Action<TArgs> callback)
+        public CallbackWithParamHandle<TArgs> Add(Action<TArgs> callback)
         {
             ArgumentNullException.ThrowIfNull(callback);
             if(_Disposed) {
@@ -73,7 +73,7 @@ namespace VirtualRadar
             }
 
             lock(_SyncLock) {
-                var result = new CallbackHandle<TArgs>(this, callback);
+                var result = new CallbackWithParamHandle<TArgs>(this, callback);
                 _CallbackHandles.Add(result);
 
                 return result;
@@ -85,7 +85,7 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="handle"></param>
         /// <returns></returns>
-        internal bool Remove(CallbackHandle<TArgs> handle)
+        internal bool Remove(CallbackWithParamHandle<TArgs> handle)
         {
             lock(_SyncLock) {
                 var result = _CallbackHandles.Remove(handle);
@@ -105,9 +105,9 @@ namespace VirtualRadar
         /// <param name="args"></param>
         public void Invoke(TArgs args)
         {
-            CallbackHandle<TArgs>[] callbacks;
+            CallbackWithParamHandle<TArgs>[] callbacks;
             lock(_SyncLock) {
-                callbacks = _CallbackHandles.ToArray();
+                callbacks = [.. _CallbackHandles];
             }
 
             foreach(var callback in callbacks) {
@@ -125,9 +125,9 @@ namespace VirtualRadar
         /// <returns></returns>
         public AggregateException InvokeWithoutExceptions(TArgs args, string aggregateExceptionMessage = "Exceptions were encountered while invoking callbacks")
         {
-            CallbackHandle<TArgs>[] callbacks;
+            CallbackWithParamHandle<TArgs>[] callbacks;
             lock(_SyncLock) {
-                callbacks = _CallbackHandles.ToArray();
+                callbacks = [.. _CallbackHandles];
             }
 
             List<Exception> exceptions = null;
