@@ -11,9 +11,9 @@
 using Microsoft.AspNetCore.Mvc;
 using VirtualRadar.Filtering;
 using VirtualRadar.Receivers;
-using VirtualRadar.Server.Models;
 using VirtualRadar.StandingData;
 using VirtualRadar.WebSite;
+using VirtualRadar.WebSite.Models;
 
 namespace VirtualRadar.Server.ApiControllers
 {

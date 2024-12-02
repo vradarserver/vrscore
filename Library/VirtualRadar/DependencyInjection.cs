@@ -10,7 +10,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using VirtualRadar.Configuration;
 using VirtualRadar.Extensions;
 using VirtualRadar.Reflection;
 using VirtualRadar.TileServer;
@@ -45,7 +44,7 @@ namespace VirtualRadar
         public static IHost StartVirtualRadarServer(this IHost host)
         {
             var log = host.Services.GetRequiredService<ILog>();
-            log.Message($"Virtual Radar Server Core {InformationalVersion.VirtualRadarVersion} starting up.");
+            log.Message($"Virtual Radar Server Core {Configuration.InformationalVersion.VirtualRadarVersion} starting up.");
 
             VirtualRadarModuleFactory.CallLoadedModules(
                 module => host.Services.InjectServices(module.ModuleInstance),
@@ -125,6 +124,7 @@ namespace VirtualRadar
             services.AddLifetime<TileServer.IDownloadedTileServerSettingsStorage,       DownloadedTileServerSettingsStorage>();
 
             services.AddLifetime<WebSite.IAircraftListJsonBuilder, WebSite.AircraftListJsonBuilder>();
+            services.AddLifetime<WebSite.ServerConfigJsonFactory>();
 
             Configuration.ConfigurationConfig.RegisterAssembly(services);
             Connection.ReceiveConnectorConfig.RegisterAssembly();

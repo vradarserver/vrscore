@@ -8,68 +8,21 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using VirtualRadar.Filtering;
-
-namespace VirtualRadar.Server.Models
+namespace VirtualRadar.WebSite.Models
 {
     /// <summary>
-    /// Describes a single filter in the v3 AircraftList.json call parameters.
+    /// Describes a sort column and direction for sorting aircraft lists.
     /// </summary>
-    public class GetAircraftListFilter
+    public class GetAircraftListSortByModel
     {
         /// <summary>
-        /// Gets or sets the field to apply the filter to.
+        /// The <see cref="AircraftComparerColumn"/> column value.
         /// </summary>
-        public GetAircraftListFilterField Field { get; set; }
+        public string Col { get; set; }
 
         /// <summary>
-        /// Gets or sets the filter condition.
+        /// True (default) if the sort order is ascending, false if it's descending.
         /// </summary>
-        public FilterCondition Condition { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating that the condition is reversed.
-        /// </summary>
-        public bool Not { get; set; }
-
-        /// <summary>
-        /// Gets or sets the string value of the filter.
-        /// </summary>
-        public string Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bool value of the filter.
-        /// </summary>
-        public bool? Is { get; set; }
-
-        /// <summary>
-        /// Gets or sets the lower end of a range.
-        /// </summary>
-        public double? From { get; set; }
-
-        /// <summary>
-        /// Gets or sets an upper end to a range.
-        /// </summary>
-        public double? To { get; set; }
-
-        /// <summary>
-        /// Gets the northern edge of a bound.
-        /// </summary>
-        public double? North { get; set; }
-
-        /// <summary>
-        /// Gets the southern edge of a bound.
-        /// </summary>
-        public double? South { get; set; }
-
-        /// <summary>
-        /// Gets the western edge of a bound.
-        /// </summary>
-        public double? West { get; set; }
-
-        /// <summary>
-        /// Gets an eastern edge of a bound.
-        /// </summary>
-        public double? East { get; set; }
+        public bool Asc { get; set; } = true;
     }
 }

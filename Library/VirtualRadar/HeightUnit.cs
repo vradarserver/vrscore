@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 onwards, Andrew Whewell
+﻿// Copyright © 2012 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,32 +8,21 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using VirtualRadar.WebSite.Models;
-
-namespace VirtualRadar.WebSite
+namespace VirtualRadar
 {
     /// <summary>
-    /// The interface for an object that can build an <see cref="AircraftListJson"/> object
-    /// from an <see cref="IAircraftList"/> object's list of aircraft.
+    /// An enumeration of the different heights that the web site knows about.
     /// </summary>
-    [Lifetime(Lifetime.Singleton)]
-    public interface IAircraftListJsonBuilder
+    public enum HeightUnit
     {
         /// <summary>
-        /// Returns a fully-formed <see cref="AircraftListJson"/> from the arguments passed across.
+        /// Feet.
         /// </summary>
-        /// <param name="args">The build criteria.</param>
-        /// <param name="ignoreInvisibleSources">
-        /// True if sources that are hidden from the web site should be ignored.
-        /// </param>
-        /// <param name="fallbackToDefaultSource">
-        /// True if the default source should be used if the requested source is unavailable for any reason.
-        /// </param>
-        /// <returns></returns>
-        AircraftListJson Build(
-            AircraftListJsonBuilderArgs args,
-            bool ignoreInvisibleSources,
-            bool fallbackToDefaultSource
-        );
+        Feet,
+
+        /// <summary>
+        /// Metres.
+        /// </summary>
+        Metres,
     }
 }

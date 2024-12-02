@@ -11,46 +11,40 @@
 namespace VirtualRadar.Convert
 {
     /// <summary>
-    /// Converts distances.
+    /// Converts speeds.
     /// </summary>
-    public static class Distance
+    public static class Speed
     {
-        public const double KilometresInMile = 1.609344;
-
-        public const double KilometresInNauticalMile = 1.852;
-
-        public const double NauticalMilesInMile = 1.15077945;
-
         /// <summary>
-        /// Converts between units of distance.
+        /// Converts between height units.
         /// </summary>
-        /// <param name="distance"></param>
+        /// <param name="speed"></param>
         /// <param name="fromUnit"></param>
         /// <param name="toUnit"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static double FromTo(double distance, DistanceUnit fromUnit, DistanceUnit toUnit)
+        public static double FromTo(double speed, SpeedUnit fromUnit, SpeedUnit toUnit)
         {
             switch(fromUnit) {
-                case DistanceUnit.Kilometres:
+                case SpeedUnit.Knots:
                     switch(toUnit) {
-                        case DistanceUnit.Kilometres:       return distance;
-                        case DistanceUnit.Miles:            return distance / KilometresInMile;
-                        case DistanceUnit.NauticalMiles:    return distance / KilometresInNauticalMile;
+                        case SpeedUnit.KilometresPerHour:   return speed * Distance.KilometresInNauticalMile;
+                        case SpeedUnit.Knots:               return speed;
+                        case SpeedUnit.MilesPerHour:        return speed / Distance.NauticalMilesInMile;
                         default:                            throw new NotImplementedException();
                     }
-                case DistanceUnit.Miles:
+                case SpeedUnit.KilometresPerHour:
                     switch(toUnit) {
-                        case DistanceUnit.Kilometres:       return distance * KilometresInMile;
-                        case DistanceUnit.Miles:            return distance;
-                        case DistanceUnit.NauticalMiles:    return distance * NauticalMilesInMile;
+                        case SpeedUnit.KilometresPerHour:   return speed;
+                        case SpeedUnit.Knots:               return speed / Distance.KilometresInNauticalMile;
+                        case SpeedUnit.MilesPerHour:        return speed / Distance.KilometresInMile;
                         default:                            throw new NotImplementedException();
                     }
-                case DistanceUnit.NauticalMiles:
+                case SpeedUnit.MilesPerHour:
                     switch(toUnit) {
-                        case DistanceUnit.Kilometres:       return distance * KilometresInNauticalMile;
-                        case DistanceUnit.Miles:            return distance / NauticalMilesInMile;
-                        case DistanceUnit.NauticalMiles:    return distance;
+                        case SpeedUnit.KilometresPerHour:   return speed * Distance.KilometresInMile;
+                        case SpeedUnit.Knots:               return speed * Distance.NauticalMilesInMile;
+                        case SpeedUnit.MilesPerHour:        return speed;
                         default:                            throw new NotImplementedException();
                     }
                 default:

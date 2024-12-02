@@ -10,7 +10,7 @@
 
 using System.Runtime.Serialization;
 
-namespace VirtualRadar.WebSite
+namespace VirtualRadar.WebSite.Models
 {
     /// <summary>
     /// The object that describes an aircraft in JSON files that are sent to the browser.

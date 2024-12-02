@@ -11,46 +11,39 @@
 using System.Runtime.Serialization;
 using VirtualRadar.Receivers;
 
-namespace VirtualRadar.WebSite
+namespace VirtualRadar.WebSite.Models
 {
     /// <summary>
-    /// The JSON object that describes a data feed from a receiver.
+    /// The JSON object that describes a receiver that the server is listening to.
     /// </summary>
     [DataContract]
-    public class FeedJson
+    public class ServerReceiverJson
     {
         /// <summary>
-        /// Gets or sets the unique ID of the feed.
+        /// Gets or sets the unique ID of the receiver.
         /// </summary>
-        [DataMember(Name="id", IsRequired=true)]
+        [DataMember]
         public int UniqueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the current name of the feed.
+        /// Gets or sets the name of the receiver.
         /// </summary>
-        [DataMember(Name="name", IsRequired=true)]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating that a polar plot exists for the feed.
-        /// </summary>
-        [DataMember(Name="polarPlot", IsRequired=true)]
-        public bool HasPolarPlot { get; set; }
-
-        /// <summary>
-        /// Constructs a <see cref="FeedJson"/> object from a receiver interface.
+        /// Returns a new object from a receiver.
         /// </summary>
         /// <param name="receiver"></param>
         /// <returns></returns>
-        public static FeedJson FromReceiver(IReceiver receiver)
+        public static ServerReceiverJson ToModel(IReceiver receiver)
         {
-            FeedJson result = null;
+            ServerReceiverJson result = null;
 
-            if(receiver != null) {
-                result = new() {
+            if(receiver != null && !receiver.Hidden) {
+                result = new ServerReceiverJson() {
                     UniqueId =      receiver.Id,
                     Name =          receiver.Name,
-                    HasPolarPlot =  false,              // TODO
                 };
             }
 

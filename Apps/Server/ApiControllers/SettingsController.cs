@@ -1,4 +1,4 @@
-﻿// Copyright © 2015 onwards, Andrew Whewell
+﻿// Copyright © 2017 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,32 +8,30 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Microsoft.AspNetCore.Mvc;
 using VirtualRadar.WebSite.Models;
 
-namespace VirtualRadar.WebSite
+namespace VirtualRadar.WebSite.ApiControllers
 {
     /// <summary>
-    /// The interface for an object that can build an <see cref="AircraftListJson"/> object
-    /// from an <see cref="IAircraftList"/> object's list of aircraft.
+    /// Handles requests for configuration settings.
     /// </summary>
-    [Lifetime(Lifetime.Singleton)]
-    public interface IAircraftListJsonBuilder
+    public class SettingsController(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+        ServerConfigJsonFactory _ServerConfigFactory
+        #pragma warning restore IDE1006
+    ) : ControllerBase
     {
         /// <summary>
-        /// Returns a fully-formed <see cref="AircraftListJson"/> from the arguments passed across.
+        /// Returns the server's configuration.
         /// </summary>
-        /// <param name="args">The build criteria.</param>
-        /// <param name="ignoreInvisibleSources">
-        /// True if sources that are hidden from the web site should be ignored.
-        /// </param>
-        /// <param name="fallbackToDefaultSource">
-        /// True if the default source should be used if the requested source is unavailable for any reason.
-        /// </param>
         /// <returns></returns>
-        AircraftListJson Build(
-            AircraftListJsonBuilderArgs args,
-            bool ignoreInvisibleSources,
-            bool fallbackToDefaultSource
-        );
+        [HttpGet]
+        [Route("api/3.00/settings/server")]
+        [Route("v3/ServerConfig.json")]
+        public ServerConfigJson GetServerConfig()
+        {
+            return _ServerConfigFactory.Build(isLocalAddress: true);       // TODO
+        }
     }
 }

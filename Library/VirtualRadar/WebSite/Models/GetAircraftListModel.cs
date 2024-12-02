@@ -10,7 +10,7 @@
 
 using VirtualRadar.WebSite;
 
-namespace VirtualRadar.Server.Models
+namespace VirtualRadar.WebSite.Models
 {
     /// <summary>
     /// The model that carries arguments to the endpoints that fetch aircraft lists.

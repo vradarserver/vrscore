@@ -12,6 +12,7 @@ using VirtualRadar.Configuration;
 using VirtualRadar.Convert;
 using VirtualRadar.Receivers;
 using VirtualRadar.StandingData;
+using VirtualRadar.WebSite.Models;
 
 namespace VirtualRadar.WebSite
 {
@@ -25,6 +26,7 @@ namespace VirtualRadar.WebSite
         ISettings<AircraftPictureSettings>      _AircraftPictureSettings,
         ISettings<InternetClientSettings>       _InternetClientSettings,
         ISettings<OperatorAndTypeFlagSettings>  _OperatorAndFlagSettings,
+        ISettings<WebClientSettings>            _WebClientSettings,
         IReceiverFactory                        _ReceiverFactory,
         IFileSystem                             _FileSystem
         #pragma warning restore IDE1006
@@ -39,6 +41,7 @@ namespace VirtualRadar.WebSite
             AircraftPictureSettings     AircraftPictureSettings,
             InternetClientSettings      InternetClientSettings,
             OperatorAndTypeFlagSettings OperatorAndTypeFlagSettings,
+            WebClientSettings           WebClientSettings,
             AircraftListJson            Json
         )
         {
@@ -64,6 +67,7 @@ namespace VirtualRadar.WebSite
                 _AircraftPictureSettings.LatestValue,
                 _InternetClientSettings.LatestValue,
                 _OperatorAndFlagSettings.LatestValue,
+                _WebClientSettings.LatestValue,
                 new()
             );
 
@@ -215,7 +219,7 @@ namespace VirtualRadar.WebSite
 
         private void AddRoute(BuildState state, AircraftJson aircraftJson, StampedValue<Route> route)
         {
-            var preferredCodeType = state.AircraftMapSettings.PreferredAirportCodeType;
+            var preferredCodeType = state.WebClientSettings.PreferredAirportCodeType;
 
             if(route.Stamp > state.Args.PreviousDataVersion && route.Value != null) {
                 aircraftJson.Destination = route.Value.To?.PreferredAirportCode(preferredCodeType);
