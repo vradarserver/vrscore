@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using VirtualRadar.Server.Middleware;
 
 namespace VirtualRadar.Server
 {
@@ -71,7 +72,9 @@ namespace VirtualRadar.Server
                     app.UseExceptionHandler("/Error");
                 }
 
+                app.UseV3StaticFileMiddleware();
                 app.UseStaticFiles();
+
                 app.UseRouting();
                 app.UseMvcWithDefaultRoute();                       // <-- need this for web API
                 app.UseAntiforgery();

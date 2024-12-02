@@ -36,6 +36,7 @@ namespace Tests.VirtualRadar.WebSite
         private MockSettings<AircraftPictureSettings> _AircraftPictureSettings;
         private MockSettings<InternetClientSettings> _InternetClientSettings;
         private MockSettings<OperatorAndTypeFlagSettings> _OperatorAndTypeFlagSettings;
+        private MockSettings<WebClientSettings> _WebClientSettings;
         private MockFileSystem _FileSystem;
 
         [TestInitialize]
@@ -69,6 +70,7 @@ namespace Tests.VirtualRadar.WebSite
             _AircraftPictureSettings = new(new());
             _InternetClientSettings = new(new());
             _OperatorAndTypeFlagSettings = new(new());
+            _WebClientSettings = new(new());
 
             _FileSystem = new();
 
@@ -77,6 +79,7 @@ namespace Tests.VirtualRadar.WebSite
                 _AircraftPictureSettings,
                 _InternetClientSettings,
                 _OperatorAndTypeFlagSettings,
+                _WebClientSettings,
                 _ReceiverFactory.Object,
                 _FileSystem
             );
@@ -530,7 +533,7 @@ namespace Tests.VirtualRadar.WebSite
         [DataRow(AirportCodeType.Icao, false, null)]
         public void Build_Sets_Aircraft_Destination(AirportCodeType showType, bool hasChanged, string expected)
         {
-            _AircraftMapSettings.Value = new(PreferredAirportCodeType: showType);
+            _WebClientSettings.Value = new(PreferredAirportCodeType: showType);
             SetupAircraft(stamp: 2, lookup: new() { Route = LHR_SIN_SYD() });
             _Args.PreviousDataVersion = hasChanged ? 1 : 2;
 
@@ -940,7 +943,7 @@ namespace Tests.VirtualRadar.WebSite
         [DataRow(AirportCodeType.Icao, false, null)]
         public void Build_Sets_Aircraft_Origin(AirportCodeType showType, bool hasChanged, string expected)
         {
-            _AircraftMapSettings.Value = new(PreferredAirportCodeType: showType);
+            _WebClientSettings.Value = new(PreferredAirportCodeType: showType);
             SetupAircraft(stamp: 2, lookup: new() { Route = LHR_SIN_SYD() });
             _Args.PreviousDataVersion = hasChanged ? 1 : 2;
 
