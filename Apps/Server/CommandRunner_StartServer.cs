@@ -13,9 +13,12 @@ using System.Reflection;
 using BlazorStrap;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using VirtualRadar.Server.Middleware;
 
 namespace VirtualRadar.Server
@@ -37,6 +40,7 @@ namespace VirtualRadar.Server
                 var builder = WebApplication.CreateBuilder();
 
                 builder.Services.AddVirtualRadarServer();
+                var vrsWorkingFolder = Options.WorkingFolder;
 
                 builder.Services.AddMvc(options => {
                     options.EnableEndpointRouting = false;          // <-- need this for web API
@@ -50,6 +54,51 @@ namespace VirtualRadar.Server
 
                 if(!Options.ShowLog) {
                     builder.Logging.ClearProviders();
+                }
+
+                const string w3cLoggingSection = "W3CLogging";
+                var w3cLoggingEnabled = builder.Configuration.GetValue<bool>($"{w3cLoggingSection}:Enabled");
+                if(w3cLoggingEnabled) {
+                    builder.Services.AddW3CLogging(config => {
+                        // We can't use the normal binding stuff because Bind() will throw if LogDirectory
+                        // is missing, and I want to be able to default that one. As of .NET Core 8 it appears
+                        // (could be wrong, feel free to submit a pull request if it can be done better) that
+                        // you can't supply defaults to missing properties, so any call to Bind() here is not
+                        // going to work. We need to do this one by hand.
+
+                        var section = builder.Configuration.GetSection(w3cLoggingSection);
+                        if(String.IsNullOrEmpty(section[nameof(W3CLoggerOptions.LogDirectory)])) {
+                            var logDirectory = Path.Combine(vrsWorkingFolder, "W3CLog");
+                            if(!Directory.Exists(logDirectory)) {
+                                Directory.CreateDirectory(logDirectory);
+                            }
+                            section[nameof(W3CLoggerOptions.LogDirectory)] = logDirectory;
+                        }
+
+                        section.Bind(config);
+//                        var configured = new W3CLoggerOptions();
+//                        section.Bind(configured, options => {
+//                            options.ErrorOnUnknownConfiguration = false;
+//                        });
+//
+//                        var logDirectory = configured.LogDirectory;
+//                        if(String.IsNullOrEmpty(logDirectory)) {
+//                            logDirectory = Path.Combine(vrsWorkingFolder, "W3CLog");
+//                            if(!Directory.Exists(logDirectory)) {
+//                                Directory.CreateDirectory(logDirectory);
+//                            }
+//                        }
+//
+//                        config.FileName =                  configured.FileName;
+//                        config.FileSizeLimit =             configured.FileSizeLimit;
+//                        config.FlushInterval =             configured.FlushInterval;
+//                        config.LogDirectory =              logDirectory;
+//                        config.LoggingFields =             configured.LoggingFields;
+//                        config.RetainedFileCountLimit =    configured.RetainedFileCountLimit;
+//                        foreach(var additionalRequestHeader in configured.AdditionalRequestHeaders) {
+//                            config.AdditionalRequestHeaders.Add(additionalRequestHeader);
+//                        }
+                    });
                 }
 
                 builder.WebHost.ConfigureKestrel((context, options) => {
@@ -72,6 +121,10 @@ namespace VirtualRadar.Server
                     app.UseExceptionHandler("/Error");
                 }
 
+                if(w3cLoggingEnabled) {
+                    app.UseW3CLogging();
+                }
+
                 app.UseV3StaticFileMiddleware();
                 app.UseStaticFiles();
 
@@ -84,7 +137,9 @@ namespace VirtualRadar.Server
                 var serverCancel = new CancellationTokenSource();
 
                 await WriteLine("Booting VRS");
-                app.StartVirtualRadarServer();
+                app.StartVirtualRadarServer(config => {
+                    config.WorkingFolder = vrsWorkingFolder;
+                });
 
                 try {
                     Console.WriteLine($"Starting server");

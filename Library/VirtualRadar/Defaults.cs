@@ -8,51 +8,20 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Services
+namespace VirtualRadar
 {
     /// <summary>
-    /// Manages the working folder.
+    /// Exposes defaults. Note that all of these values can be overridden at runtime, don't rely on them.
     /// </summary>
-    class WorkingFolder : IWorkingFolder
+    public static class Defaults
     {
-        private IFileSystem _FileSystem;
-        private long _CountFolderAccessed;
-
-        private string _Folder = Defaults.DefaultWorkingFolder;
-
-        /// <inheritdoc/>
-        public string Folder
-        {
-            get {
-                if(_CountFolderAccessed == 0) {
-                    _FileSystem.CreateDirectoryIfNotExists(_Folder);
-                }
-                Interlocked.Increment(ref _CountFolderAccessed);
-                return _Folder;
-            }
-        }
-
-        /// <inheritdoc/>
-        public long CountFolderAccessed => _CountFolderAccessed;
-
-        public WorkingFolder(IFileSystem fileSystem)
-        {
-            _FileSystem = fileSystem;
-        }
-
-        /// <inheritdoc/>
-        public override string ToString() => _Folder ?? "";
-
-        /// <inheritdoc/>
-        public bool ChangeFolder(string newFolder)
-        {
-            ArgumentNullException.ThrowIfNullOrWhiteSpace(newFolder);
-
-            var result = _CountFolderAccessed == 0;
-            _FileSystem.CreateDirectoryIfNotExists(newFolder);
-            _Folder = newFolder;
-
-            return result;
-        }
+        /// <summary>
+        /// The default working folder. Use <see cref="IWorkingFolder.Folder"/> to get the correct
+        /// value for this at runtime.
+        /// </summary>
+        public static string DefaultWorkingFolder => System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "VirtualRadarCore"
+        );
     }
 }

@@ -10,6 +10,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using VirtualRadar.Configuration;
 using VirtualRadar.Extensions;
 using VirtualRadar.Reflection;
 using VirtualRadar.TileServer;
@@ -40,9 +41,19 @@ namespace VirtualRadar
         /// cref="StopVirtualRadarServer"/>.
         /// </summary>
         /// <param name="host"></param>
+        /// <param name="configCallback"></param>
         /// <returns></returns>
-        public static IHost StartVirtualRadarServer(this IHost host)
+        public static IHost StartVirtualRadarServer(
+            this IHost host,
+            Action<StartVirtualRadarServerOptions> configCallback = null
+        )
         {
+            var startupOptions = new StartVirtualRadarServerOptions();
+            configCallback?.Invoke(startupOptions);
+
+            var workingFolder = host.Services.GetRequiredService<IWorkingFolder>();
+            workingFolder.ChangeFolder(startupOptions.WorkingFolder);
+
             var log = host.Services.GetRequiredService<ILog>();
             log.Message($"Virtual Radar Server Core {Configuration.InformationalVersion.VirtualRadarVersion} starting up.");
 

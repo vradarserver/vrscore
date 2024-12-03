@@ -25,6 +25,12 @@ namespace VirtualRadar.Server
                     case "/?":
                         Usage();
                         break;
+                    case "-dev":
+                        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+                        break;
+                    case "-folder":
+                        result.WorkingFolder = UseNextArg(arg, nextArg, ref i);
+                        break;
                     case "-http":
                         result.HttpPort = ParseInteger(UseNextArg(arg, nextArg, ref i));
                         break;
@@ -119,6 +125,9 @@ namespace VirtualRadar.Server
             Console.WriteLine($"VirtualRadar.Server command [options]");
             Console.WriteLine($"  (no commands yet)");
             Console.WriteLine();
+            Console.WriteLine($"GLOBAL OPTIONS");
+            Console.WriteLine($"  -dev                Force ASPNETCORE_ENVIRONMENT to Development");
+            Console.WriteLine();
             Console.WriteLine($"SERVER OPTIONS");
             Console.WriteLine($"  -http    <port>     HTTP port [{defaults.HttpPort}]");
             Console.WriteLine($"  -https   <port>     HTTPS port [{defaults.HttpsPort}]");
@@ -126,6 +135,7 @@ namespace VirtualRadar.Server
             Console.WriteLine($"  -noHTTP             Do not accept HTTP requests [{defaults.NoHttp}]");
             Console.WriteLine($"  -noHTTPS            Do not accept HTTPS requests [{defaults.NoHttps}]");
             Console.WriteLine($"  -showLog            Show server log on screen [{defaults.ShowLog}]");
+            Console.WriteLine($"  -folder <path>      Set working folder [{defaults.WorkingFolder}]");
 
             if (!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();
