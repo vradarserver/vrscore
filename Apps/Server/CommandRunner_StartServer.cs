@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using VirtualRadar.Configuration;
 using VirtualRadar.Server.Middleware;
 
 namespace VirtualRadar.Server
@@ -27,6 +28,12 @@ namespace VirtualRadar.Server
     {
         public override async Task<bool> Run()
         {
+            var version = InformationalVersion.VirtualRadarVersion;
+
+            var title = $"Virtual Radar Server Core {version}";
+            await WriteLine(title);
+            await WriteLine(new String('=', title.Length));
+
             if(Options.NoHttp && Options.NoHttps) {
                 OptionsParser.Usage("The server needs to listen to accept at least one of either HTTP or HTTPS");
             }
@@ -41,6 +48,7 @@ namespace VirtualRadar.Server
 
                 builder.Services.AddVirtualRadarServer();
                 var vrsWorkingFolder = Options.WorkingFolder;
+                await WriteLine($"Working folder is {vrsWorkingFolder}");
 
                 builder.Services.AddMvc(options => {
                     options.EnableEndpointRouting = false;          // <-- need this for web API
@@ -56,66 +64,11 @@ namespace VirtualRadar.Server
                     builder.Logging.ClearProviders();
                 }
 
-                const string w3cLoggingSection = "W3CLogging";
-                var w3cLoggingEnabled = builder.Configuration.GetValue<bool>($"{w3cLoggingSection}:Enabled");
-                if(w3cLoggingEnabled) {
-                    builder.Services.AddW3CLogging(config => {
-                        // We can't use the normal binding stuff because Bind() will throw if LogDirectory
-                        // is missing, and I want to be able to default that one. As of .NET Core 8 it appears
-                        // (could be wrong, feel free to submit a pull request if it can be done better) that
-                        // you can't supply defaults to missing properties, so any call to Bind() here is not
-                        // going to work. We need to do this one by hand.
-
-                        var section = builder.Configuration.GetSection(w3cLoggingSection);
-                        if(String.IsNullOrEmpty(section[nameof(W3CLoggerOptions.LogDirectory)])) {
-                            var logDirectory = Path.Combine(vrsWorkingFolder, "W3CLog");
-                            if(!Directory.Exists(logDirectory)) {
-                                Directory.CreateDirectory(logDirectory);
-                            }
-                            section[nameof(W3CLoggerOptions.LogDirectory)] = logDirectory;
-                        }
-
-                        section.Bind(config);
-//                        var configured = new W3CLoggerOptions();
-//                        section.Bind(configured, options => {
-//                            options.ErrorOnUnknownConfiguration = false;
-//                        });
-//
-//                        var logDirectory = configured.LogDirectory;
-//                        if(String.IsNullOrEmpty(logDirectory)) {
-//                            logDirectory = Path.Combine(vrsWorkingFolder, "W3CLog");
-//                            if(!Directory.Exists(logDirectory)) {
-//                                Directory.CreateDirectory(logDirectory);
-//                            }
-//                        }
-//
-//                        config.FileName =                  configured.FileName;
-//                        config.FileSizeLimit =             configured.FileSizeLimit;
-//                        config.FlushInterval =             configured.FlushInterval;
-//                        config.LogDirectory =              logDirectory;
-//                        config.LoggingFields =             configured.LoggingFields;
-//                        config.RetainedFileCountLimit =    configured.RetainedFileCountLimit;
-//                        foreach(var additionalRequestHeader in configured.AdditionalRequestHeaders) {
-//                            config.AdditionalRequestHeaders.Add(additionalRequestHeader);
-//                        }
-                    });
-                }
-
-                builder.WebHost.ConfigureKestrel((context, options) => {
-                    if(!Options.NoHttp) {
-                        Console.WriteLine($"Listening on http://localhost:{Options.HttpPort}");
-                        options.ListenLocalhost(Options.HttpPort);
-                    }
-
-                    if(!Options.NoHttps) {
-                        Console.WriteLine($"Listening on https://localhost:{Options.HttpsPort}");
-                        options.ListenLocalhost(Options.HttpsPort, listenOptions => {
-                            listenOptions.UseHttps();               // TODO: Need a *bunch* more stuff here
-                        });
-                    }
-                });
+                var w3cLoggingEnabled = ConfigureW3CLogging(builder, vrsWorkingFolder);
+                ConfigureKestrel(builder);
 
                 var app = builder.Build();
+                await WriteLine($"Environment is {app.Environment.EnvironmentName}");
 
                 if(!app.Environment.IsDevelopment()) {
                     app.UseExceptionHandler("/Error");
@@ -156,7 +109,7 @@ namespace VirtualRadar.Server
                     }
 
                     Console.TreatControlCAsInput = true;
-                    await WriteLine("Press Q to shut down");
+                    await WriteLine("Press Q to shut down cleanly");
                     var waitForKeyTask = CancelIfKeyPressed(serverCancel, ConsoleKey.Q);
 
                     await serverTask;
@@ -174,6 +127,47 @@ namespace VirtualRadar.Server
             } finally {
                 Environment.CurrentDirectory = currentDirectory;
             }
+        }
+
+        private static bool ConfigureW3CLogging(WebApplicationBuilder builder, string vrsWorkingFolder)
+        {
+            const string w3cLoggingSection = "W3CLogging";
+            var w3cLoggingEnabled = builder.Configuration.GetValue<bool>($"{w3cLoggingSection}:Enabled");
+
+            if(w3cLoggingEnabled) {
+                const string logDirectoryName = nameof(W3CLoggerOptions.LogDirectory);
+
+                var section = builder.Configuration.GetSection(w3cLoggingSection);
+                if(String.IsNullOrEmpty(section[logDirectoryName])) {
+                    var logDirectory = Path.Combine(vrsWorkingFolder, "W3CLog");
+                    if(!Directory.Exists(logDirectory)) {
+                        Directory.CreateDirectory(logDirectory);
+                    }
+                    section[logDirectoryName] = logDirectory;
+                }
+                Console.WriteLine($"W3C log folder is {section[logDirectoryName]}");
+
+                builder.Services.AddW3CLogging(config => section.Bind(config));
+            }
+
+            return w3cLoggingEnabled;
+        }
+
+        private void ConfigureKestrel(WebApplicationBuilder builder)
+        {
+            builder.WebHost.ConfigureKestrel((context, options) => {
+                if(!Options.NoHttp) {
+                    Console.WriteLine($"Listening on http://localhost:{Options.HttpPort}");
+                    options.ListenLocalhost(Options.HttpPort);
+                }
+
+                if(!Options.NoHttps) {
+                    Console.WriteLine($"Listening on https://localhost:{Options.HttpsPort}");
+                    options.ListenLocalhost(Options.HttpsPort, listenOptions => {
+                        listenOptions.UseHttps();               // TODO: Need a *bunch* more stuff here
+                    });
+                }
+            });
         }
     }
 }
