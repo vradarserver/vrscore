@@ -56,6 +56,8 @@ To just run the server without building first:
 | `-http <port number>`  | Specify the HTTP port to listen to. Note that ports below 1024 might be restricted or in use. Defaults to 5001. |
 | `-https <port number>` | Specify the HTTPS port to listen to. Note that ports below 1024 might be restricted or in use. Defaults to 6001. |
 | `-noBrowser`           | Don't open the default browser on the site after starting the server |
+| `-noHTTP`              | Disable support for HTTP |
+| `-noHTTPS`             | Disable support for HTTPS |
 | `-showLog`             | Show web server logging on the console |
 | `-dev`                 | Force development mode |
 
