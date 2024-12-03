@@ -67,7 +67,7 @@ namespace VirtualRadar.StandingData
                         country = text[1..^1].Trim();
                     } else {
                         var chunks = text.Split(
-                            StringExtensions.AllAsciiWhiteSpace,
+                            StringExtensions.AllAsciiWhiteSpaceCharacters,
                             StringSplitOptions.RemoveEmptyEntries
                         );
                         if(chunks.Length > 0) {

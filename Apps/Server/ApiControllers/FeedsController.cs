@@ -11,6 +11,7 @@
 using Microsoft.AspNetCore.Mvc;
 using VirtualRadar.Filtering;
 using VirtualRadar.Receivers;
+using VirtualRadar.Server.ModelBinders;
 using VirtualRadar.StandingData;
 using VirtualRadar.WebSite;
 using VirtualRadar.WebSite.Models;
@@ -76,7 +77,8 @@ namespace VirtualRadar.Server.ApiControllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/3.00/feeds/aircraft-list/{feedId?}")]
-        public AircraftListJson AircraftList(GetAircraftListModel model, int feedId = -1)
+        [Route("v3/AircraftList.json")]
+        public AircraftListJson AircraftList([DefaultFormUrlEncoded] GetAircraftListModel model, int feedId = -1)
         {
             var args = new AircraftListJsonBuilderArgs() {
                 BrowserLatitude =       model?.Latitude,

@@ -21,9 +21,14 @@ namespace VirtualRadar.Extensions
         public static readonly string[] AllLineEndings = [ "\r\n", "\n", ];
 
         /// <summary>
+        /// A collection of all line end characters.
+        /// </summary>
+        public static readonly char[] AllLineEndingCharacters = [ '\r', '\n', ];
+
+        /// <summary>
         /// Both ASCII whitespace characters.
         /// </summary>
-        public static readonly char[] AllAsciiWhiteSpace = [ ' ', '\t', ];
+        public static readonly char[] AllAsciiWhiteSpaceCharacters = [ ' ', '\t', ];
 
         /// <summary>
         /// Truncates the string to the length passed across.
