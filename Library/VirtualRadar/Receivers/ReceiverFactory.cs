@@ -154,7 +154,10 @@ namespace VirtualRadar.Receivers
             var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
             var receivers = _Receivers;
             return FindById(messageSources.DefaultSourceId)
-                ?? receivers.FirstOrDefault();
+                ?? receivers
+                    .Where(r => !r.Hidden)
+                    .OrderBy(r => r.Id)
+                    .FirstOrDefault();
         }
 
         /// <inheritdoc/>
