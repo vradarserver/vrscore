@@ -145,6 +145,8 @@ namespace VirtualRadar.Feed.Vatsim
                 pilotState.OperatorIcao = lookupOutcome.OperatorIcao;
             }
 
+            LookupAircraftType(pilot, pilotState, lookupOutcome);
+
             if(pilotState.Registration != registration) {
                 // TODO: Port across the registration fixups
                 lookupOutcome.Registration = registration;
@@ -154,6 +156,26 @@ namespace VirtualRadar.Feed.Vatsim
             pilotState.TransponderMessage = transponderMessage;
             pilotState.LookupOutcome = lookupOutcome;
             pilotState.Generation = Generation;
+        }
+
+        private void LookupAircraftType(
+            VatsimDataV3Pilot pilot,
+            PilotState pilotState,
+            LookupByAircraftIdOutcome lookupOutcome
+        )
+        {
+            var modelIcao = pilot.FlightPlan?.AircraftShort;
+            if(modelIcao != pilotState.ModelIcao) {
+                pilotState.ModelIcao = modelIcao;
+
+                var aircraftType = _StandingDataManager.FindAircraftType(modelIcao);
+                lookupOutcome.ModelIcao =               modelIcao;
+                lookupOutcome.EngineType =              aircraftType?.EngineType ?? EngineType.None;
+                lookupOutcome.EnginePlacement =         aircraftType?.EnginePlacement ?? EnginePlacement.Unknown;
+                lookupOutcome.NumberOfEngines =         aircraftType?.Engines;
+                lookupOutcome.Species =                 aircraftType?.Species ?? Species.None;
+                lookupOutcome.WakeTurbulenceCategory =  aircraftType?.WakeTurbulenceCategory ?? WakeTurbulenceCategory.None;
+            }
         }
     }
 }

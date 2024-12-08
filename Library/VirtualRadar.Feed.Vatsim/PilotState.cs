@@ -47,5 +47,10 @@ namespace VirtualRadar.Feed.Vatsim
         /// The current operator code for the aircraft.
         /// </summary>
         public string OperatorIcao { get; set; }
+
+        /// <summary>
+        /// The current model ICAO code for the aircraft.
+        /// </summary>
+        public string ModelIcao { get; set; }
     }
 }
