@@ -158,6 +158,7 @@ namespace VirtualRadar.Feed.Vatsim
             }
 
             LookupAircraftType(vatsimSettings, pilot, pilotState, lookupOutcome);
+            LookupRoute(pilot, pilotState, lookupOutcome);
 
             pilotState.TransponderMessage = transponderMessage;
             pilotState.LookupOutcome = lookupOutcome;
@@ -250,6 +251,38 @@ namespace VirtualRadar.Feed.Vatsim
                     : hasModel
                         ? model
                         : manufacturer;
+            }
+        }
+
+        private void LookupRoute(
+            VatsimDataV3Pilot pilot,
+            PilotState pilotState,
+            LookupByAircraftIdOutcome lookupOutcome
+        )
+        {
+            if(pilot.FlightPlan != null) {
+                var fromCode = pilot.FlightPlan.Departure;
+                var toCode = pilot.FlightPlan.Arrival;
+                if(fromCode != pilotState.RouteFromAirportCode || toCode != pilotState.RouteToAirportCode) {
+                    pilotState.RouteFromAirportCode = fromCode;
+                    pilotState.RouteToAirportCode = toCode;
+
+                    var fromAirport = !String.IsNullOrEmpty(fromCode)
+                        ? _StandingDataManager.FindAirportForCode(fromCode)
+                        : null;
+                    var toAirport = !String.IsNullOrEmpty(toCode)
+                        ? _StandingDataManager.FindAirportForCode(toCode)
+                        : null;
+
+                    pilotState.Route = fromAirport != null && toAirport != null
+                        ? new Route() {
+                            From = fromAirport,
+                            To =   toAirport,
+                        }
+                        : null;
+                }
+
+                lookupOutcome.Route = pilotState.Route;
             }
         }
     }
