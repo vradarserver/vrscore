@@ -166,6 +166,7 @@ namespace VirtualRadar.WebSite
                     AddRoute(state, aircraftJson, aircraft.Route);
                     state.Json.Aircraft.Add(aircraftJson);
                 }
+                state.Json.AvailableAircraft = allAircraft.Length;
             }
 
             state.Json.LastDataVersion = stamp.ToString(CultureInfo.InvariantCulture);

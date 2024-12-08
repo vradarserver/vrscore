@@ -415,6 +415,17 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
+        public void Build_Returns_Count_Of_Aircraft_In_List()
+        {
+            SetupAircraft();
+            SetupAircraft();
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(2, json.AvailableAircraft);
+        }
+
+        [TestMethod]
         public void Build_Sets_LastDataVersion_From_AircraftList_Stamp()
         {
             _AircraftListToArrayStamp = 1234L;
