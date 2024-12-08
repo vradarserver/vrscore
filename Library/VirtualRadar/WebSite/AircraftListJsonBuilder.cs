@@ -220,11 +220,21 @@ namespace VirtualRadar.WebSite
 
         private void AddRoute(BuildState state, AircraftJson aircraftJson, StampedValue<Route> route)
         {
-            var preferredCodeType = state.WebClientSettings.PreferredAirportCodeType;
+            string describeAirport(Airport airport)
+            {
+                return airport == null
+                    ? ""
+                    : airport.Describe(
+                        state.WebClientSettings.PreferredAirportCodeType,
+                        showCode: true,
+                        showTown: true,
+                        showCountry: true
+                    );
+            }
 
             if(route.Stamp > state.Args.PreviousDataVersion && route.Value != null) {
-                aircraftJson.Destination = route.Value.To?.PreferredAirportCode(preferredCodeType);
-                aircraftJson.Origin =      route.Value.From?.PreferredAirportCode(preferredCodeType);
+                aircraftJson.Destination = describeAirport(route.Value.To);
+                aircraftJson.Origin =      describeAirport(route.Value.From);
             }
         }
 

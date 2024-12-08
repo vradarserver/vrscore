@@ -65,6 +65,7 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
             IcaoCode =          Icao,
             Location =          Location.FromNullable(Latitude, Longitude),
             Name =              Name,
+            Town =              Town,
         };
     }
 }

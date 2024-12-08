@@ -33,6 +33,11 @@ namespace VirtualRadar.StandingData
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the town or city served by the airport.
+        /// </summary>
+        public string Town { get; set; }
+
+        /// <summary>
         /// Gets or sets the country that the airport is in.
         /// </summary>
         public string Country { get; set; }
@@ -83,6 +88,65 @@ namespace VirtualRadar.StandingData
                     : IataCode;
             }
             return result ?? "";
+        }
+
+        /// <summary>
+        /// Either the <see cref="Name"/> and <see cref="Town"/> concatenated together or,
+        /// if <see cref="Name"/> already includes <see cref="Town"/>, then just the <see cref="Name"/>.
+        /// </summary>
+        /// <returns></returns>
+        public string NameAndTown()
+        {
+            var result = new StringBuilder(Name ?? "");
+
+            if(!String.IsNullOrEmpty(Town)) {
+                if(   result.Length == 0
+                   || (
+                          Name != Town
+                       && !Name.StartsWith($"{Town} ", StringComparison.InvariantCultureIgnoreCase)
+                       && !Name.Contains($" {Town}", StringComparison.InvariantCultureIgnoreCase)
+                    )
+                ) {
+                    result.AppendWithSeparator(", ", Town);
+                }
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Describes the airport.
+        /// </summary>
+        /// <param name="preferredCode"></param>
+        /// <param name="showCode"></param>
+        /// <param name="showName"></param>
+        /// <param name="showTown"></param>
+        /// <param name="showCountry"></param>
+        /// <returns></returns>
+        public string Describe(
+            AirportCodeType preferredCode,
+            bool showCode = true,
+            bool showName = true,
+            bool showTown = false,
+            bool showCountry = true
+        )
+        {
+            var result = new StringBuilder();
+
+            if(showCode) {
+                result.Append(PreferredAirportCode(preferredCode));
+            }
+            string nameAndTown;
+            if(showName && showTown && (nameAndTown = NameAndTown()) != "") {
+                result.AppendWithSeparator(" ", nameAndTown);
+            } else if(showName && !String.IsNullOrEmpty(Name)) {
+                result.AppendWithSeparator(" ", Name);
+            }
+            if(showCountry && !String.IsNullOrEmpty(Country)) {
+                result.AppendWithSeparator(", ", Country);
+            }
+
+            return result.ToString();
         }
     }
 }
