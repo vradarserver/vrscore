@@ -34,9 +34,15 @@ namespace VirtualRadar.Feed.Vatsim
         public LookupByAircraftIdOutcome LookupOutcome { get; set; }
 
         /// <summary>
-        /// The current registration for the aircraft.
+        /// The registration as sent by VATSIM.
         /// </summary>
-        public string Registration { get; set; }
+        public string RegistrationOriginal { get; set; }
+
+        /// <summary>
+        /// The corrected registration as built from <see cref="RegistrationOriginal"/> and registration
+        /// prefix data.
+        /// </summary>
+        public string RegistrationCorrected { get; set; }
 
         /// <summary>
         /// The current callsign for the aircraft.

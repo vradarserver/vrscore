@@ -23,8 +23,9 @@ namespace VirtualRadar.Feed.Vatsim
     /// </summary>
     public class CommonFeedParser(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+        ISettings<VatsimSettings> _VatsimSettings,
         IStandingDataManager _StandingDataManager,
-        ISettings<VatsimSettings> _VatsimSettings
+        IRegistrationPrefixLookup _RegistrationPrefixLookup
         #pragma warning restore IDE1006
     )
     {
@@ -116,9 +117,15 @@ namespace VirtualRadar.Feed.Vatsim
             };
 
             var registration = remarks.Registration;
-            if(registration == "") {
-                registration = pilotState.Registration;
+            if(registration == pilotState.RegistrationOriginal) {
+                registration = pilotState.RegistrationCorrected;
+            } else {
+                pilotState.RegistrationOriginal = registration;
+                registration= FixRegistrationByExaminingPrefix(vatsimSettings, registration);
+                pilotState.RegistrationCorrected = registration;
             }
+            lookupOutcome.Registration = registration;
+
             var operatorIcao = remarks.OperatorIcao;
             if(operatorIcao == "") {
                 operatorIcao = pilotState.OperatorIcao;
@@ -152,12 +159,6 @@ namespace VirtualRadar.Feed.Vatsim
 
             LookupAircraftType(vatsimSettings, pilot, pilotState, lookupOutcome);
 
-            if(pilotState.Registration != registration) {
-                // TODO: Port across the registration fixups
-                lookupOutcome.Registration = registration;
-                pilotState.Registration = lookupOutcome.Registration;
-            }
-
             pilotState.TransponderMessage = transponderMessage;
             pilotState.LookupOutcome = lookupOutcome;
             pilotState.Generation = Generation;
@@ -167,6 +168,33 @@ namespace VirtualRadar.Feed.Vatsim
         {
             return vatsimSettings.AssumeSlowAircraftAreOnGround
                 && groundSpeedKnots <= vatsimSettings.SlowAircraftThresholdSpeedKnots;
+        }
+
+        private string FixRegistrationByExaminingPrefix(VatsimSettings vatsimSettings, string registration)
+        {
+            var result = registration?.ToUpperInvariant().Trim();
+            var hasHyphen = result?.Contains('-') ?? false;
+
+            if(result?.Length > 0 && (!hasHyphen || !vatsimSettings.ShowInvalidRegistrations)) {
+                var prefixes = _RegistrationPrefixLookup
+                    .FindDetailsForNoHyphenRegistration(result);
+
+                if(prefixes.Count == 0 && !vatsimSettings.ShowInvalidRegistrations) {
+                    result = "";
+                } else if(prefixes.Count > 0 && !hasHyphen && !prefixes.Any(prefix => !prefix.HasHyphen)) {
+                    var bestPrefix = prefixes
+                        .OrderBy(prefixInfo => prefixInfo.Prefix)
+                        .FirstOrDefault();
+                    var match = bestPrefix.DecodeNoHyphenRegex.Match(result);
+                    if(match.Success) {
+                        result = bestPrefix.FormatCode(
+                            match.Groups["code"].Value
+                        );
+                    }
+                }
+            }
+
+            return result;
         }
 
         private void LookupAircraftType(
