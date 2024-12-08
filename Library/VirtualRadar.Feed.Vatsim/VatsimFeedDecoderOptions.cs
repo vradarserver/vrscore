@@ -14,27 +14,11 @@ using VirtualRadar.Receivers;
 namespace VirtualRadar.Feed.Vatsim
 {
     [SettingsProvider(SettingsProviderName)]
-    public record VatsimFeedDecoderOptions(
-        bool AssumeSlowAircraftAreOnGround,
-        int SlowAircraftThresholdSpeedKnots,
-        bool InferModelFromModelType,
-        bool ShowInvalidRegistrations
-    ) : IReceiverFeedDecoderOptions
+    public record VatsimFeedDecoderOptions() : IReceiverFeedDecoderOptions
     {
         public const string SettingsProviderName = "VatsimFeedDecoder";
 
         /// <inheritdoc/>
         public string SettingsProvider => SettingsProviderName;
-
-        /// <summary>
-        /// Default ctor.
-        /// </summary>
-        public VatsimFeedDecoderOptions() : this(
-            AssumeSlowAircraftAreOnGround:      true,
-            SlowAircraftThresholdSpeedKnots:    40,
-            InferModelFromModelType:            true,
-            ShowInvalidRegistrations:           false
-        )
-        {;}
     }
 }

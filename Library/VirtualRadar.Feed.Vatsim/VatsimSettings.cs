@@ -18,11 +18,28 @@ namespace VirtualRadar.Feed.Vatsim
     /// <param name="RefreshIntervalSeconds">The number of seconds between each fetch of VATSIM data.</param>
     /// <param name="StatusUrl">The URL to download status data from.</param>
     /// <param name="RefreshStatusHours">The number of hours to wait between refreshes of status.</param>
+    /// <param name="AssumeSlowAircraftAreOnGround">
+    /// Infer "on ground" state from the speed of the aircraft.
+    /// </param>
+    /// <param name="SlowAircraftThresholdSpeedKnots">
+    /// The speed in knots under which the aircraft is assumed to be on the ground when <paramref
+    /// name="AssumeSlowAircraftAreOnGround"/> is true.
+    /// </param>
+    /// <param name="InferModelFromModelType">
+    /// Infer the manufacturer and model names from the aircraft type.
+    /// </param>
+    /// <param name="ShowInvalidRegistrations">
+    /// True if invalid registrations are to be suppressed from display.
+    /// </param>
     [Settings("Vatsim")]
     public record VatsimSettings(
         int RefreshIntervalSeconds = 16,
         string StatusUrl = "https://status.vatsim.net/status.json",
-        int RefreshStatusHours = 1
+        int RefreshStatusHours = 1,
+        bool AssumeSlowAircraftAreOnGround = true,
+        int SlowAircraftThresholdSpeedKnots = 40,
+        bool InferModelFromModelType = true,
+        bool ShowInvalidRegistrations = false
     )
     {
     }

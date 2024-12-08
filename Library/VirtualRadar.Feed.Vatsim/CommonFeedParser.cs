@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Configuration;
 using VirtualRadar.Extensions;
 using VirtualRadar.Feed.Vatsim.ApiModels;
 using VirtualRadar.Message;
@@ -22,7 +23,8 @@ namespace VirtualRadar.Feed.Vatsim
     /// </summary>
     public class CommonFeedParser(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        IStandingDataManager _StandingDataManager
+        IStandingDataManager _StandingDataManager,
+        ISettings<VatsimSettings> _VatsimSettings
         #pragma warning restore IDE1006
     )
     {
@@ -78,6 +80,8 @@ namespace VirtualRadar.Feed.Vatsim
 
         private void BuildStateForPilot(VatsimDataV3Pilot pilot, PilotState pilotState)
         {
+            var vatsimSettings = _VatsimSettings.LatestValue;
+
             var aircraftId = BuildAircraftId(pilot);
             var remarks = new RemarksParser(pilot.FlightPlan?.Remarks);
 
@@ -145,7 +149,7 @@ namespace VirtualRadar.Feed.Vatsim
                 pilotState.OperatorIcao = lookupOutcome.OperatorIcao;
             }
 
-            LookupAircraftType(pilot, pilotState, lookupOutcome);
+            LookupAircraftType(vatsimSettings, pilot, pilotState, lookupOutcome);
 
             if(pilotState.Registration != registration) {
                 // TODO: Port across the registration fixups
@@ -159,6 +163,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         private void LookupAircraftType(
+            VatsimSettings vatsimSettings,
             VatsimDataV3Pilot pilot,
             PilotState pilotState,
             LookupByAircraftIdOutcome lookupOutcome
@@ -175,6 +180,41 @@ namespace VirtualRadar.Feed.Vatsim
                 lookupOutcome.NumberOfEngines =         aircraftType?.Engines;
                 lookupOutcome.Species =                 aircraftType?.Species ?? Species.None;
                 lookupOutcome.WakeTurbulenceCategory =  aircraftType?.WakeTurbulenceCategory ?? WakeTurbulenceCategory.None;
+
+                GuessManufacturerAndModelFromType(
+                    vatsimSettings,
+                    aircraftType,
+                    lookupOutcome
+                );
+            }
+        }
+
+        private void GuessManufacturerAndModelFromType(
+            VatsimSettings vatsimSettings,
+            AircraftType aircraftType,
+            LookupOutcome lookupOutcome
+        )
+        {
+            if(!vatsimSettings.InferModelFromModelType) {
+                lookupOutcome.Manufacturer = "";
+                lookupOutcome.Model = "";
+            } else {
+                // This is going to be complete garbage quite a lot of the time...
+                var manufacturer = aircraftType?.Manufacturers
+                    ?.OrderBy(manufacturerName => manufacturerName, StringComparer.InvariantCultureIgnoreCase)
+                    .FirstOrDefault()
+                    ?? "";
+                var model = aircraftType?.Models
+                    ?.OrderBy(modelName => modelName, StringComparer.InvariantCultureIgnoreCase)
+                    .FirstOrDefault()
+                    ?? "";
+                var hasModel = !String.IsNullOrEmpty(model);
+                lookupOutcome.Manufacturer = manufacturer;
+                lookupOutcome.Model = !String.IsNullOrEmpty(manufacturer) && hasModel
+                    ? $"{manufacturer} {model}"     // most of VRS expects model to actually be manufacturer + model
+                    : hasModel
+                        ? model
+                        : manufacturer;
             }
         }
     }
