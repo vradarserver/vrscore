@@ -100,6 +100,7 @@ namespace VirtualRadar.Feed.Vatsim
                 GroundTrackDegrees =    pilot.HeadingDegrees,
                 IsFakeAircraft =        true,
                 Location =              new(pilot.Latitude, pilot.Longitude),
+                OnGround =              SetOnGround(vatsimSettings, pilot.GroundSpeedKnots),
                 Squawk =                pilot.Squawk,
             };
             var modeSCode = remarks.ModeSCode;
@@ -162,6 +163,12 @@ namespace VirtualRadar.Feed.Vatsim
             pilotState.Generation = Generation;
         }
 
+        private static bool? SetOnGround(VatsimSettings vatsimSettings, int groundSpeedKnots)
+        {
+            return vatsimSettings.AssumeSlowAircraftAreOnGround
+                && groundSpeedKnots <= vatsimSettings.SlowAircraftThresholdSpeedKnots;
+        }
+
         private void LookupAircraftType(
             VatsimSettings vatsimSettings,
             VatsimDataV3Pilot pilot,
@@ -189,7 +196,7 @@ namespace VirtualRadar.Feed.Vatsim
             }
         }
 
-        private void GuessManufacturerAndModelFromType(
+        private static void GuessManufacturerAndModelFromType(
             VatsimSettings vatsimSettings,
             AircraftType aircraftType,
             LookupOutcome lookupOutcome
