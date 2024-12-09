@@ -10,10 +10,17 @@
 
 using VirtualRadar.Message;
 
-namespace VirtualRadar
+namespace VirtualRadar.AircraftLists
 {
-    /// <inheritdoc/>
-    class AircraftList : IAircraftList
+    /// <summary>
+    /// The default implementation of <see cref="IAircraftList"/>.
+    /// </summary>
+    [AircraftList(typeof(AircraftListOptions))]
+    public class AircraftList(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+        IAircraftListOptions _Options
+        #pragma warning restore IDE1006
+    ) : IAircraftList
     {
         private readonly object _SyncLock = new();
         private readonly Dictionary<int, Aircraft> _AircraftById = [];
@@ -22,6 +29,9 @@ namespace VirtualRadar
 
         /// <inheritdoc/>
         public long Stamp => _Stamp;
+
+        /// <inheritdoc/>
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
         /// <inheritdoc/>
         public (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message)

@@ -47,7 +47,7 @@ namespace VirtualRadar.Receivers
         public IFeedDecoder FeedDecoder { get; }
 
         /// <inheritdoc/>
-        public IAircraftList AircraftList { get; } = new AircraftList();
+        public IAircraftList AircraftList { get; }
 
         private long _CountPacketsReceived;
         /// <inheritdoc/>
@@ -63,17 +63,20 @@ namespace VirtualRadar.Receivers
         /// <param name="options"></param>
         /// <param name="connector"></param>
         /// <param name="feedDecoder"></param>
+        /// <param name="aircraftList"></param>
         /// <param name="aircraftLookupService"></param>
         internal Receiver(
             ReceiverOptions options,
             IReceiveConnector connector,
             IFeedDecoder feedDecoder,
+            IAircraftList aircraftList,
             IAircraftOnlineLookupService aircraftLookupService
         )
         {
             Options = options;
             Connector = connector;
             FeedDecoder = feedDecoder;
+            AircraftList = aircraftList;
 
             _AircraftLookupService = aircraftLookupService;
             _AircraftLookupService.LookupCompleted += AircraftLookupService_LookupCompleted;

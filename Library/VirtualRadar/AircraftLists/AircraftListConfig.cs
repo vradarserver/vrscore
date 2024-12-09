@@ -13,18 +13,18 @@ using VirtualRadar.Collections;
 using VirtualRadar.Extensions;
 using VirtualRadar.Reflection;
 
-namespace VirtualRadar.Feed
+namespace VirtualRadar.AircraftLists
 {
     /// <summary>
-    /// Records and exposes the links between a configuration type and the feed decoder type that uses it.
+    /// Records and exposes the links between a configuration type and the aircraft list that uses it.
     /// </summary>
-    public static class FeedDecoderConfig
+    public static class AircraftListConfig
     {
         private readonly static object _SyncLock = new();
-        private volatile static Dictionary<Type, Type> _ConfigToDecoderTypeMap = [];
+        private volatile static Dictionary<Type, Type> _ConfigToAircraftListTypeMap = [];
 
         /// <summary>
-        /// Finds all types that implement <see cref="FeedDecoderAttribute"/> and automatically
+        /// Finds all types that implement <see cref="AircraftListAttribute"/> and automatically
         /// register the connection between their options and their type.
         /// </summary>
         /// <param name="addToServices"></param>
@@ -33,8 +33,8 @@ namespace VirtualRadar.Feed
         {
             assembly ??= Assembly.GetCallingAssembly();
             try {
-                foreach(var typeAttr in AttributeTags.TaggedTypes<FeedDecoderAttribute>(assembly)) {
-                    RegisterFeedDecoder(typeAttr.Attribute.OptionsType, typeAttr.Type);
+                foreach(var typeAttr in AttributeTags.TaggedTypes<AircraftListAttribute>(assembly)) {
+                    RegisterAircraftList(typeAttr.Attribute.OptionsType, typeAttr.Type);
                 }
             } catch(Exception ex) {
                 ex.AddStringData("Assembly", () => assembly.FullName);
@@ -43,39 +43,39 @@ namespace VirtualRadar.Feed
         }
 
         /// <summary>
-        /// Registers the feed decoder that should be built when the factory is given an options object
+        /// Registers the aircraftList that should be built when the factory is given an options object
         /// of the type passed across.
         /// </summary>
         /// <param name="optionsType"></param>
-        /// <param name="feedDecoderType"></param>
-        public static void RegisterFeedDecoder(Type optionsType, Type feedDecoderType)
+        /// <param name="aircraftListType"></param>
+        public static void RegisterAircraftList(Type optionsType, Type aircraftListType)
         {
             ArgumentNullException.ThrowIfNull(optionsType);
-            ArgumentNullException.ThrowIfNull(feedDecoderType);
+            ArgumentNullException.ThrowIfNull(aircraftListType);
 
-            if(!typeof(IFeedDecoderOptions).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IFeedDecoderOptions)}");
+            if(!typeof(IAircraftListOptions).IsAssignableFrom(optionsType)) {
+                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IAircraftListOptions)}");
             }
-            if(!typeof(IFeedDecoder).IsAssignableFrom(feedDecoderType)) {
-                throw new InvalidOperationException($"{feedDecoderType.Name} does not implement {nameof(IFeedDecoder)}");
+            if(!typeof(IAircraftList).IsAssignableFrom(aircraftListType)) {
+                throw new InvalidOperationException($"{aircraftListType.Name} does not implement {nameof(IAircraftList)}");
             }
 
             lock(_SyncLock) {
-                var newMap = ShallowCollectionCopier.Copy(_ConfigToDecoderTypeMap);
-                newMap[optionsType] = feedDecoderType;
-                _ConfigToDecoderTypeMap = newMap;
+                var newMap = ShallowCollectionCopier.Copy(_ConfigToAircraftListTypeMap);
+                newMap[optionsType] = aircraftListType;
+                _ConfigToAircraftListTypeMap = newMap;
             }
         }
 
         /// <summary>
-        /// Returns the feed decoder type for the options type passed across or null if no decoder type has
-        /// been mapped to the options type.
+        /// Returns the aircraft list type for the options type passed across or null if no aircraft list type
+        /// has been mapped to the options type.
         /// </summary>
         /// <param name="optionsType"></param>
         /// <returns></returns>
-        public static Type FeedDecoderType(Type optionsType)
+        public static Type AircraftListType(Type optionsType)
         {
-            var map = _ConfigToDecoderTypeMap;
+            var map = _ConfigToAircraftListTypeMap;
             map.TryGetValue(optionsType, out var result);
             return result;
         }

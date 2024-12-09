@@ -103,7 +103,6 @@ namespace VirtualRadar
         /// <returns></returns>
         public static IServiceCollection AddVirtualRadarGroup(this IServiceCollection services)
         {
-            services.AddLifetime<IAircraftList,                 AircraftList>();
             services.AddLifetime<IAircraftOnlineLookupProvider, Services.AircraftOnlineLookup.LookupProvider>();
             services.AddLifetime<IAircraftOnlineLookupService,  Services.AircraftOnlineLookup.LookupService>();
             services.AddLifetime<IClock,                        Services.Clock>();
@@ -114,12 +113,15 @@ namespace VirtualRadar
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
+            services.AddLifetime<AircraftLists.AircraftListFactory>();
+            services.AddLifetime<IAircraftList, AircraftLists.AircraftList>();
+
             services.AddLifetime<Configuration.ISettingsStorage,        Configuration.SettingsStorage>();
             services.AddLifetime<Configuration.ISettingsConfiguration,  Configuration.SettingsConfiguration>();
 
             services.AddLifetime<Connection.ReceiveConnectorFactory, Connection.ReceiveConnectorFactory>();
 
-            services.AddLifetime<Feed.FeedDecoderFactory,           Feed.FeedDecoderFactory>();
+            services.AddLifetime<Feed.FeedDecoderFactory>();
             services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
 
             services.AddLifetime<Receivers.IReceiverFactory, Receivers.ReceiverFactory>();
@@ -137,8 +139,10 @@ namespace VirtualRadar
             services.AddLifetime<WebSite.IAircraftListJsonBuilder, WebSite.AircraftListJsonBuilder>();
             services.AddLifetime<WebSite.ServerConfigJsonFactory>();
 
+            AircraftLists.AircraftListConfig.RegisterAssembly();
             Configuration.ConfigurationConfig.RegisterAssembly(services);
             Connection.ReceiveConnectorConfig.RegisterAssembly();
+            Feed.FeedDecoderConfig.RegisterAssembly();
 
             return services;
         }

@@ -16,7 +16,7 @@ namespace VirtualRadar
     /// The interface for all objects that can maintain a list of aircraft.
     /// </summary>
     [Lifetime(Lifetime.Transient)]
-    public interface IAircraftList
+    public interface IAircraftList : IAsyncDisposable
     {
         /// <summary>
         /// Gets the highest stamp seen on any aircraft. See <see cref="PostOffice"/> for rules regarding

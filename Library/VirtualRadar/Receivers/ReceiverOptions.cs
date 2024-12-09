@@ -32,6 +32,8 @@ namespace VirtualRadar.Receivers
 
         public IReceiverFeedDecoderOptions FeedDecoder { get; init; }
 
+        public IReceiverAircraftListOptions AircraftList { get; init; }
+
         public ReceiverOptions()
         {
         }
@@ -42,7 +44,8 @@ namespace VirtualRadar.Receivers
             bool enabled,
             bool hidden,
             IReceiverConnectorOptions connector,
-            IReceiverFeedDecoderOptions feedDecoder
+            IReceiverFeedDecoderOptions feedDecoder,
+            IReceiverAircraftListOptions aircraftList
         )
         {
             Id = id;
@@ -51,6 +54,7 @@ namespace VirtualRadar.Receivers
             Hidden = hidden;
             Connector = connector;
             FeedDecoder = feedDecoder;
+            AircraftList = aircraftList;
         }
 
         public ReceiverOptions(ReceiverOptions source) : this(
@@ -59,7 +63,8 @@ namespace VirtualRadar.Receivers
             enabled: source.Enabled,
             hidden: source.Hidden,
             connector: source.Connector,
-            feedDecoder: source.FeedDecoder
+            feedDecoder: source.FeedDecoder,
+            aircraftList: source.AircraftList
         )
         {
         }
@@ -77,7 +82,8 @@ namespace VirtualRadar.Receivers
                        && Enabled == other.Enabled
                        && Hidden == other.Hidden
                        && Object.Equals(Connector, other.Connector)
-                       && Object.Equals(FeedDecoder, other.FeedDecoder);
+                       && Object.Equals(FeedDecoder, other.FeedDecoder)
+                       && Object.Equals(AircraftList, other.AircraftList);
             }
 
             return result;
@@ -94,6 +100,7 @@ namespace VirtualRadar.Receivers
                 + $" {nameof(Hidden)} = {Hidden},"
                 + $" {nameof(Connector)} = {Connector},"
                 + $" {nameof(FeedDecoder)} = {FeedDecoder}"
+                + $" {nameof(AircraftList)} = {AircraftList}"
                 + " }";
         }
     }

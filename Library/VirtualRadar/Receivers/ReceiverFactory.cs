@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Microsoft.Extensions.DependencyInjection;
+using VirtualRadar.AircraftLists;
 using VirtualRadar.Collections;
 using VirtualRadar.Configuration;
 using VirtualRadar.Connection;
@@ -80,7 +81,11 @@ namespace VirtualRadar.Receivers
             var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
             return messageSources
                 .Receivers
-                .FirstOrDefault(receiver => String.Equals(receiver.Name, receiverName, StringComparison.InvariantCultureIgnoreCase));
+                .FirstOrDefault(receiver => String.Equals(
+                    receiver.Name,
+                    receiverName,
+                    StringComparison.InvariantCultureIgnoreCase
+                ));
         }
 
         /// <inheritdoc/>
@@ -100,11 +105,18 @@ namespace VirtualRadar.Receivers
                 feedDecoder = decoderFactory.Create(options.FeedDecoder);
             }
 
-            if(connector != null && feedDecoder != null) {
+            IAircraftList aircraftList = null;
+            if(options?.AircraftList != null) {
+                var aircraftListFactory = serviceProvider.GetRequiredService<AircraftListFactory>();
+                aircraftList = aircraftListFactory.Create(options.AircraftList);
+            }
+
+            if(connector != null && feedDecoder != null && aircraftList != null) {
                 result = new(
                     options,
                     connector,
                     feedDecoder,
+                    aircraftList,
                     serviceProvider.GetRequiredService<IAircraftOnlineLookupService>()
                 );
             }

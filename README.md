@@ -102,6 +102,11 @@ receiver that is listening to a BaseStation feed:
       },
       "FeedDecoder": {
         "SettingsProvider": "BaseStationFeedDecoder"
+      },
+      "AircraftList": {
+        "SettingsProvider": "GenericAircraftList",
+        "DisplayTimeoutSeconds": 30,
+        "TrackingTimeoutSeconds": 600
       }
     }
   ]
@@ -136,6 +141,11 @@ and here is an example receiver for a VATSIM feed:
         "SlowAircraftThresholdSpeedKnots": 40,
         "InferModelFromModelType": true,
         "ShowInvalidRegistrations": false
+      },
+      "AircraftList": {
+        "SettingsProvider": "GenericAircraftList",
+        "DisplayTimeoutSeconds": 30,
+        "TrackingTimeoutSeconds": 600
       }
     }
 ```
