@@ -49,8 +49,8 @@ namespace Tests.VirtualRadar.WebSite
             _AircraftListToArrayStamp = 0L;
             _AircraftList = MockHelper.CreateMock<IAircraftList>();
             _AircraftList
-                .Setup(r => r.ToArray(out It.Ref<long>.IsAny))
-                .Returns((out long stamp) => {
+                .Setup(r => r.ToArray(out It.Ref<long>.IsAny, true))
+                .Returns((out long stamp, bool _) => {
                     stamp = _AircraftListToArrayStamp;
                     return _AllAircraft.ToArray();
                 });

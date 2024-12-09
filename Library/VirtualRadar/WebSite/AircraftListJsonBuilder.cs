@@ -91,7 +91,7 @@ namespace VirtualRadar.WebSite
 
             var aircraftList = state.Receiver?.AircraftList;
             if(aircraftList != null) {
-                var allAircraft = aircraftList.ToArray(out stamp);
+                var allAircraft = aircraftList.ToArray(out stamp, applyDisplayTimeout: true);
                 var oldStamp = state.Args.PreviousDataVersion;
 
                 foreach(var aircraft in allAircraft) {

@@ -91,7 +91,7 @@ namespace VirtualRadar.Utility.Terminal
         {
             if(!_CancellationToken.IsCancellationRequested) {
                 var set = AircraftList
-                    ?.ToArray(out _)
+                    ?.ToArray(out _, applyDisplayTimeout: true)
                     .OrderBy(r => r.Icao24.Value)
                     .Select(r => new AircraftTableRow() {
                         Icao24 =        r.Icao24.Value.ToString(),

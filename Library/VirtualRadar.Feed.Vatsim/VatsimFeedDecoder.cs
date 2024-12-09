@@ -31,11 +31,6 @@ namespace VirtualRadar.Feed.Vatsim
         /// <inheritdoc/>
         public bool FeedContainsLookups => true;
 
-        /// <summary>
-        /// The standing data used by the decoder to make some educated guesses about the aircraft.
-        /// </summary>
-        public IStandingDataManager StandingData { get; }
-
         /// <inheritdoc/>
         public event EventHandler<TransponderMessage> MessageReceived;
 

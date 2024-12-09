@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Timers;
 using VirtualRadar.Message;
 
 namespace VirtualRadar.AircraftLists
@@ -16,22 +17,55 @@ namespace VirtualRadar.AircraftLists
     /// The default implementation of <see cref="IAircraftList"/>.
     /// </summary>
     [AircraftList(typeof(AircraftListOptions))]
-    public class AircraftList(
-        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        IAircraftListOptions _Options
-        #pragma warning restore IDE1006
-    ) : IAircraftList
+    public class AircraftList : IAircraftList
     {
         private readonly object _SyncLock = new();
         private readonly Dictionary<int, Aircraft> _AircraftById = [];
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = [];
         private long _Stamp = 0L;
+        private AircraftListOptions _Options;
+        private ILog _Log;
+        private System.Timers.Timer _HousekeepingTimer;
 
         /// <inheritdoc/>
         public long Stamp => _Stamp;
 
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="options"></param>
+        public AircraftList(
+            AircraftListOptions options,
+            ILog log
+        )
+        {
+            _Options = options;
+            _Log = log;
+
+            _HousekeepingTimer = new(1000) {
+                AutoReset = false,
+            };
+            _HousekeepingTimer.Elapsed += HousekeepingTimer_Elapsed;
+            _HousekeepingTimer.Start();
+        }
+
         /// <inheritdoc/>
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public ValueTask DisposeAsync()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+
+            return ValueTask.CompletedTask;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                var timer = _HousekeepingTimer;
+                _HousekeepingTimer = null;
+                timer?.Dispose();
+            }
+        }
 
         /// <inheritdoc/>
         public (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message)
@@ -138,17 +172,53 @@ namespace VirtualRadar.AircraftLists
         }
 
         /// <inheritdoc/>
-        public Aircraft[] ToArray(out long arrayStamp)
+        public Aircraft[] ToArray(out long arrayStamp, bool applyDisplayTimeout)
         {
+            var timeoutThreshold = applyDisplayTimeout
+                ? DateTime.UtcNow.AddSeconds(-_Options.DisplayTimeoutSeconds)
+                : DateTime.MinValue;
+
             lock(_SyncLock) {
                 arrayStamp = Stamp;
                 var result = _AircraftById
                     .Values
                     .OfType<Aircraft>()
+                    .Where(aircraft => aircraft.MostRecentMessageReceivedUtc >= timeoutThreshold)
                     .Select(aircraft => aircraft.ShallowCopy())
                     .ToArray();
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Removes aircraft whose last message is longer than the configured tracking timeout seconds.
+        /// </summary>
+        private void RemoveOldAircraft()
+        {
+            var threshold = DateTime.UtcNow.AddSeconds(-_Options.TrackingTimeoutSeconds);
+            lock(_SyncLock) {
+                foreach(var candidate in _AircraftById.Values.ToArray()) {
+                    if(candidate.MostRecentMessageReceivedUtc <= threshold) {
+                        _AircraftById.Remove(candidate.Id);
+                        var icao24 = candidate.Icao24.Value;
+                        if(icao24 != null && _AircraftByIcao24.ContainsKey(icao24.Value)) {
+                            _AircraftByIcao24.Remove(icao24.Value);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void HousekeepingTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            try {
+                RemoveOldAircraft();
+            } catch(Exception ex) {
+                _Log.Exception(ex, "Caught exception while removing old aircraft from an aircraft list");
+            }
+
+            var timer = _HousekeepingTimer;
+            timer?.Start();
         }
     }
 }

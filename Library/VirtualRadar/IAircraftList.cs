@@ -72,9 +72,14 @@ namespace VirtualRadar
         /// <summary>
         /// Returns a copy of the contents of the aircraft list.
         /// </summary>
-        /// <param name="arrayStamp">The value of <see cref="Stamp"/> at the point where the
-        /// array is built.</param>
+        /// <param name="arrayStamp">
+        /// The value of <see cref="Stamp"/> at the point where the array is built.
+        /// </param>
+        /// <param name="applyDisplayTimeout">
+        /// Controls whether aircraft that have not sent a message within the display timeout period are
+        /// returned.
+        /// </param>
         /// <returns></returns>
-        Aircraft[] ToArray(out long arrayStamp);
+        Aircraft[] ToArray(out long arrayStamp, bool applyDisplayTimeout);
     }
 }

@@ -57,6 +57,8 @@ namespace VirtualRadar
 
         public DateTime FirstMessageReceivedUtc { get; private set; }
 
+        public DateTime MostRecentMessageReceivedUtc { get; private set; }
+
         public StampedTimedValue<long> CountMessagesReceived { get; } = new();
 
         public StampedValue<Icao24?> Icao24 { get; } = new();
@@ -207,9 +209,10 @@ namespace VirtualRadar
         {
             lock(_SyncLock) {
                 var result = new Aircraft(Id) {
-                    FirstStamp =              FirstStamp,
-                    Stamp =                   Stamp,
-                    FirstMessageReceivedUtc = FirstMessageReceivedUtc,
+                    FirstStamp =                    FirstStamp,
+                    Stamp =                         Stamp,
+                    FirstMessageReceivedUtc =       FirstMessageReceivedUtc,
+                    MostRecentMessageReceivedUtc =  MostRecentMessageReceivedUtc,
                 };
 
                 // TRANSMITTED VALUES
@@ -286,9 +289,10 @@ namespace VirtualRadar
                 }
 
                 lock(_SyncLock) {
+                    MostRecentMessageReceivedUtc = DateTime.UtcNow;
                     if(FirstMessageReceivedUtc == default) {
                         changed = true;
-                        FirstMessageReceivedUtc = DateTime.UtcNow;          // <-- as of .NET 8 this is still the fastest UTC function, faster that DateTimeOffset.UtcNow.
+                        FirstMessageReceivedUtc = MostRecentMessageReceivedUtc;
                     }
 
                     var stamp = PostOffice.GetStamp();

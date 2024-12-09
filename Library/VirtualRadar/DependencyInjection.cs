@@ -114,7 +114,6 @@ namespace VirtualRadar
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
             services.AddLifetime<AircraftLists.AircraftListFactory>();
-            services.AddLifetime<IAircraftList, AircraftLists.AircraftList>();
 
             services.AddLifetime<Configuration.ISettingsStorage,        Configuration.SettingsStorage>();
             services.AddLifetime<Configuration.ISettingsConfiguration,  Configuration.SettingsConfiguration>();
@@ -122,7 +121,7 @@ namespace VirtualRadar
             services.AddLifetime<Connection.ReceiveConnectorFactory, Connection.ReceiveConnectorFactory>();
 
             services.AddLifetime<Feed.FeedDecoderFactory>();
-            services.AddLifetime<Feed.IFeedFormatFactoryService,    Feed.FeedFormatFactoryService>();
+            services.AddLifetime<Feed.IFeedFormatFactoryService, Feed.FeedFormatFactoryService>();
 
             services.AddLifetime<Receivers.IReceiverFactory, Receivers.ReceiverFactory>();
             services.AddLifetime<Receivers.ReceiverEngine>();
