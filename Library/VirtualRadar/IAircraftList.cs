@@ -81,5 +81,13 @@ namespace VirtualRadar
         /// </param>
         /// <returns></returns>
         Aircraft[] ToArray(out long arrayStamp, bool applyDisplayTimeout);
+
+        /// <summary>
+        /// Returns a copy of the aircraft whose ID is passed across, or null if the aircraft does not exist
+        /// in the list.
+        /// </summary>
+        /// <param name="aircraftId"></param>
+        /// <returns></returns>
+        Aircraft FindAircraft(int aircraftId);
     }
 }

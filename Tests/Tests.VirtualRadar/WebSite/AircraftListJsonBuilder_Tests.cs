@@ -144,6 +144,25 @@ namespace Tests.VirtualRadar.WebSite
             return aircraft;
         }
 
+        private void AddTrailData(
+            Aircraft aircraft,
+            long stamp,
+            Location location,
+            float? heading = null,
+            int? altitude = null,
+            float? speed = null
+        )
+        {
+            var message = new TransponderMessage(aircraft.Id) {
+                Location = location,
+                AltitudeFeet = altitude,
+                GroundSpeedKnots = speed,
+                GroundTrackDegrees = heading,
+            };
+            PostOffice.SetNextStampForUnitTest(stamp);
+            aircraft.CopyFromMessage(message);
+        }
+
         private static Route SetupRoute(Airport fromAirport, Airport toAirport, Airport[] stopovers = null)
         {
             var result = new Route() {
@@ -1300,6 +1319,122 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             Assert.AreEqual(expected, json.Aircraft[0].YearBuilt);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Sends_Nothing_When_No_Trails_Requested()
+        {
+            _Args.TrailType = TrailType.None;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+
+            Assert.IsNull(aircraftJson.TrailType);
+            Assert.IsNull(aircraftJson.FullCoordinates);
+            Assert.IsNull(aircraftJson.ShortCoordinates);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Sends_Simple_Full_Trail()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.FullCoordinates;
+
+            Assert.AreEqual("", aircraftJson.TrailType);
+            Assert.IsNull(aircraftJson.ShortCoordinates);
+            Assert.AreEqual(3, actual.Count);
+            Assert.AreEqual(10, actual[0]);
+            Assert.AreEqual(11, actual[1]);
+            Assert.AreEqual(90, actual[2]);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Sends_Start_And_End_Of_Full_Trail()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13));
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(6, actual.Count);
+            var idx = 0;
+
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+
+            Assert.AreEqual(12, actual[idx++]);
+            Assert.AreEqual(13, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Ignores_Changes_Of_Location_Without_Change_Of_Heading_In_Full_Trail()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13));
+            AddTrailData(aircraft, stamp: 4, new(14, 15), heading: 91);
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(6, actual.Count);
+            var idx = 0;
+
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+
+            Assert.AreEqual(14, actual[idx++]);
+            Assert.AreEqual(15, actual[idx++]);
+            Assert.AreEqual(91, actual[idx++]);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Always_Sends_At_Least_First_And_Last_Point_In_Full_Trail()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13));
+            AddTrailData(aircraft, stamp: 4, new(14, 15));
+            AddTrailData(aircraft, stamp: 5, new(16, 17));
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(6, actual.Count);
+            var idx = 0;
+
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+
+            Assert.AreEqual(16, actual[idx++]);
+            Assert.AreEqual(17, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
         }
     }
 }

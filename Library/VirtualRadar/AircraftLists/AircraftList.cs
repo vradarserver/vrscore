@@ -190,6 +190,15 @@ namespace VirtualRadar.AircraftLists
             }
         }
 
+        /// <inheritdoc/>
+        public Aircraft FindAircraft(int aircraftId)
+        {
+            lock(_SyncLock) {
+                _AircraftById.TryGetValue(aircraftId, out var result);
+                return result?.ShallowCopy();
+            }
+        }
+
         /// <summary>
         /// Removes aircraft whose last message is longer than the configured tracking timeout seconds.
         /// </summary>

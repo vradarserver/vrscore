@@ -35,6 +35,7 @@ namespace VirtualRadar.WebSite
         // Carries state into all of the build functions, and in particular maintains a consistent
         // set of latest settings throughout the build.
         record BuildState(
+            DateTime                    UtcNow,
             AircraftListJsonBuilderArgs Args,
             IReceiver                   Receiver,
             AircraftMapSettings         AircraftMapSettings,
@@ -45,6 +46,14 @@ namespace VirtualRadar.WebSite
             AircraftListJson            Json
         )
         {
+            private DateTime? _ShortTrailStart;
+            public DateTime ShortTrailStart
+            {
+                get {
+                    _ShortTrailStart ??= UtcNow.AddSeconds(-AircraftMapSettings.ShortTrailLengthSeconds);
+                    return _ShortTrailStart.Value;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -61,6 +70,7 @@ namespace VirtualRadar.WebSite
             );
 
             var state = new BuildState(
+                DateTime.UtcNow,
                 args,
                 receiver,
                 _AircraftMapSettings.LatestValue,
@@ -164,6 +174,7 @@ namespace VirtualRadar.WebSite
                     }
                     AddPicture(state, aircraftJson, aircraft);
                     AddRoute(state, aircraftJson, aircraft.Route);
+                    AddTrails(state, aircraftJson, aircraft);
                     state.Json.Aircraft.Add(aircraftJson);
                 }
                 state.Json.AvailableAircraft = allAircraft.Length;
@@ -235,6 +246,50 @@ namespace VirtualRadar.WebSite
             if(route.Stamp > state.Args.PreviousDataVersion && route.Value != null) {
                 aircraftJson.Destination = describeAirport(route.Value.To);
                 aircraftJson.Origin =      describeAirport(route.Value.From);
+            }
+        }
+
+        private void AddTrails(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
+        {
+            if(state.Args.TrailType != TrailType.None) {
+                var relevantHistory = aircraft.StateChanges.GetChangeSetsFromAndFor(
+                    -1,
+                    state.Args.TrailType.ToAircraftHistoryFields(useRadarAltitude: false)
+                );
+
+                if(aircraftJson.FullCoordinates == null) {
+                    aircraftJson.TrailType = state.Args.TrailType.ToAircraftListTrailType();
+                    aircraftJson.FullCoordinates = [];
+                }
+
+                Location previousLocation = null;
+                float? previousHeading = null;
+                Location location = null;
+                float? heading = null;
+                foreach(var changeSet in relevantHistory) {
+                    location = changeSet.Location ?? location;
+                    heading = changeSet.GroundTrackDegrees ?? heading;
+
+                    if(location != null && heading != null && heading != previousHeading) {
+                        aircraftJson.FullCoordinates.Add(location.Latitude);
+                        aircraftJson.FullCoordinates.Add(location.Longitude);
+                        aircraftJson.FullCoordinates.Add(heading.Value);
+
+                        previousLocation = location;
+                        previousHeading = heading;
+                    }
+                }
+
+                if(aircraftJson.FullCoordinates.Count > 0 && location != null && heading != null) {
+                    if(   aircraftJson.FullCoordinates[^3] != location.Latitude
+                       || aircraftJson.FullCoordinates[^2] != location.Longitude
+                       || aircraftJson.FullCoordinates[^1] != heading.Value
+                    ) {
+                        aircraftJson.FullCoordinates.Add(location.Latitude);
+                        aircraftJson.FullCoordinates.Add(location.Longitude);
+                        aircraftJson.FullCoordinates.Add(heading.Value);
+                    }
+                }
             }
         }
 

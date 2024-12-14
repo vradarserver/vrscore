@@ -77,7 +77,6 @@ namespace VirtualRadar.Server.ApiControllers
         /// <returns></returns>
         [HttpPost]
         [Route("api/3.00/feeds/aircraft-list/{feedId?}")]
-        [Route("v3/AircraftList.json")]
         public AircraftListJson AircraftList([DefaultFormUrlEncoded] GetAircraftListModel model, int feedId = -1)
         {
             var args = new AircraftListJsonBuilderArgs() {
@@ -94,6 +93,43 @@ namespace VirtualRadar.Server.ApiControllers
             };
             SortByFromModel(args, model);
             PreviousAircraftFromModel(args, model);
+
+            return BuildAircraftList(args);
+        }
+
+        /// <summary>
+        /// An improved version 2 endpoint that was accessed via POST and accepted known aircraft in the body.
+        /// Note that the .NET Framework version could accept a list of ICAO identifiers instead of a list of
+        /// IDs. This version does not, it only accepts a list of IDs.
+        /// </summary>
+        /// <param name="ids">A list of hyphen delimited tracked aircraft IDs in hex.</param>
+        /// <param name="feed"></param>
+        /// <param name="lat"></param>
+        /// <param name="lng"></param>
+        /// <param name="ldv"></param>
+        /// <param name="stm"></param>
+        /// <param name="refreshTrails"></param>
+        /// <param name="selAc"></param>
+        /// <param name="trFmt"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("v3/AircraftList.json")]
+        public AircraftListJson AircraftListV2Post(string ids = null, int feed = -1, double? lat = null, double? lng = null, long ldv = -1, long stm = -1, byte refreshTrails = 0, int selAc = -1, string trFmt = null)
+        {
+            var args = new AircraftListJsonBuilderArgs() {
+                BrowserLatitude =       lat,
+                BrowserLongitude =      lng,
+                IsFlightSimulatorList = false,
+                PreviousDataVersion =   ldv,
+                ResendTrails =          refreshTrails == 1,
+                SelectedAircraftId =    selAc,
+                ServerTimeTicks =       stm,
+                ReceiverId =            feed,
+                Filter =                ExpandQueryStringFilters(),
+                TrailType =             TrailTypeExtensions.TrailTypeFromCode(trFmt),
+            };
+            SortByFromQueryString(args);
+            PreviousAircraftFromBody(args, ids);
 
             return BuildAircraftList(args);
         }
@@ -126,12 +162,43 @@ namespace VirtualRadar.Server.ApiControllers
             }
         }
 
+        private void SortByFromQueryString(AircraftListJsonBuilderArgs args)
+        {
+            var query = HttpContext.Request.Query;
+
+            var sortBy1 = (query["sortBy1"].FirstOrDefault() ?? "").ToUpperInvariant();
+            if(sortBy1 == "") {
+                SetDefaultAircraftListSortBy(args);
+            } else {
+                var sortOrder1 = (query["sortOrder1"].FirstOrDefault() ?? "").ToUpperInvariant();
+                args.SortBy.Add(new KeyValuePair<string, bool>(sortBy1, sortOrder1 == "ASC"));
+
+                var sortBy2 = (query["sortBy2"].FirstOrDefault() ?? "").ToUpperInvariant();
+                if(sortBy2 != "") {
+                    var sortOrder2 = (query["sortOrder2"].FirstOrDefault() ?? "").ToUpperInvariant();
+                    args.SortBy.Add(new KeyValuePair<string, bool>(sortBy2, sortOrder2 == "ASC"));
+                }
+            }
+        }
+
         private void PreviousAircraftFromModel(AircraftListJsonBuilderArgs args, GetAircraftListModel model)
         {
             if(model != null && model.PreviousAircraft != null && model.PreviousAircraft.Count > 0) {
                 foreach(var icao in model.PreviousAircraft) {
                     if(Icao24.TryParse(icao, out var parsed)) {
                         args.PreviousAircraft.Add(parsed);
+                    }
+                }
+            }
+        }
+
+        private void PreviousAircraftFromBody(AircraftListJsonBuilderArgs args, string ids)
+        {
+            if(!String.IsNullOrEmpty(ids)) {
+                foreach(var hexUniqueID in ids.Split('-')) {
+                    var id = Convert.Hex.ToInteger(hexUniqueID);
+                    if(id != -1) {
+                        args.PreviousAircraft.Add(id);
                     }
                 }
             }
@@ -309,6 +376,214 @@ namespace VirtualRadar.Server.ApiControllers
         {
             result ??= new AircraftListJsonBuilderFilter();
             assignFilter(result, filter);
+        }
+
+        private AircraftListJsonBuilderFilter ExpandQueryStringFilters()
+        {
+            AircraftListJsonBuilderFilter result = null;
+
+            var query = HttpContext.Request.Query;
+            foreach(var kvp in query.Where(r => r.Key.Length > 3 && (r.Key[0] == 'f' || r.Key[0] == 'F'))) {
+                var key = kvp.Key.ToUpperInvariant();
+                var value = kvp.Value.FirstOrDefault() ?? "";
+                switch(key.Substring(0, 3)) {
+                    case "FAI":     result = DecodeStringFilter     ("FAIR",    key, value, result, (f,v) => f.Airport = v); break;
+                    case "FCA":     result = DecodeStringFilter     ("FCALL",   key, value, result, (f,v) => f.Callsign = v); break;
+                    case "FCO":     result = DecodeStringFilter     ("FCOU",    key, value, result, (f,v) => f.Icao24Country = v); break;
+                    case "FIC":     result = DecodeStringFilter     ("FICO",    key, value, result, (f,v) => f.Icao24 = v); break;
+                    case "FOP":     result = DecodeStringFilter     ("FOPICAO", key, value, result, (f,v) => f.OperatorIcao = v);
+                                    result = DecodeStringFilter     ("FOP",     key, value, result, (f,v) => f.Operator = v); break;
+                    case "FRE":     result = DecodeStringFilter     ("FREG",    key, value, result, (f,v) => f.Registration = v); break;
+                    case "FTY":     result = DecodeStringFilter     ("FTYP",    key, value, result, (f,v) => f.Type = v); break;
+                    case "FUT":     result = DecodeStringFilter     ("FUT",     key, value, result, (f,v) => f.UserTag = v); break;
+
+                    case "FIN":     result = DecodeBoolFilter       ("FINT",    key, value, result, (f,v) => f.IsInteresting = v); break;
+                    case "FMI":     result = DecodeBoolFilter       ("FMIL",    key, value, result, (f,v) => f.IsMilitary = v); break;
+                    case "FNO":     result = DecodeBoolFilter       ("FNOPOS",  key, value, result, (f,v) => f.MustTransmitPosition = v); break;
+
+                    case "FAL":     result = DecodeIntRangeFilter   ("FALT",    key, value, result, f => f.Altitude, (f,v) => f.Altitude = v); break;
+                    case "FSQ":     result = DecodeIntRangeFilter   ("FSQK",    key, value, result, f => f.Squawk,   (f,v) => f.Squawk = v); break;
+                    case "FDS":     result = DecodeDoubleRangeFilter("FDST",    key, value, result, f => f.Distance, (f,v) => f.Distance = v); break;
+
+                    case "FEG":     result = DecodeEnumFilter<EngineType>            ("FEGT", key, value, result, (f,v) => f.EngineType = v); break;
+                    case "FSP":     result = DecodeEnumFilter<Species>               ("FSPC", key, value, result, (f,v) => f.Species = v); break;
+                    case "FWT":     result = DecodeEnumFilter<WakeTurbulenceCategory>("FWTC", key, value, result, (f,v) => f.WakeTurbulenceCategory = v); break;
+                }
+            }
+
+            result = DecodeBounds(result, query["FNBND"], query["FWBND"], query["FSBND"], query["FEBND"]);
+
+            return result;
+        }
+
+        private char DecodeFilter<T>(string prefix, T filter, string name)
+            where T: Filter
+        {
+            var suffixLength = name.Length - prefix.Length;
+
+            var ch = !name.StartsWith(prefix) || suffixLength < 1 || suffixLength > 2 ? '\0' : name[name.Length - 1];
+            if(ch == 'N' && suffixLength == 2) {
+                filter.ReverseCondition = true;
+                ch = name[name.Length - 2];
+                suffixLength = 1;
+            }
+
+            var result = '\0';
+            if(suffixLength == 1) {
+                result = ch;
+                switch(ch) {
+                    case 'L':
+                    case 'U':   filter.Condition = FilterCondition.Between; break;
+                    case 'S':   filter.Condition = FilterCondition.StartsWith; break;
+                    case 'E':   filter.Condition = FilterCondition.EndsWith; break;
+                    case 'C':   filter.Condition = FilterCondition.Contains; break;
+                    case 'Q':   filter.Condition = FilterCondition.Equals; break;
+                    default:    result = '\0'; break;
+                }
+            }
+
+            return result;
+        }
+
+        private AircraftListJsonBuilderFilter DecodeBoolFilter(
+            string prefix,
+            string key,
+            string value,
+            AircraftListJsonBuilderFilter result,
+            Action<AircraftListJsonBuilderFilter, FilterBool> assignFilter
+        )
+        {
+            var filter = new FilterBool();
+            if(DecodeFilter(prefix, filter, key) == 'Q') {
+                if(!String.IsNullOrEmpty(value)) {
+                    filter.Value = value != "0" && !value.Equals("false", StringComparison.OrdinalIgnoreCase);
+                    DoAssignFilter(ref result, assignFilter, filter);
+                }
+            }
+
+            return result;
+        }
+
+        private AircraftListJsonBuilderFilter DecodeDoubleRangeFilter(
+            string prefix,
+            string key,
+            string value,
+            AircraftListJsonBuilderFilter result,
+            Func<AircraftListJsonBuilderFilter, FilterRange<double>> getFilter,
+            Action<AircraftListJsonBuilderFilter, FilterRange<double>> assignFilter
+        )
+        {
+            if(double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out double doubleValue)) {
+                var filter = result == null ? new FilterRange<double>() : getFilter(result);
+                switch(DecodeFilter(prefix, filter, key)) {
+                    case 'L':   filter.LowerValue = doubleValue; break;
+                    case 'U':   filter.UpperValue = doubleValue; break;
+                    default:    filter = null; break;
+                }
+                if(filter != null) {
+                    DoAssignFilter(ref result, assignFilter, filter);
+                }
+            }
+
+            return result;
+        }
+
+        private AircraftListJsonBuilderFilter DecodeEnumFilter<T>(
+            string prefix,
+            string key,
+            string value,
+            AircraftListJsonBuilderFilter result,
+            Action<AircraftListJsonBuilderFilter, FilterEnum<T>> assignFilter
+        )
+            where T: struct, IComparable
+        {
+            if(!String.IsNullOrEmpty(value) && Enum.TryParse<T>(value, out T enumValue)) {
+                if(Enum.IsDefined(typeof(T), enumValue)) {
+                    var filter = new FilterEnum<T>() {
+                        Value = enumValue,
+                    };
+                    if(DecodeFilter(prefix, filter, key) == 'Q') {
+                        DoAssignFilter(ref result, assignFilter, filter);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private AircraftListJsonBuilderFilter DecodeIntRangeFilter(
+            string prefix,
+            string key,
+            string value,
+            AircraftListJsonBuilderFilter result,
+            Func<AircraftListJsonBuilderFilter, FilterRange<int>> getFilter,
+            Action<AircraftListJsonBuilderFilter, FilterRange<int>> assignFilter
+        )
+        {
+            if(int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out int intValue)) {
+                var filter = result == null ? new FilterRange<int>() : getFilter(result);
+                switch(DecodeFilter(prefix, filter, key)) {
+                    case 'L':   filter.LowerValue = intValue; break;
+                    case 'U':   filter.UpperValue = intValue; break;
+                    default:    filter = null; break;
+                }
+                if(filter != null) {
+                    DoAssignFilter(ref result, assignFilter, filter);
+                }
+            }
+
+            return result;
+        }
+
+        private AircraftListJsonBuilderFilter DecodeStringFilter(
+            string prefix,
+            string key,
+            string value,
+            AircraftListJsonBuilderFilter result,
+            Action<AircraftListJsonBuilderFilter, FilterString> assignFilter
+        )
+        {
+            var filter = new FilterString();
+            switch(DecodeFilter(prefix, filter, key)) {
+                case 'C':
+                case 'E':
+                case 'Q':
+                case 'S':
+                    filter.Value = value;
+                    DoAssignFilter(ref result, assignFilter, filter);
+                    break;
+            }
+
+            return result;
+        }
+
+        private AircraftListJsonBuilderFilter DecodeBounds(
+            AircraftListJsonBuilderFilter result,
+            string northText,
+            string westText,
+            string southText,
+            string eastText
+        )
+        {
+            if(   !String.IsNullOrEmpty(northText)
+               && !String.IsNullOrEmpty(westText)
+               && !String.IsNullOrEmpty(southText)
+               && !String.IsNullOrEmpty(eastText)
+            ) {
+                if(   double.TryParse(northText, NumberStyles.Any, CultureInfo.InvariantCulture, out double north)
+                   && double.TryParse(southText, NumberStyles.Any, CultureInfo.InvariantCulture, out double south)
+                   && double.TryParse(westText,  NumberStyles.Any, CultureInfo.InvariantCulture, out double west)
+                   && double.TryParse(eastText,  NumberStyles.Any, CultureInfo.InvariantCulture, out double east)
+                ) {
+                    result ??= new();
+                    result.PositionWithin = new(
+                        new(north, west),
+                        new(south, east)
+                    );
+                }
+            }
+
+            return result;
         }
 
         private static void SetDefaultAircraftListSortBy(AircraftListJsonBuilderArgs args)

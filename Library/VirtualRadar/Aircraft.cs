@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.AircraftHistory;
 using VirtualRadar.Message;
 using VirtualRadar.StandingData;
 
@@ -22,6 +23,7 @@ namespace VirtualRadar
     public class Aircraft
     {
         private readonly object _SyncLock = new();
+        private readonly AircraftHistorySnapshot _StateChangeHistory;
 
         /// <summary>
         /// The unique identifier of the aircraft. For most feeds this will be the <see cref="Icao24"/> but
@@ -50,6 +52,11 @@ namespace VirtualRadar
                 FirstStamp = Stamp;
             }
         }
+
+        //
+        //                                  RECENT HISTORY
+        //
+        public AircraftHistorySnapshot StateChanges => _StateChangeHistory;
 
         //
         //                                  TRANSMITTED INFORMATION
@@ -189,6 +196,7 @@ namespace VirtualRadar
         public Aircraft(int id)
         {
             Id = id;
+            _StateChangeHistory = new(id);
         }
 
         /// <inheritdoc/>
@@ -214,6 +222,7 @@ namespace VirtualRadar
                     FirstMessageReceivedUtc =       FirstMessageReceivedUtc,
                     MostRecentMessageReceivedUtc =  MostRecentMessageReceivedUtc,
                 };
+                result._StateChangeHistory.CopyFrom(_StateChangeHistory);
 
                 // TRANSMITTED VALUES
                 AirPressureInHg             .CopyTo(result.AirPressureInHg);
@@ -296,58 +305,60 @@ namespace VirtualRadar
                     }
 
                     var stamp = PostOffice.GetStamp();
+                    var changeSet = new ChangeSet(stamp, MostRecentMessageReceivedUtc);
 
                     // TRANSMITTED VALUES
-                    changed = AltitudeType              .SetIfNotDefault(message.AltitudeType, stamp)              || changed;
-                    changed = Callsign                  .SetIfNotDefault(message.Callsign, stamp)                  || changed;
-                    changed = CallsignIsSuspect         .SetIfNotDefault(message.CallsignIsSuspect, stamp)         || changed;
-                    changed = GroundSpeedKnots          .SetIfNotDefault(message.GroundSpeedKnots, stamp)          || changed;
-                    changed = GroundSpeedType           .SetIfNotDefault(message.GroundSpeedType, stamp)           || changed;
-                    changed = GroundTrackDegrees        .SetIfNotDefault(message.GroundTrackDegrees, stamp)        || changed;
-                    changed = GroundTrackIsHeading      .SetIfNotDefault(message.GroundTrackIsHeading, stamp)      || changed;
-                    changed = Icao24                    .SetIfNotDefault(message.Icao24, stamp)                    || changed;
-                    changed = IdentActive               .SetIfNotDefault(message.IdentActive, stamp)               || changed;
-                    changed = IsTisb                    .SetIfNotDefault(message.IsTisb, stamp)                    || changed;
-                    changed = Location                  .SetIfNotDefault(message.Location, stamp)                  || changed;
-                    changed = OnGround                  .SetIfNotDefault(message.OnGround, stamp)                  || changed;
-                    changed = SignalLevel               .SetIfNotDefault(message.SignalLevel, stamp)               || changed;
-                    changed = SignalLevelSent           .SetIfNotDefault(message.SignalLevelSent, stamp)           || changed;
-                    changed = Squawk                    .SetIfNotDefault(message.Squawk, stamp)                    || changed;
-                    changed = TargetAltitudeFeet        .SetIfNotDefault(message.TargetAltitudeFeet, stamp)        || changed;
-                    changed = TargetHeadingDegrees      .SetIfNotDefault(message.TargetHeadingDegrees, stamp)      || changed;
-                    changed = VerticalRateType          .SetIfNotDefault(message.VerticalRateType, stamp)          || changed;
-                    changed = VerticalRateFeetPerMinute .SetIfNotDefault(message.VerticalRateFeetPerMinute, stamp) || changed;
+                    changeSet.SetIfNotDefault(AircraftHistoryField.AltitudeType,               AltitudeType,               message.AltitudeType);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Callsign,                   Callsign,                   message.Callsign);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.CallsignIsSuspect,          CallsignIsSuspect,          message.CallsignIsSuspect);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.GroundSpeedKnots,           GroundSpeedKnots,           message.GroundSpeedKnots);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.GroundSpeedType,            GroundSpeedType,            message.GroundSpeedType);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.GroundTrackDegrees,         GroundTrackDegrees,         message.GroundTrackDegrees);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.GroundTrackIsHeading,       GroundTrackIsHeading,       message.GroundTrackIsHeading);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Icao24,                     Icao24,                     message.Icao24);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.IdentActive,                IdentActive,                message.IdentActive);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.IsTisb,                     IsTisb,                     message.IsTisb);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Location,                   Location,                   message.Location);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.OnGround,                   OnGround,                   message.OnGround);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.SignalLevel,                SignalLevel,                message.SignalLevel);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.SignalLevelSent,            SignalLevelSent,            message.SignalLevelSent);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Squawk,                     Squawk,                     message.Squawk);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.TargetAltitudeFeet,         TargetAltitudeFeet,         message.TargetAltitudeFeet);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.TargetHeadingDegrees,       TargetHeadingDegrees,       message.TargetHeadingDegrees);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.VerticalRateType,           VerticalRateType,           message.VerticalRateType);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.VerticalRateFeetPerMinute,  VerticalRateFeetPerMinute,  message.VerticalRateFeetPerMinute);
 
                     if(message.TransponderType != null) {
                         if(TransponderType.Value?.IsSupercededBy(message.TransponderType.Value) ?? true) {
-                            changed = TransponderType.Set(message.TransponderType, stamp) || changed;
+                            changeSet.Set(AircraftHistoryField.TransponderType, TransponderType, message.TransponderType);
                         }
                     }
 
                     if(message.AltitudeFeet != null) {
                         switch(message.AltitudeType ?? VirtualRadar.AltitudeType.AirPressure) {
                             case VirtualRadar.AltitudeType.AirPressure:
-                                changed = AltitudePressureFeet.Set(message.AltitudeFeet, stamp) || changed;
+                                changeSet.Set(AircraftHistoryField.AltitudePressureFeet, AltitudePressureFeet, message.AltitudeFeet);
                                 break;
                             case VirtualRadar.AltitudeType.Radar:
-                                changed = AltitudeRadarFeet.Set(message.AltitudeFeet, stamp) || changed;
+                                changeSet.Set(AircraftHistoryField.AltitudeRadarFeet, AltitudeRadarFeet, message.AltitudeFeet);
                                 break;
                             default:
                                 throw new NotImplementedException();
                         }
-                        changed = CalculateAirPressures(stamp) || changed;
+                        CalculateAirPressures(changeSet);
                     }
 
                     if(Squawk.Stamp == stamp) {
-                        changed = SquawkIsEmergency.Set(
+                        changeSet.Set(AircraftHistoryField.SquawkIsEmergency, SquawkIsEmergency, 
                                Squawk.Value == 7500
                             || Squawk.Value == 7600
-                            || Squawk.Value == 7700,
-                            stamp
-                        ) || changed;
+                            || Squawk.Value == 7700
+                        );
                     }
 
+                    changed = changed || changeSet.Changed;
                     if(changed) {
+                        _StateChangeHistory.AddChangeSet(changeSet);
                         SetStamp(stamp);
                         CountMessagesReceived.Set(CountMessagesReceived + 1, stamp);
                     }
@@ -370,42 +381,46 @@ namespace VirtualRadar
             if(lookup?.Success ?? false) {
                 lock(_SyncLock) {
                     var stamp = PostOffice.GetStamp();
+                    var changeSet = new ChangeSet(stamp, MostRecentMessageReceivedUtc);
+
+                    changed = LookupAgeUtc.SetIfNotDefault(lookup.SourceAgeUtc, stamp) || changed;
 
                     // LOOKED-UP VALUES
-                    changed = AirPressureInHg       .SetIfNotDefault(lookup.AirPressureInHg, stamp)        || changed;
-                    changed = ConstructionNumber    .SetIfNotDefault(lookup.ConstructionNumber, stamp)     || changed;
-                    changed = Country               .SetIfNotDefault(lookup.Country, stamp)                || changed;
-                    changed = EnginePlacement       .SetIfNotDefault(lookup.EnginePlacement, stamp)        || changed;
-                    changed = EngineType            .SetIfNotDefault(lookup.EngineType, stamp)             || changed;
-                    changed = Icao24Country         .SetIfNotDefault(lookup.Icao24Country, stamp)          || changed;
-                    changed = IsCharterFlight       .SetIfNotDefault(lookup.IsCharterFlight, stamp)        || changed;
-                    changed = IsMilitary            .SetIfNotDefault(lookup.IsMilitary, stamp)             || changed;
-                    changed = IsPositioningFlight   .SetIfNotDefault(lookup.IsPositioningFlight, stamp)    || changed;
-                    changed = LookupAgeUtc          .SetIfNotDefault(lookup.SourceAgeUtc, stamp)           || changed;
-                    changed = Manufacturer          .SetIfNotDefault(lookup.Manufacturer, stamp)           || changed;
-                    changed = Model                 .SetIfNotDefault(lookup.Model, stamp)                  || changed;
-                    changed = ModelIcao             .SetIfNotDefault(lookup.ModelIcao, stamp)              || changed;
-                    changed = NumberOfEngines       .SetIfNotDefault(lookup.NumberOfEngines, stamp)        || changed;
-                    changed = Operator              .SetIfNotDefault(lookup.Operator, stamp)               || changed;
-                    changed = OperatorIcao          .SetIfNotDefault(lookup.OperatorIcao, stamp)           || changed;
-                    changed = AircraftPicture       .SetIfNotDefault(lookup.AircraftPicture, stamp)        || changed;
-                    changed = Registration          .SetIfNotDefault(lookup.Registration, stamp)           || changed;
-                    changed = Route                 .SetIfNotDefault(lookup.Route, stamp)                  || changed;
-                    changed = Serial                .SetIfNotDefault(lookup.Serial, stamp)                 || changed;
-                    changed = Species               .SetIfNotDefault(lookup.Species, stamp)                || changed;
-                    changed = UserNotes             .SetIfNotDefault(lookup.UserNotes, stamp)              || changed;
-                    changed = UserTag               .SetIfNotDefault(lookup.UserTag, stamp)                || changed;
-                    changed = WakeTurbulenceCategory.SetIfNotDefault(lookup.WakeTurbulenceCategory, stamp) || changed;
-                    changed = YearBuilt             .SetIfNotDefault(lookup.YearBuilt, stamp)              || changed;
+                    changeSet.SetIfNotDefault(AircraftHistoryField.AirPressureInHg,        AirPressureInHg,        lookup.AirPressureInHg);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.ConstructionNumber,     ConstructionNumber,     lookup.ConstructionNumber);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Country,                Country,                lookup.Country);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.EnginePlacement,        EnginePlacement,        lookup.EnginePlacement);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.EngineType,             EngineType,             lookup.EngineType);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Icao24Country,          Icao24Country,          lookup.Icao24Country);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.IsCharterFlight,        IsCharterFlight,        lookup.IsCharterFlight);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.IsMilitary,             IsMilitary,             lookup.IsMilitary);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.IsPositioningFlight,    IsPositioningFlight,    lookup.IsPositioningFlight);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Manufacturer,           Manufacturer,           lookup.Manufacturer);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Model,                  Model,                  lookup.Model);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.ModelIcao,              ModelIcao,              lookup.ModelIcao);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.NumberOfEngines,        NumberOfEngines,        lookup.NumberOfEngines);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Operator,               Operator,               lookup.Operator);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.OperatorIcao,           OperatorIcao,           lookup.OperatorIcao);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.AircraftPicture,        AircraftPicture,        lookup.AircraftPicture);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Registration,           Registration,           lookup.Registration);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Route,                  Route,                  lookup.Route);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Serial,                 Serial,                 lookup.Serial);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.Species,                Species,                lookup.Species);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.UserNotes,              UserNotes,              lookup.UserNotes);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.UserTag,                UserTag,                lookup.UserTag);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.WakeTurbulenceCategory, WakeTurbulenceCategory, lookup.WakeTurbulenceCategory);
+                    changeSet.SetIfNotDefault(AircraftHistoryField.YearBuilt,              YearBuilt,              lookup.YearBuilt);
 
                     if(lookup.AirPressureLookupAttempted ?? false) {
                         changed = AirPressureLookedUpUtc.Set(DateTime.UtcNow, stamp) || changed;
                     }
                     if(lookup.AirPressureInHg != null) {
-                        changed = CalculateAirPressures(stamp) || changed;
+                        CalculateAirPressures(changeSet);
                     }
 
+                    changed = changed || changeSet.Changed;
                     if(changed) {
+                        _StateChangeHistory.AddChangeSet(changeSet);
                         SetStamp(stamp);
                     }
                 }
@@ -414,35 +429,29 @@ namespace VirtualRadar
             return changed;
         }
 
-        private bool CalculateAirPressures(long stamp)
+        private void CalculateAirPressures(ChangeSet changeSet)
         {
-            var changed = false;
-
             switch(AltitudeType.Value ?? VirtualRadar.AltitudeType.AirPressure) {
                 case VirtualRadar.AltitudeType.AirPressure:
-                    changed = AltitudeRadarFeet.Set(
+                    changeSet.Set(AircraftHistoryField.AltitudeRadarFeet, AltitudeRadarFeet,
                         Convert.Altitude.PressureAltitudeToGeometricAltitude(
                             AltitudePressureFeet.Value,
                             AirPressureInHg.Value,
                             AirPressureUnit.InchesMercury
-                        ),
-                        stamp
+                        )
                     );
                     break;
                 case VirtualRadar.AltitudeType.Radar:
-                    changed = AltitudePressureFeet.Set(
+                    changeSet.Set(AircraftHistoryField.AltitudePressureFeet, AltitudePressureFeet,
                         Convert.Altitude.GeometricAltitudeToPressureAltitude(
                             AltitudeRadarFeet.Value,
                             AirPressureInHg.Value,
                             AirPressureUnit.InchesMercury,
                             roundTo25FeetIncrements: true
-                        ),
-                        stamp
+                        )
                     );
                     break;
             }
-
-            return changed;
         }
     }
 }

@@ -1,0 +1,99 @@
+﻿@page "/aircraft-state"
+@using Microsoft.Extensions.Options
+@using System.Runtime.InteropServices
+@using VirtualRadar.Configuration
+@using VirtualRadar.Receivers
+@inject VirtualRadar.Receivers.IReceiverFactory _ReceiverFactory
+
+<PageTitle>Aircraft State</PageTitle>
+
+<BSRow MarginTop="Margins.Small">
+    <BSCol Column="3">
+        <BSLabel>
+            Receiver:
+        </BSLabel>
+    </BSCol>
+    <BSCol>
+        <BSInput InputType="InputType.Select" @bind-Value="_ReceiverId">
+            @foreach(var receiver in _ReceiverFactory.Receivers.OrderBy(r => r.Name).ThenBy(r => r.Id)) {
+                <option value="@receiver.Id">@receiver.Name</option>
+            }
+        </BSInput>
+    </BSCol>
+</BSRow>
+
+<BSRow>
+    <BSCol Column="3">
+        <BSLabel>
+            Aircraft ID:
+        </BSLabel>
+    </BSCol>
+    <BSCol>
+        <BSInput InputType="InputType.Number" @bind-Value="_AircraftId"></BSInput>
+    </BSCol>
+</BSRow>
+
+<BSRow>
+    <BSCol Offset="3">
+        <BSButton @onclick="MessageHistory_Clicked">Update Message History</BSButton>
+    </BSCol>
+</BSRow>
+<BSTable>
+    <BSTHead>
+        <BSTR>
+            <BSTD>
+                Received
+            </BSTD>
+            <BSTD>
+                Field
+            </BSTD>
+            <BSTD>
+                New Value
+            </BSTD>
+        </BSTR>
+    </BSTHead>
+    <BSTBody>
+        @foreach(var messageHistory in _MessageHistory) {
+            <BSTR>
+                <BSTD>@messageHistory.Time?.ToString("HH:mm:ss.fff")</BSTD>
+                <BSTD>@messageHistory.Field</BSTD>
+                <BSTD>@messageHistory.NewValue</BSTD>
+            </BSTR>
+        }
+    </BSTBody>
+</BSTable>
+
+@code {
+    record MessageHistory(DateTime? Time, string Field, string NewValue);
+
+    private int _ReceiverId;
+    private int _AircraftId;
+    private List<MessageHistory> _MessageHistory = [];
+
+    private IReceiver _SelectedReceiver => _ReceiverFactory
+        .Receivers
+        .FirstOrDefault(receiver => receiver.Id == _ReceiverId);
+
+    private Aircraft _SelectedAircraft => _SelectedReceiver
+        ?.AircraftList
+        .FindAircraft(_AircraftId);
+
+    private void MessageHistory_Clicked()
+    {
+        _MessageHistory.Clear();
+
+        var aircraft = _SelectedAircraft;
+        if(aircraft != null) {
+            foreach(var changeSet in aircraft.StateChanges.ChangeSets) {
+                for(var idx = 0;idx < changeSet.ChangedValues.Count;++idx) {
+                    var changedValue = changeSet.ChangedValues[idx];
+                    _MessageHistory.Add(new(
+                        Time: idx == 0 ? changeSet.Utc : null,
+                        Field: changedValue.Field.ToString(),
+                        NewValue: changedValue.NewValueAsObject.ToString()
+                    ));
+                }
+            }
+        }
+    }
+}
