@@ -253,6 +253,9 @@ namespace VirtualRadar.WebSite
         {
             if(state.Args.TrailType != TrailType.None) {
                 var includesAltitude = state.Args.TrailType.IncludesAltitude();
+                var includesSpeed =    state.Args.TrailType.IncludesSpeed();
+                var usesFourElements = includesAltitude || includesSpeed;
+
                 var fromStamp = state.Args.ResendTrails
                     ? -1
                     : state.Args.PreviousDataVersion;
@@ -270,21 +273,25 @@ namespace VirtualRadar.WebSite
                 Location previousLocation = null;
                 float? previousHeading = null;
                 int? previousAltitude = null;
+                float? previousSpeed = null;
 
                 Location location = null;
                 float? heading = null;
                 int? altitude = null;
+                float? speed = null;
 
                 foreach(var changeSet in relevantHistory) {
                     location = changeSet.Location ?? location;
                     heading = changeSet.GroundTrackDegrees ?? heading;
                     altitude = changeSet.AltitudePressureFeet ?? altitude;
+                    speed = changeSet.GroundSpeedKnots ?? speed;
 
                     var canUse = location != null
                               && heading != null
                               && (
                                    heading != previousHeading
                                 || (includesAltitude && altitude != previousAltitude)
+                                || (includesSpeed && speed != previousSpeed)
                               )
                               && changeSet.Stamp > fromStamp;
 
@@ -294,30 +301,36 @@ namespace VirtualRadar.WebSite
                         aircraftJson.FullCoordinates.Add(heading.Value);
                         if(includesAltitude) {
                             aircraftJson.FullCoordinates.Add(altitude);
+                        } else if(includesSpeed) {
+                            aircraftJson.FullCoordinates.Add(speed);
                         }
 
                         previousLocation = location;
                         previousHeading = heading;
                         previousAltitude = altitude;
+                        previousSpeed = speed;
                     }
                 }
 
                 if(aircraftJson.FullCoordinates.Count > 0 && location != null && heading != null) {
-                    var lastLatitude =  includesAltitude ? aircraftJson.FullCoordinates[^4] : aircraftJson.FullCoordinates[^3];
-                    var lastLongitude = includesAltitude ? aircraftJson.FullCoordinates[^3] : aircraftJson.FullCoordinates[^2];
-                    var lastHeading =   includesAltitude ? aircraftJson.FullCoordinates[^2] : aircraftJson.FullCoordinates[^1];
-                    var lastOther =     includesAltitude ? aircraftJson.FullCoordinates[^1] : null;
+                    var lastLatitude =  usesFourElements ? aircraftJson.FullCoordinates[^4] : aircraftJson.FullCoordinates[^3];
+                    var lastLongitude = usesFourElements ? aircraftJson.FullCoordinates[^3] : aircraftJson.FullCoordinates[^2];
+                    var lastHeading =   usesFourElements ? aircraftJson.FullCoordinates[^2] : aircraftJson.FullCoordinates[^1];
+                    var lastOther =     usesFourElements ? aircraftJson.FullCoordinates[^1] : null;
 
                     if(   lastLatitude  != location.Latitude
                        || lastLongitude != location.Longitude
                        || lastHeading   != heading.Value
                        || (includesAltitude && lastOther != altitude)
+                       || (includesSpeed && lastOther != speed)
                     ) {
                         aircraftJson.FullCoordinates.Add(location.Latitude);
                         aircraftJson.FullCoordinates.Add(location.Longitude);
                         aircraftJson.FullCoordinates.Add(heading.Value);
                         if(includesAltitude) {
                             aircraftJson.FullCoordinates.Add(altitude);
+                        } else if(includesSpeed) {
+                            aircraftJson.FullCoordinates.Add(speed);
                         }
                     }
                 }

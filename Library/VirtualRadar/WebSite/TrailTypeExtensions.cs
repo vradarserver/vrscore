@@ -53,6 +53,8 @@ namespace VirtualRadar.WebSite
                 case TrailType.Full:            return "";
                 case TrailType.FullAltitude:
                 case TrailType.ShortAltitude:   return "a";
+                case TrailType.FullSpeed:
+                case TrailType.ShortSpeed:      return "s";
                 default:                        return null;
             }
         }
@@ -68,23 +70,10 @@ namespace VirtualRadar.WebSite
             AircraftHistoryField.AltitudePressureFeet,
         ];
 
-        private static readonly AircraftHistoryField[] _RadarAltitude = [
+        private static readonly AircraftHistoryField[] _FullPositionsAndSpeed = [
             AircraftHistoryField.Location,
-            AircraftHistoryField.AltitudeRadarFeet,
-        ];
-
-        private static readonly AircraftHistoryField[] _PressureAltitude = [
-            AircraftHistoryField.Location,
-            AircraftHistoryField.AltitudePressureFeet,
-        ];
-
-        private static readonly AircraftHistoryField[] _GroundSpeed = [
-            AircraftHistoryField.Location,
+            AircraftHistoryField.GroundTrackDegrees,
             AircraftHistoryField.GroundSpeedKnots,
-        ];
-
-        private static readonly AircraftHistoryField[] _Location = [
-            AircraftHistoryField.Location,
         ];
 
         public static AircraftHistoryField[] ToAircraftHistoryFields(this TrailType trailType, bool useRadarAltitude)
@@ -92,15 +81,8 @@ namespace VirtualRadar.WebSite
             switch(trailType) {
                 case TrailType.Full:            return _FullPositions;
                 case TrailType.FullAltitude:    return _FullPositionsAndAltitude;
-                case TrailType.Short:
-                    return _Location;
-                case TrailType.ShortAltitude:
-                    return useRadarAltitude ? _RadarAltitude : _PressureAltitude;
-                case TrailType.FullSpeed:
-                case TrailType.ShortSpeed:
-                    return _GroundSpeed;
-                default:
-                    return [];
+                case TrailType.FullSpeed:       return _FullPositionsAndSpeed;
+                default:                        return [];
             }
         }
     }
