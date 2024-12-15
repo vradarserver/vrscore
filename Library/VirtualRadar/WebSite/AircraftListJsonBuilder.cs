@@ -252,6 +252,7 @@ namespace VirtualRadar.WebSite
         private void AddTrails(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
         {
             if(state.Args.TrailType != TrailType.None) {
+                var includesAltitude = state.Args.TrailType.IncludesAltitude();
                 var fromStamp = state.Args.ResendTrails
                     ? -1
                     : state.Args.PreviousDataVersion;
@@ -268,30 +269,56 @@ namespace VirtualRadar.WebSite
 
                 Location previousLocation = null;
                 float? previousHeading = null;
+                int? previousAltitude = null;
+
                 Location location = null;
                 float? heading = null;
+                int? altitude = null;
+
                 foreach(var changeSet in relevantHistory) {
                     location = changeSet.Location ?? location;
                     heading = changeSet.GroundTrackDegrees ?? heading;
+                    altitude = changeSet.AltitudePressureFeet ?? altitude;
 
-                    if(location != null && heading != null && heading != previousHeading && changeSet.Stamp > fromStamp) {
+                    var canUse = location != null
+                              && heading != null
+                              && (
+                                   heading != previousHeading
+                                || (includesAltitude && altitude != previousAltitude)
+                              )
+                              && changeSet.Stamp > fromStamp;
+
+                    if(canUse) {
                         aircraftJson.FullCoordinates.Add(location.Latitude);
                         aircraftJson.FullCoordinates.Add(location.Longitude);
                         aircraftJson.FullCoordinates.Add(heading.Value);
+                        if(includesAltitude) {
+                            aircraftJson.FullCoordinates.Add(altitude);
+                        }
 
                         previousLocation = location;
                         previousHeading = heading;
+                        previousAltitude = altitude;
                     }
                 }
 
                 if(aircraftJson.FullCoordinates.Count > 0 && location != null && heading != null) {
-                    if(   aircraftJson.FullCoordinates[^3] != location.Latitude
-                       || aircraftJson.FullCoordinates[^2] != location.Longitude
-                       || aircraftJson.FullCoordinates[^1] != heading.Value
+                    var lastLatitude =  includesAltitude ? aircraftJson.FullCoordinates[^4] : aircraftJson.FullCoordinates[^3];
+                    var lastLongitude = includesAltitude ? aircraftJson.FullCoordinates[^3] : aircraftJson.FullCoordinates[^2];
+                    var lastHeading =   includesAltitude ? aircraftJson.FullCoordinates[^2] : aircraftJson.FullCoordinates[^1];
+                    var lastOther =     includesAltitude ? aircraftJson.FullCoordinates[^1] : null;
+
+                    if(   lastLatitude  != location.Latitude
+                       || lastLongitude != location.Longitude
+                       || lastHeading   != heading.Value
+                       || (includesAltitude && lastOther != altitude)
                     ) {
                         aircraftJson.FullCoordinates.Add(location.Latitude);
                         aircraftJson.FullCoordinates.Add(location.Longitude);
                         aircraftJson.FullCoordinates.Add(heading.Value);
+                        if(includesAltitude) {
+                            aircraftJson.FullCoordinates.Add(altitude);
+                        }
                     }
                 }
             }

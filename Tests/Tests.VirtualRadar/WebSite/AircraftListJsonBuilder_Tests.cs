@@ -1490,5 +1490,62 @@ namespace Tests.VirtualRadar.WebSite
             Assert.AreEqual(15, actual[idx++]);
             Assert.AreEqual(90, actual[idx++]);
         }
+
+        [TestMethod]
+        public void Build_Trails_Can_Send_Altitudes_In_Full_Trail()
+        {
+            _Args.TrailType = TrailType.FullAltitude;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+                m.AltitudeFeet = 1000;
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.FullCoordinates;
+
+            Assert.AreEqual("a", aircraftJson.TrailType);
+            Assert.IsNull(aircraftJson.ShortCoordinates);
+            Assert.AreEqual(4, actual.Count);
+            Assert.AreEqual(10, actual[0]);
+            Assert.AreEqual(11, actual[1]);
+            Assert.AreEqual(90, actual[2]);
+            Assert.AreEqual(1000, actual[3]);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Shows_Changes_In_Altitude_Even_If_Heading_Is_Unchanged_In_Full_Trail()
+        {
+            _Args.TrailType = TrailType.FullAltitude;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+                m.AltitudeFeet = 1000;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13), altitude: 1025);
+            AddTrailData(aircraft, stamp: 4, new(14, 15));
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(12, actual.Count);
+            var idx = 0;
+
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+            Assert.AreEqual(1000, actual[idx++]);
+
+            Assert.AreEqual(12, actual[idx++]);
+            Assert.AreEqual(13, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+            Assert.AreEqual(1025, actual[idx++]);
+
+            Assert.AreEqual(14, actual[idx++]);
+            Assert.AreEqual(15, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+            Assert.AreEqual(1025, actual[idx++]);
+        }
     }
 }

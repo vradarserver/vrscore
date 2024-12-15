@@ -43,17 +43,29 @@ namespace VirtualRadar.WebSite
             return false;
         }
 
+        public static bool IncludesAltitude(this TrailType trailType) => trailType == TrailType.FullAltitude || trailType == TrailType.ShortAltitude;
+
+        public static bool IncludesSpeed(this TrailType trailType) => trailType == TrailType.FullSpeed || trailType == TrailType.ShortSpeed;
+
         public static string ToAircraftListTrailType(this TrailType trailType)
         {
             switch(trailType) {
-                case TrailType.Full:        return "";
-                default:                    return null;
+                case TrailType.Full:            return "";
+                case TrailType.FullAltitude:
+                case TrailType.ShortAltitude:   return "a";
+                default:                        return null;
             }
         }
 
         private static readonly AircraftHistoryField[] _FullPositions = [
             AircraftHistoryField.Location,
             AircraftHistoryField.GroundTrackDegrees,
+        ];
+
+        private static readonly AircraftHistoryField[] _FullPositionsAndAltitude = [
+            AircraftHistoryField.Location,
+            AircraftHistoryField.GroundTrackDegrees,
+            AircraftHistoryField.AltitudePressureFeet,
         ];
 
         private static readonly AircraftHistoryField[] _RadarAltitude = [
@@ -79,9 +91,9 @@ namespace VirtualRadar.WebSite
         {
             switch(trailType) {
                 case TrailType.Full:            return _FullPositions;
+                case TrailType.FullAltitude:    return _FullPositionsAndAltitude;
                 case TrailType.Short:
                     return _Location;
-                case TrailType.FullAltitude:
                 case TrailType.ShortAltitude:
                     return useRadarAltitude ? _RadarAltitude : _PressureAltitude;
                 case TrailType.FullSpeed:
