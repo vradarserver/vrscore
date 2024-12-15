@@ -252,8 +252,12 @@ namespace VirtualRadar.WebSite
         private void AddTrails(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
         {
             if(state.Args.TrailType != TrailType.None) {
+                var fromStamp = state.Args.ResendTrails
+                    ? -1
+                    : state.Args.PreviousDataVersion;
+                aircraftJson.ResetTrail = state.Args.ResendTrails;
                 var relevantHistory = aircraft.StateChanges.GetChangeSetsFromAndFor(
-                    -1,
+                    fromStamp,
                     state.Args.TrailType.ToAircraftHistoryFields(useRadarAltitude: false)
                 );
 
@@ -270,7 +274,7 @@ namespace VirtualRadar.WebSite
                     location = changeSet.Location ?? location;
                     heading = changeSet.GroundTrackDegrees ?? heading;
 
-                    if(location != null && heading != null && heading != previousHeading) {
+                    if(location != null && heading != null && heading != previousHeading && changeSet.Stamp > fromStamp) {
                         aircraftJson.FullCoordinates.Add(location.Latitude);
                         aircraftJson.FullCoordinates.Add(location.Longitude);
                         aircraftJson.FullCoordinates.Add(heading.Value);

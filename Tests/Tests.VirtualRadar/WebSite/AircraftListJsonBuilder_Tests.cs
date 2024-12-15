@@ -1436,5 +1436,59 @@ namespace Tests.VirtualRadar.WebSite
             Assert.AreEqual(17, actual[idx++]);
             Assert.AreEqual(90, actual[idx++]);
         }
+
+        [TestMethod]
+        public void Build_Trails_Does_Not_Resend_Coordinates_In_Full_Trail()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13));
+            AddTrailData(aircraft, stamp: 4, new(14, 15));
+            AddTrailData(aircraft, stamp: 5, new(16, 17));
+            _Args.PreviousDataVersion = 4;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(3, actual.Count);
+            Assert.AreEqual(false, json.Aircraft[0].ResetTrail);
+            var idx = 0;
+
+            Assert.AreEqual(16, actual[idx++]);
+            Assert.AreEqual(17, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+        }
+
+        [TestMethod]
+        public void Build_Trails_Will_Resend_Coordinates_In_Full_Trail_If_Requested()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13));
+            AddTrailData(aircraft, stamp: 4, new(14, 15));
+            _Args.PreviousDataVersion = 3;
+            _Args.ResendTrails = true;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(6, actual.Count);
+            Assert.AreEqual(true, json.Aircraft[0].ResetTrail);
+            var idx = 0;
+
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+
+            Assert.AreEqual(14, actual[idx++]);
+            Assert.AreEqual(15, actual[idx++]);
+            Assert.AreEqual(90, actual[idx++]);
+        }
     }
 }
