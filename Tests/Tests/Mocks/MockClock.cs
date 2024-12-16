@@ -17,7 +17,5 @@ namespace Tests.Mocks
         public DateTime UtcNow => Now.UtcDateTime;
 
         public DateTimeOffset Now { get; set; } = DateTimeOffset.Now;
-
-        public long UtcNowUnixMilliseconds => (long)(UtcNow - VirtualRadar.Convert.Time.UnixEpocUtc).TotalMilliseconds;
     }
 }

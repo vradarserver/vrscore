@@ -23,7 +23,7 @@ namespace VirtualRadar.Convert
         /// <summary>
         /// The start of the Unix epoc at UTC.
         /// </summary>
-        public static readonly DateTime UnixEpocUtc = new(
+        public static readonly DateTime UnixEpochUtc = new(
             1970, 1, 1, 0, 0, 0, DateTimeKind.Utc
         );
     }

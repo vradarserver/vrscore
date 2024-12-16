@@ -12,7 +12,7 @@ using Moq;
 using Tests.Mocks;
 using VirtualRadar;
 using VirtualRadar.Configuration;
-using VirtualRadar.Convert;
+using VirtualRadar.Extensions;
 using VirtualRadar.Message;
 using VirtualRadar.Receivers;
 using VirtualRadar.StandingData;
@@ -23,6 +23,7 @@ namespace Tests.VirtualRadar.WebSite
     [TestClass]
     public class AircraftListJsonBuilder_Tests
     {
+        private static readonly DateTime _StartUtc = new DateTime(2024, 12, 16, 17, 20, 21, 123);
         private AircraftListJsonBuilder _Builder;
         private AircraftListJsonBuilderArgs _Args;
         private AircraftListJsonBuilderFilter _Filter;
@@ -75,7 +76,9 @@ namespace Tests.VirtualRadar.WebSite
             _WebClientSettings = new(new());
 
             _FileSystem = new();
-            _Clock = new();
+            _Clock = new() {
+                Now = _StartUtc
+            };
             _PostOffice = new();
 
             _Builder = new(
@@ -118,9 +121,14 @@ namespace Tests.VirtualRadar.WebSite
             int? id = null,
             long? stamp = null,
             Action<TransponderMessage> fillMessage = null,
-            LookupOutcome lookup = null
+            LookupOutcome lookup = null,
+            int addMilliseconds = 0
         )
         {
+            if(addMilliseconds != 0) {
+                _Clock.Now = _Clock.Now.AddMilliseconds(addMilliseconds);
+            }
+
             if(aircraft == null) {
                 id ??= _AllAircraft.DefaultIfEmpty().Max(aircraft => aircraft?.Id ?? 0) + 1;
                 aircraft = new(id.Value, _Clock, _PostOffice);
@@ -155,9 +163,13 @@ namespace Tests.VirtualRadar.WebSite
             Location location,
             float? heading = null,
             int? altitude = null,
-            float? speed = null
+            float? speed = null,
+            int addMilliseconds = 0
         )
         {
+            if(addMilliseconds != 0) {
+                _Clock.Now = _Clock.Now.AddMilliseconds(addMilliseconds);
+            }
             var message = new TransponderMessage(aircraft.Id) {
                 Location = location,
                 AltitudeFeet = altitude,
@@ -294,7 +306,7 @@ namespace Tests.VirtualRadar.WebSite
 
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
-            Assert.AreEqual(_Clock.UtcNowUnixMilliseconds, json.ServerTime);
+            Assert.AreEqual(_Clock.UtcNow.ToUnixMilliseconds(), json.ServerTime);
         }
 
         [TestMethod]
@@ -1053,7 +1065,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             if(hasChanged) {
-                Assert.AreEqual(_Clock.UtcNowUnixMilliseconds, json.Aircraft[0].PositionTime ?? 0L);
+                Assert.AreEqual(_Clock.UtcNow.ToUnixMilliseconds(), json.Aircraft[0].PositionTime ?? 0L);
             } else {
                 Assert.IsNull(json.Aircraft[0].PositionTime);
             }
@@ -1635,6 +1647,97 @@ namespace Tests.VirtualRadar.WebSite
             Assert.AreEqual(15, actual[idx++]);
             Assert.AreEqual(90, actual[idx++]);
             Assert.AreEqual(210, actual[idx++]);
+        }
+
+        [TestMethod]
+        public void Build_Short_Trail_Returns_Positions_And_Times()
+        {
+            _Args.TrailType = TrailType.Short;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.ShortCoordinates;
+
+            Assert.AreEqual("", aircraftJson.TrailType);
+            Assert.IsNull(aircraftJson.FullCoordinates);
+            Assert.AreEqual(3, actual.Count);
+
+            var idx = 0;
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(_StartUtc.ToUnixMilliseconds(), actual[idx++]);
+        }
+
+        [TestMethod]
+        [DataRow(8000, true)]
+        [DataRow(8001, false)]
+        public void Build_Short_Trail_Does_Not_Show_Positions_Older_Than_N_Seconds(int milliseconds, bool expectCoordinate)
+        {
+            _AircraftMapSettings.Value = new(ShortTrailLengthSeconds: 8);
+            _Args.TrailType = TrailType.Short;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+            });
+
+            _Clock.Now = _Clock.Now.AddMilliseconds(milliseconds);
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual(expectCoordinate ? 3 : 0, json.Aircraft[0].ShortCoordinates.Count);
+        }
+
+        [TestMethod]
+        public void Build_Short_Trail_Does_Not_Show_Positions_That_Have_Already_Been_Sent()
+        {
+            _Args.TrailType = TrailType.Short;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => m.Location = new(10, 11));
+            AddTrailData(aircraft, stamp:3, new(12, 13), addMilliseconds: 1000);
+            AddTrailData(aircraft, stamp:4, new(14, 15), addMilliseconds: 1000);
+            _Args.PreviousDataVersion = 3;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.ShortCoordinates;
+
+            Assert.IsFalse(aircraftJson.ResetTrail);
+            var idx = 0;
+            Assert.AreEqual(3, actual.Count);
+            Assert.AreEqual(14, actual[idx++]);
+            Assert.AreEqual(15, actual[idx++]);
+            Assert.AreEqual(_Clock.UtcNow.ToUnixMilliseconds(), actual[idx++]);
+        }
+
+        [TestMethod]
+        public void Build_Short_Trail_Sends_All_Positions_If_Required()
+        {
+            _Args.TrailType = TrailType.Short;
+            _Args.ResendTrails = true;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => m.Location = new(10, 11));
+            AddTrailData(aircraft, stamp:3, new(12, 13), addMilliseconds: 1000);
+            AddTrailData(aircraft, stamp:4, new(14, 15), addMilliseconds: 1000);
+            _Args.PreviousDataVersion = 3;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.ShortCoordinates;
+
+            Assert.IsTrue(aircraftJson.ResetTrail);
+            Assert.AreEqual(9, actual.Count);
+            var idx = 0;
+
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(_StartUtc.ToUnixMilliseconds(), actual[idx++]);
+
+            Assert.AreEqual(12, actual[idx++]);
+            Assert.AreEqual(13, actual[idx++]);
+            Assert.AreEqual(_StartUtc.AddMilliseconds(1000).ToUnixMilliseconds(), actual[idx++]);
+
+            Assert.AreEqual(14, actual[idx++]);
+            Assert.AreEqual(15, actual[idx++]);
+            Assert.AreEqual(_Clock.UtcNow.ToUnixMilliseconds(), actual[idx++]);
         }
     }
 }

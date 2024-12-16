@@ -14,6 +14,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Content Remove="wwwroot\v3\typings\translations.tt" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="wwwroot\v3\typings\translations.tt" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
         <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
@@ -29,12 +36,6 @@
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.Vatsim\VirtualRadar.Feed.Vatsim.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Update="wwwroot\v3\typings\translations.tt">
-        <Generator>TextTemplatingFileGenerator</Generator>
-      </Content>
     </ItemGroup>
 
 </Project>

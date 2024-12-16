@@ -18,8 +18,5 @@ namespace VirtualRadar.Services
 
         /// <inheritdoc/>
         public DateTimeOffset Now => DateTimeOffset.Now;
-
-        /// <inheritdoc/>
-        public long UtcNowUnixMilliseconds => (long)(UtcNow - Convert.Time.UnixEpocUtc).TotalMilliseconds;
     }
 }

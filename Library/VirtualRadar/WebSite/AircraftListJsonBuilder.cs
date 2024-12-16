@@ -10,6 +10,7 @@
 
 using VirtualRadar.Configuration;
 using VirtualRadar.Convert;
+using VirtualRadar.Extensions;
 using VirtualRadar.Receivers;
 using VirtualRadar.StandingData;
 using VirtualRadar.WebSite.Models;
@@ -86,7 +87,7 @@ namespace VirtualRadar.WebSite
             state.Json.Source =                     1; // <-- for backwards compatability, we don't have the concept of fake and/or flight sim aircraft lists in VRS Core
             state.Json.SourceFeedId =               args.ReceiverId;
             state.Json.LastDataVersion =            receiver?.AircraftList.Stamp.ToString();
-            state.Json.ServerTime =                 _Clock.UtcNowUnixMilliseconds;
+            state.Json.ServerTime =                 _Clock.UtcNow.ToUnixMilliseconds();
 
             AddAircraft(state);
             AddFeeds(state);
@@ -173,7 +174,7 @@ namespace VirtualRadar.WebSite
                         aircraftJson.Longitude =    aircraft.Location.Value?.Longitude;
                         aircraftJson.PositionTime = aircraft.LocationReceivedUtc.Value == null
                                                         ? (long?)null
-                                                        : (long)(aircraft.LocationReceivedUtc.Value.Value - Time.UnixEpocUtc).TotalMilliseconds;
+                                                        : (long)(aircraft.LocationReceivedUtc.Value.Value - Time.UnixEpochUtc).TotalMilliseconds;
                     }
                     AddPicture(state, aircraftJson, aircraft);
                     AddRoute(state, aircraftJson, aircraft.Route);
@@ -255,87 +256,128 @@ namespace VirtualRadar.WebSite
         private void AddTrails(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
         {
             if(state.Args.TrailType != TrailType.None) {
-                var includesAltitude = state.Args.TrailType.IncludesAltitude();
-                var includesSpeed =    state.Args.TrailType.IncludesSpeed();
-                var usesFourElements = includesAltitude || includesSpeed;
-
-                var fromStamp = state.Args.ResendTrails
-                    ? -1
-                    : state.Args.PreviousDataVersion;
                 aircraftJson.ResetTrail = state.Args.ResendTrails;
-                var relevantHistory = aircraft.StateChanges.GetChangeSetsFromAndFor(
-                    fromStamp,
-                    state.Args.TrailType.ToAircraftHistoryFields(useRadarAltitude: false)
-                );
-
-                if(aircraftJson.FullCoordinates == null) {
-                    aircraftJson.TrailType = state.Args.TrailType.ToAircraftListTrailType();
-                    aircraftJson.FullCoordinates = [];
+                if(state.Args.TrailType.IsFullTrail()) {
+                    PopulateFullTrail(state, aircraftJson, aircraft);
+                } else if(state.Args.TrailType.IsShortTrail()) {
+                    PopulateShortTrail(state, aircraftJson, aircraft);
                 }
+            }
+        }
 
-                Location previousLocation = null;
-                float? previousHeading = null;
-                int? previousAltitude = null;
-                float? previousSpeed = null;
+        private void PopulateFullTrail(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
+        {
+            var includesAltitude = state.Args.TrailType.IncludesAltitude();
+            var includesSpeed =    state.Args.TrailType.IncludesSpeed();
+            var usesFourElements = includesAltitude || includesSpeed;
 
-                Location location = null;
-                float? heading = null;
-                int? altitude = null;
-                float? speed = null;
+            var fromStamp = state.Args.ResendTrails
+                ? -1
+                : state.Args.PreviousDataVersion;
+            var relevantHistory = aircraft.StateChanges.GetChangeSetsFromAndFor(
+                fromStamp,
+                state.Args.TrailType.ToAircraftHistoryFields(useRadarAltitude: false)
+            );
 
-                foreach(var changeSet in relevantHistory) {
-                    location = changeSet.Location ?? location;
-                    heading = changeSet.GroundTrackDegrees ?? heading;
-                    altitude = changeSet.AltitudePressureFeet ?? altitude;
-                    speed = changeSet.GroundSpeedKnots ?? speed;
+            if(aircraftJson.FullCoordinates == null) {
+                aircraftJson.TrailType = state.Args.TrailType.ToAircraftListTrailType();
+                aircraftJson.FullCoordinates = [];
+            }
 
-                    var canUse = location != null
-                              && heading != null
-                              && (
-                                   heading != previousHeading
-                                || (includesAltitude && altitude != previousAltitude)
-                                || (includesSpeed && speed != previousSpeed)
-                              )
-                              && changeSet.Stamp > fromStamp;
+            Location previousLocation = null;
+            float? previousHeading = null;
+            int? previousAltitude = null;
+            float? previousSpeed = null;
 
-                    if(canUse) {
-                        aircraftJson.FullCoordinates.Add(location.Latitude);
-                        aircraftJson.FullCoordinates.Add(location.Longitude);
-                        aircraftJson.FullCoordinates.Add(heading.Value);
-                        if(includesAltitude) {
-                            aircraftJson.FullCoordinates.Add(altitude);
-                        } else if(includesSpeed) {
-                            aircraftJson.FullCoordinates.Add(speed);
-                        }
+            Location location = null;
+            float? heading = null;
+            int? altitude = null;
+            float? speed = null;
 
-                        previousLocation = location;
-                        previousHeading = heading;
-                        previousAltitude = altitude;
-                        previousSpeed = speed;
+            foreach(var changeSet in relevantHistory) {
+                location = changeSet.Location ?? location;
+                heading = changeSet.GroundTrackDegrees ?? heading;
+                altitude = changeSet.AltitudePressureFeet ?? altitude;
+                speed = changeSet.GroundSpeedKnots ?? speed;
+
+                var canUse = location != null
+                            && heading != null
+                            && (
+                                heading != previousHeading
+                            || (includesAltitude && altitude != previousAltitude)
+                            || (includesSpeed && speed != previousSpeed)
+                            )
+                            && changeSet.Stamp > fromStamp;
+
+                if(canUse) {
+                    aircraftJson.FullCoordinates.Add(location.Latitude);
+                    aircraftJson.FullCoordinates.Add(location.Longitude);
+                    aircraftJson.FullCoordinates.Add(heading.Value);
+                    if(includesAltitude) {
+                        aircraftJson.FullCoordinates.Add(altitude);
+                    } else if(includesSpeed) {
+                        aircraftJson.FullCoordinates.Add(speed);
+                    }
+
+                    previousLocation = location;
+                    previousHeading = heading;
+                    previousAltitude = altitude;
+                    previousSpeed = speed;
+                }
+            }
+
+            if(aircraftJson.FullCoordinates.Count > 0 && location != null && heading != null) {
+                var lastLatitude =  usesFourElements ? aircraftJson.FullCoordinates[^4] : aircraftJson.FullCoordinates[^3];
+                var lastLongitude = usesFourElements ? aircraftJson.FullCoordinates[^3] : aircraftJson.FullCoordinates[^2];
+                var lastHeading =   usesFourElements ? aircraftJson.FullCoordinates[^2] : aircraftJson.FullCoordinates[^1];
+                var lastOther =     usesFourElements ? aircraftJson.FullCoordinates[^1] : null;
+
+                if(   lastLatitude  != location.Latitude
+                    || lastLongitude != location.Longitude
+                    || lastHeading   != heading.Value
+                    || (includesAltitude && lastOther != altitude)
+                    || (includesSpeed && lastOther != speed)
+                ) {
+                    aircraftJson.FullCoordinates.Add(location.Latitude);
+                    aircraftJson.FullCoordinates.Add(location.Longitude);
+                    aircraftJson.FullCoordinates.Add(heading.Value);
+                    if(includesAltitude) {
+                        aircraftJson.FullCoordinates.Add(altitude);
+                    } else if(includesSpeed) {
+                        aircraftJson.FullCoordinates.Add(speed);
                     }
                 }
+            }
+        }
 
-                if(aircraftJson.FullCoordinates.Count > 0 && location != null && heading != null) {
-                    var lastLatitude =  usesFourElements ? aircraftJson.FullCoordinates[^4] : aircraftJson.FullCoordinates[^3];
-                    var lastLongitude = usesFourElements ? aircraftJson.FullCoordinates[^3] : aircraftJson.FullCoordinates[^2];
-                    var lastHeading =   usesFourElements ? aircraftJson.FullCoordinates[^2] : aircraftJson.FullCoordinates[^1];
-                    var lastOther =     usesFourElements ? aircraftJson.FullCoordinates[^1] : null;
+        private void PopulateShortTrail(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
+        {
+            var browserLastStamp = state.Args.ResendTrails
+                ? -1L
+                : state.Args.PreviousDataVersion;
+            var relevantHistory = aircraft.StateChanges.GetChangeSetsFromAndFor(
+                state.ShortTrailStart,
+                state.Args.TrailType.ToAircraftHistoryFields(useRadarAltitude: false)
+            );
 
-                    if(   lastLatitude  != location.Latitude
-                       || lastLongitude != location.Longitude
-                       || lastHeading   != heading.Value
-                       || (includesAltitude && lastOther != altitude)
-                       || (includesSpeed && lastOther != speed)
-                    ) {
-                        aircraftJson.FullCoordinates.Add(location.Latitude);
-                        aircraftJson.FullCoordinates.Add(location.Longitude);
-                        aircraftJson.FullCoordinates.Add(heading.Value);
-                        if(includesAltitude) {
-                            aircraftJson.FullCoordinates.Add(altitude);
-                        } else if(includesSpeed) {
-                            aircraftJson.FullCoordinates.Add(speed);
-                        }
-                    }
+            if(aircraftJson.ShortCoordinates == null) {
+                aircraftJson.TrailType = state.Args.TrailType.ToAircraftListTrailType();
+                aircraftJson.ShortCoordinates = [];
+            }
+
+            Location location = null;
+
+            foreach(var changeSet in relevantHistory) {
+                location = changeSet.Location ?? location;
+
+                var canUse =  location != null
+                           && changeSet.Stamp > browserLastStamp
+                           && changeSet.Utc >= state.ShortTrailStart;
+
+                if(canUse) {
+                    aircraftJson.ShortCoordinates.Add(location.Latitude);
+                    aircraftJson.ShortCoordinates.Add(location.Longitude);
+                    aircraftJson.ShortCoordinates.Add(changeSet.Utc.ToUnixMilliseconds());
                 }
             }
         }
