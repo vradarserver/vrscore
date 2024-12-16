@@ -18,8 +18,8 @@ namespace VirtualRadar.Feed.BaseStation
         {
             services.AddSingleton<FormatConfig, FormatConfig>();
 
-            services.AddScoped<BaseStationMessageParser,    BaseStationMessageParser>();
-            services.AddScoped<BaseStationMessageConverter, BaseStationMessageConverter>();
+            services.AddSingleton<BaseStationMessageParser,    BaseStationMessageParser>();
+            services.AddSingleton<BaseStationMessageConverter, BaseStationMessageConverter>();
 
             VirtualRadar.Configuration.ConfigurationConfig.RegisterAssembly(services);
             VirtualRadar.Feed.FeedDecoderConfig.RegisterAssembly();
