@@ -17,7 +17,6 @@ namespace VirtualRadar.Feed.BaseStation
         public static IServiceCollection AddVirtualRadarBaseStationFeedGroup(this IServiceCollection services)
         {
             services.AddSingleton<FormatConfig, FormatConfig>();
-
             services.AddSingleton<BaseStationMessageParser,    BaseStationMessageParser>();
             services.AddSingleton<BaseStationMessageConverter, BaseStationMessageConverter>();
 
