@@ -1322,7 +1322,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Sends_Nothing_When_No_Trails_Requested()
+        public void Build_All_Trails_Sends_Nothing_When_No_Trails_Requested()
         {
             _Args.TrailType = TrailType.None;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1339,7 +1339,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Sends_Simple_Full_Trail()
+        public void Build_Full_Trail_Sends_Simple_Set()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1360,7 +1360,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Sends_Start_And_End_Of_Full_Trail()
+        public void Build_Full_Trail_Sends_Start_And_End()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1385,7 +1385,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Ignores_Changes_Of_Location_Without_Change_Of_Heading_In_Full_Trail()
+        public void Build_Full_Trail_Ignores_Changes_Of_Location_Without_Change_Of_Heading()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1411,7 +1411,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Always_Sends_At_Least_First_And_Last_Point_In_Full_Trail()
+        public void Build_Full_Trail_Always_Sends_At_Least_First_And_Last_Point()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1438,7 +1438,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Does_Not_Resend_Coordinates_In_Full_Trail()
+        public void Build_Full_Trail_Does_Not_Resend_Coordinates()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1463,7 +1463,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Does_Not_Send_New_Coordinate_In_Full_Trail_If_It_Is_Unchanged()
+        public void Build_Full_Trail_Does_Not_Send_New_Coordinate_If_It_Is_Unchanged()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1481,7 +1481,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Will_Resend_Coordinates_In_Full_Trail_If_Requested()
+        public void Build_Full_Trails_Will_Resend_Coordinates_If_Requested()
         {
             _Args.TrailType = TrailType.Full;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1510,7 +1510,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Can_Send_Altitudes_In_Full_Trail()
+        public void Build_Full_Trail_Can_Send_Altitudes()
         {
             _Args.TrailType = TrailType.FullAltitude;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1533,7 +1533,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Can_Send_Speeds_In_Full_Trail()
+        public void Build_Full_Trail_Can_Send_Speeds()
         {
             _Args.TrailType = TrailType.FullSpeed;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1556,7 +1556,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Shows_Changes_In_Altitude_Even_If_Heading_Is_Unchanged_In_Full_Trail()
+        public void Build_Full_Trail_Shows_Changes_In_Altitude_Even_If_Heading_Is_Unchanged()
         {
             _Args.TrailType = TrailType.FullAltitude;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
@@ -1590,7 +1590,7 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        public void Build_Trails_Shows_Changes_In_Speed_Even_If_Heading_Is_Unchanged_In_Full_Trail()
+        public void Build_Full_Trail_Shows_Changes_In_Speed_Even_If_Heading_Is_Unchanged()
         {
             _Args.TrailType = TrailType.FullSpeed;
             var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
