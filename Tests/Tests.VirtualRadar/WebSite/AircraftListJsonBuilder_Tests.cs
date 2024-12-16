@@ -1463,6 +1463,24 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
+        public void Build_Trails_Does_Not_Send_New_Coordinate_In_Full_Trail_If_It_Is_Unchanged()
+        {
+            _Args.TrailType = TrailType.Full;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundTrackDegrees = 90;
+            });
+            AddTrailData(aircraft, stamp: 3, new(12, 13));
+            AddTrailData(aircraft, stamp: 4, new(12, 13));
+            _Args.PreviousDataVersion = 3;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].FullCoordinates;
+
+            Assert.AreEqual(0, actual.Count);
+        }
+
+        [TestMethod]
         public void Build_Trails_Will_Resend_Coordinates_In_Full_Trail_If_Requested()
         {
             _Args.TrailType = TrailType.Full;
