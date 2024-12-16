@@ -1,4 +1,4 @@
-﻿// Copyright © 2013 onwards, Andrew Whewell
+﻿// Copyright © 2012 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,18 +8,36 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Services
+using System.IO;
+using Newtonsoft.Json;
+
+namespace VirtualRadar
 {
-    /// <inheritdoc/>
-    class Clock : IClock
+    /// <summary>
+    /// Serialises an object as JSON.
+    /// </summary>
+    public class JsonSerialiser
     {
-        /// <inheritdoc/>
-        public DateTime UtcNow => DateTime.UtcNow;
+        private static readonly Encoding _UTF8NoBOM = new UTF8Encoding(false, true);         // Same encoding that you get by default in StreamWriter
 
-        /// <inheritdoc/>
-        public DateTimeOffset Now => DateTimeOffset.Now;
+        /// <summary>
+        /// Serialises the object to the stream.
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="obj"></param>
+        public static void WriteObject(Stream stream, object obj)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
 
-        /// <inheritdoc/>
-        public long UtcNowUnixMilliseconds => (long)(UtcNow - Convert.Time.UnixEpocUtc).TotalMilliseconds;
+            using var streamWriter = new StreamWriter(stream, _UTF8NoBOM, 1024, leaveOpen: true);
+            using var jsonWriter = new JsonTextWriter(streamWriter) {
+                CloseOutput = false,
+                Formatting = Formatting.None,
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+            };
+
+            var serialiser = new JsonSerializer();
+            serialiser.Serialize(jsonWriter, obj);
+        }
     }
 }

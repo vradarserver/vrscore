@@ -22,6 +22,7 @@ namespace VirtualRadar
     /// </remarks>
     public class Aircraft
     {
+        private readonly IClock _Clock;
         private readonly object _SyncLock = new();
         private readonly AircraftHistorySnapshot _StateChangeHistory;
 
@@ -66,7 +67,7 @@ namespace VirtualRadar
 
         public DateTime MostRecentMessageReceivedUtc { get; private set; }
 
-        public StampedTimedValue<long> CountMessagesReceived { get; } = new();
+        public StampedValue<long> CountMessagesReceived { get; } = new();
 
         public StampedValue<Icao24?> Icao24 { get; } = new();
 
@@ -107,7 +108,7 @@ namespace VirtualRadar
 
         public StampedValue<float?> AirPressureInHg { get; } = new();
 
-        public StampedTimedValue<DateTime?> AirPressureLookedUpUtc { get; } = new();
+        public StampedValue<DateTime?> AirPressureLookedUpUtc { get; } = new();
 
         public StampedValue<int?> TargetAltitudeFeet { get; } = new();
 
@@ -115,7 +116,9 @@ namespace VirtualRadar
 
         public StampedValue<SpeedType?> GroundSpeedType { get; } = new();
 
-        public StampedTimedValue<Location> Location { get; } = new();
+        public StampedValue<Location> Location { get; } = new();
+
+        public StampedValue<DateTime?> LocationReceivedUtc { get; } = new();
 
         public StampedValue<bool?> IsTisb { get; } = new();
 
@@ -193,9 +196,13 @@ namespace VirtualRadar
         /// Creates a new object.
         /// </summary>
         /// <param name="id"></param>
-        public Aircraft(int id)
+        public Aircraft(
+            int id,
+            IClock clock
+        )
         {
             Id = id;
+            _Clock = clock;
             _StateChangeHistory = new(id);
         }
 
@@ -216,7 +223,7 @@ namespace VirtualRadar
         public Aircraft ShallowCopy()
         {
             lock(_SyncLock) {
-                var result = new Aircraft(Id) {
+                var result = new Aircraft(Id, _Clock) {
                     FirstStamp =                    FirstStamp,
                     Stamp =                         Stamp,
                     FirstMessageReceivedUtc =       FirstMessageReceivedUtc,
@@ -240,6 +247,7 @@ namespace VirtualRadar
                 IdentActive                 .CopyTo(result.IdentActive);
                 IsTisb                      .CopyTo(result.IsTisb);
                 Location                    .CopyTo(result.Location);
+                LocationReceivedUtc         .CopyTo(result.LocationReceivedUtc);
                 OnGround                    .CopyTo(result.OnGround);
                 SignalLevel                 .CopyTo(result.SignalLevel);
                 SignalLevelSent             .CopyTo(result.SignalLevelSent);
@@ -298,7 +306,7 @@ namespace VirtualRadar
                 }
 
                 lock(_SyncLock) {
-                    MostRecentMessageReceivedUtc = DateTime.UtcNow;
+                    MostRecentMessageReceivedUtc = _Clock.UtcNow;
                     if(FirstMessageReceivedUtc == default) {
                         changed = true;
                         FirstMessageReceivedUtc = MostRecentMessageReceivedUtc;
@@ -327,6 +335,10 @@ namespace VirtualRadar
                     changeSet.SetIfNotDefault(AircraftHistoryField.TargetHeadingDegrees,       TargetHeadingDegrees,       message.TargetHeadingDegrees);
                     changeSet.SetIfNotDefault(AircraftHistoryField.VerticalRateType,           VerticalRateType,           message.VerticalRateType);
                     changeSet.SetIfNotDefault(AircraftHistoryField.VerticalRateFeetPerMinute,  VerticalRateFeetPerMinute,  message.VerticalRateFeetPerMinute);
+
+                    if(Location.Stamp == stamp) {
+                        changeSet.SetIfNotDefault(AircraftHistoryField.LocationReceivedUtc, LocationReceivedUtc, MostRecentMessageReceivedUtc);
+                    }
 
                     if(message.TransponderType != null) {
                         if(TransponderType.Value?.IsSupercededBy(message.TransponderType.Value) ?? true) {
@@ -412,7 +424,7 @@ namespace VirtualRadar
                     changeSet.SetIfNotDefault(AircraftHistoryField.YearBuilt,              YearBuilt,              lookup.YearBuilt);
 
                     if(lookup.AirPressureLookupAttempted ?? false) {
-                        changed = AirPressureLookedUpUtc.Set(DateTime.UtcNow, stamp) || changed;
+                        changed = AirPressureLookedUpUtc.Set(_Clock.UtcNow, stamp) || changed;
                     }
                     if(lookup.AirPressureInHg != null) {
                         CalculateAirPressures(changeSet);

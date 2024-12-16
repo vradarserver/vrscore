@@ -23,8 +23,9 @@ namespace VirtualRadar.AircraftLists
         private readonly Dictionary<int, Aircraft> _AircraftById = [];
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = [];
         private long _Stamp = 0L;
-        private AircraftListOptions _Options;
-        private ILog _Log;
+        private readonly AircraftListOptions _Options;
+        private readonly ILog _Log;
+        private readonly IClock _Clock;
         private System.Timers.Timer _HousekeepingTimer;
 
         /// <inheritdoc/>
@@ -34,13 +35,17 @@ namespace VirtualRadar.AircraftLists
         /// Creates a new object.
         /// </summary>
         /// <param name="options"></param>
+        /// <param name="log"></param>
+        /// <param name="clock"></param>
         public AircraftList(
             AircraftListOptions options,
-            ILog log
+            ILog log,
+            IClock clock
         )
         {
             _Options = options;
             _Log = log;
+            _Clock = clock;
 
             _HousekeepingTimer = new(1000) {
                 AutoReset = false,
@@ -78,7 +83,7 @@ namespace VirtualRadar.AircraftLists
                     isNew = !_AircraftById.TryGetValue(message.AircraftId, out var aircraft);
                     if(isNew) {
                         changed = true;
-                        aircraft = new(message.AircraftId);
+                        aircraft = new(message.AircraftId, _Clock);
                         _AircraftById[message.AircraftId] = aircraft;
                     }
 

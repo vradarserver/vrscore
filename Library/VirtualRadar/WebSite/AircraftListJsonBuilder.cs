@@ -28,7 +28,8 @@ namespace VirtualRadar.WebSite
         ISettings<OperatorAndTypeFlagSettings>  _OperatorAndFlagSettings,
         ISettings<WebClientSettings>            _WebClientSettings,
         IReceiverFactory                        _ReceiverFactory,
-        IFileSystem                             _FileSystem
+        IFileSystem                             _FileSystem,
+        IClock                                  _Clock
         #pragma warning restore IDE1006
     ) : IAircraftListJsonBuilder
     {
@@ -70,7 +71,7 @@ namespace VirtualRadar.WebSite
             );
 
             var state = new BuildState(
-                DateTime.UtcNow,
+                _Clock.UtcNow,
                 args,
                 receiver,
                 _AircraftMapSettings.LatestValue,
@@ -170,7 +171,9 @@ namespace VirtualRadar.WebSite
                     if(aircraft.Location.Stamp > oldStamp) {
                         aircraftJson.Latitude =     aircraft.Location.Value?.Latitude;
                         aircraftJson.Longitude =    aircraft.Location.Value?.Longitude;
-                        aircraftJson.PositionTime = (long)(aircraft.Location.LastChangedUtc - Time.UnixEpocUtc).TotalMilliseconds;
+                        aircraftJson.PositionTime = aircraft.LocationReceivedUtc.Value == null
+                                                        ? (long?)null
+                                                        : (long)(aircraft.LocationReceivedUtc.Value.Value - Time.UnixEpocUtc).TotalMilliseconds;
                     }
                     AddPicture(state, aircraftJson, aircraft);
                     AddRoute(state, aircraftJson, aircraft.Route);

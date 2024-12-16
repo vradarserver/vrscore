@@ -17,8 +17,8 @@ namespace VirtualRadar
     public interface IClock
     {
         /// <summary>
-        /// Gets the current date and time at UTC. On Windows this will be an order of magnitude
-        /// quicker than every other clock call exposed by .NET.
+        /// Gets the current date and time at UTC. On Windows this will be an order of magnitude quicker than
+        /// every other clock call exposed by .NET.
         /// </summary>
         DateTime UtcNow { get; }
 
@@ -26,5 +26,11 @@ namespace VirtualRadar
         /// Gets the current local date and time.
         /// </summary>
         DateTimeOffset Now { get; }
+
+        /// <summary>
+        /// The number of milliseconds that have elapsed since 01-Jan-1970 and <see cref="UtcNow"/>, rounded
+        /// down.
+        /// </summary>
+        long UtcNowUnixMilliseconds { get; }
     }
 }

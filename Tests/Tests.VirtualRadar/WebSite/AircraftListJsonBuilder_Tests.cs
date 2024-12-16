@@ -38,6 +38,7 @@ namespace Tests.VirtualRadar.WebSite
         private MockSettings<OperatorAndTypeFlagSettings> _OperatorAndTypeFlagSettings;
         private MockSettings<WebClientSettings> _WebClientSettings;
         private MockFileSystem _FileSystem;
+        private MockClock _Clock;
 
         [TestInitialize]
         public void TestInitialise()
@@ -73,6 +74,7 @@ namespace Tests.VirtualRadar.WebSite
             _WebClientSettings = new(new());
 
             _FileSystem = new();
+            _Clock = new();
 
             _Builder = new(
                 _AircraftMapSettings,
@@ -81,7 +83,8 @@ namespace Tests.VirtualRadar.WebSite
                 _OperatorAndTypeFlagSettings,
                 _WebClientSettings,
                 _ReceiverFactory.Object,
-                _FileSystem
+                _FileSystem,
+                _Clock
             );
         }
 
@@ -118,7 +121,7 @@ namespace Tests.VirtualRadar.WebSite
         {
             if(aircraft == null) {
                 id ??= _AllAircraft.DefaultIfEmpty().Max(aircraft => aircraft?.Id ?? 0) + 1;
-                aircraft = new(id.Value);
+                aircraft = new(id.Value, _Clock);
             }
 
             if(!_AllAircraft.Contains(aircraft)) {
@@ -624,6 +627,7 @@ namespace Tests.VirtualRadar.WebSite
         [DataRow(false)]
         public void Build_Sets_Aircraft_FirstSeen(bool hasChanged)
         {
+            _Clock.Now = new DateTimeOffset(2013, 12, 11, 10, 9, 8, TimeSpan.Zero);
             SetupAircraft(stamp: 2, fillMessage: m => m.Icao24 = new(1));
             _Args.PreviousDataVersion = hasChanged ? 1 : 2;
 
@@ -634,7 +638,7 @@ namespace Tests.VirtualRadar.WebSite
                 Assert.IsNull(actual);
             } else {
                 Assert.IsNotNull(actual);
-                Assert.AreEqual(DateTime.UtcNow.Ticks, actual.Value.Ticks, Time.TicksInSecond);
+                Assert.AreEqual(_Clock.UtcNow, actual.Value);
             }
         }
 
@@ -1032,14 +1036,14 @@ namespace Tests.VirtualRadar.WebSite
         [DataRow(false)]
         public void Build_Sets_Aircraft_Position_Time_To_Milliseconds_After_Unix_Epoc(bool hasChanged)
         {
-            var expected = (long)(DateTime.UtcNow - Time.UnixEpocUtc).TotalMilliseconds;
+            _Clock.Now = new DateTimeOffset(2001, 2, 3, 4, 5, 6, TimeSpan.Zero);
             SetupAircraft(stamp: 2, fillMessage: m => m.Location = new(1, 1));
             _Args.PreviousDataVersion = hasChanged ? 1 : 2;
 
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
             if(hasChanged) {
-                Assert.AreEqual(expected, json.Aircraft[0].PositionTime ?? 0L, 1000L);
+                Assert.AreEqual(_Clock.UtcNowUnixMilliseconds, json.Aircraft[0].PositionTime ?? 0L);
             } else {
                 Assert.IsNull(json.Aircraft[0].PositionTime);
             }
