@@ -66,7 +66,7 @@ namespace VirtualRadar.WebSite
         )
         {
             var receiver = _ReceiverFactory.FindById(
-                -1,
+                args.ReceiverId,
                 ignoreInvisibleSources,
                 fallbackToDefaultSource
             );
