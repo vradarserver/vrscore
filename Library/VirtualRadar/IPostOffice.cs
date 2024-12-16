@@ -11,13 +11,23 @@
 namespace VirtualRadar
 {
     /// <summary>
-    /// The default implementation of <see cref="IPostOffice"/>.
+    /// Maintains a central stamp that only ever increments.
     /// </summary>
-    class PostOffice : IPostOffice
+    /// <remarks>
+    /// Many objects related to the aircraft state carry a stamp value. This is a 64-bit number that is
+    /// greater than zero. A new stamp is requested when applying changes to the aircraft state. The new stamp
+    /// value will always be greater than the old stamp value. All stamped objects share the same source of
+    /// stamps.Therefore if you have a stamp value then you can compare it to stamps on other objects to
+    /// determine which stamped values have changed since your held stamp value was established.
+    /// </remarks>
+    [Lifetime(Lifetime.Singleton)]
+    public interface IPostOffice
     {
-        private long _Stamp = 0;
-
-        /// <inheritdoc/>
-        public long GetStamp() => Interlocked.Increment(ref _Stamp);
+        /// <summary>
+        /// Returns a new stamp. Each successive call to this will return a value that
+        /// is higher than the last. This is thread safe.
+        /// </summary>
+        /// <returns></returns>
+        long GetStamp();
     }
 }

@@ -26,6 +26,7 @@ namespace VirtualRadar.AircraftLists
         private readonly AircraftListOptions _Options;
         private readonly ILog _Log;
         private readonly IClock _Clock;
+        private readonly IPostOffice _PostOffice;
         private System.Timers.Timer _HousekeepingTimer;
 
         /// <inheritdoc/>
@@ -37,15 +38,18 @@ namespace VirtualRadar.AircraftLists
         /// <param name="options"></param>
         /// <param name="log"></param>
         /// <param name="clock"></param>
+        /// <param name="postOffice"></param>
         public AircraftList(
             AircraftListOptions options,
             ILog log,
-            IClock clock
+            IClock clock,
+            IPostOffice postOffice
         )
         {
             _Options = options;
             _Log = log;
             _Clock = clock;
+            _PostOffice = postOffice;
 
             _HousekeepingTimer = new(1000) {
                 AutoReset = false,
@@ -83,7 +87,7 @@ namespace VirtualRadar.AircraftLists
                     isNew = !_AircraftById.TryGetValue(message.AircraftId, out var aircraft);
                     if(isNew) {
                         changed = true;
-                        aircraft = new(message.AircraftId, _Clock);
+                        aircraft = new(message.AircraftId, _Clock, _PostOffice);
                         _AircraftById[message.AircraftId] = aircraft;
                     }
 

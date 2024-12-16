@@ -86,7 +86,7 @@ namespace VirtualRadar.WebSite
             state.Json.Source =                     1; // <-- for backwards compatability, we don't have the concept of fake and/or flight sim aircraft lists in VRS Core
             state.Json.SourceFeedId =               args.ReceiverId;
             state.Json.LastDataVersion =            receiver?.AircraftList.Stamp.ToString();
-            state.Json.ServerTime =                 PostOffice.GetStamp();
+            state.Json.ServerTime =                 _Clock.UtcNowUnixMilliseconds;
 
             AddAircraft(state);
             AddFeeds(state);

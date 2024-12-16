@@ -23,6 +23,7 @@ namespace VirtualRadar
     public class Aircraft
     {
         private readonly IClock _Clock;
+        private readonly IPostOffice _PostOffice;
         private readonly object _SyncLock = new();
         private readonly AircraftHistorySnapshot _StateChangeHistory;
 
@@ -196,13 +197,17 @@ namespace VirtualRadar
         /// Creates a new object.
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="clock"></param>
+        /// <param name="postOffice"></param>
         public Aircraft(
             int id,
-            IClock clock
+            IClock clock,
+            IPostOffice postOffice
         )
         {
             Id = id;
             _Clock = clock;
+            _PostOffice = postOffice;
             _StateChangeHistory = new(id);
         }
 
@@ -223,7 +228,7 @@ namespace VirtualRadar
         public Aircraft ShallowCopy()
         {
             lock(_SyncLock) {
-                var result = new Aircraft(Id, _Clock) {
+                var result = new Aircraft(Id, _Clock, _PostOffice) {
                     FirstStamp =                    FirstStamp,
                     Stamp =                         Stamp,
                     FirstMessageReceivedUtc =       FirstMessageReceivedUtc,
@@ -312,7 +317,7 @@ namespace VirtualRadar
                         FirstMessageReceivedUtc = MostRecentMessageReceivedUtc;
                     }
 
-                    var stamp = PostOffice.GetStamp();
+                    var stamp = _PostOffice.GetStamp();
                     var changeSet = new ChangeSet(stamp, MostRecentMessageReceivedUtc);
 
                     // TRANSMITTED VALUES
@@ -392,7 +397,7 @@ namespace VirtualRadar
 
             if(lookup?.Success ?? false) {
                 lock(_SyncLock) {
-                    var stamp = PostOffice.GetStamp();
+                    var stamp = _PostOffice.GetStamp();
                     var changeSet = new ChangeSet(stamp, MostRecentMessageReceivedUtc);
 
                     changed = LookupAgeUtc.SetIfNotDefault(lookup.SourceAgeUtc, stamp) || changed;

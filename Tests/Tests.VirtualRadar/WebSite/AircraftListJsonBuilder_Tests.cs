@@ -39,6 +39,7 @@ namespace Tests.VirtualRadar.WebSite
         private MockSettings<WebClientSettings> _WebClientSettings;
         private MockFileSystem _FileSystem;
         private MockClock _Clock;
+        private MockPostOffice _PostOffice;
 
         [TestInitialize]
         public void TestInitialise()
@@ -75,6 +76,7 @@ namespace Tests.VirtualRadar.WebSite
 
             _FileSystem = new();
             _Clock = new();
+            _PostOffice = new();
 
             _Builder = new(
                 _AircraftMapSettings,
@@ -121,7 +123,7 @@ namespace Tests.VirtualRadar.WebSite
         {
             if(aircraft == null) {
                 id ??= _AllAircraft.DefaultIfEmpty().Max(aircraft => aircraft?.Id ?? 0) + 1;
-                aircraft = new(id.Value, _Clock);
+                aircraft = new(id.Value, _Clock, _PostOffice);
             }
 
             if(!_AllAircraft.Contains(aircraft)) {
@@ -132,13 +134,13 @@ namespace Tests.VirtualRadar.WebSite
                 var message = new TransponderMessage(aircraft.Id);
                 fillMessage(message);
                 if(stamp != null) {
-                    PostOffice.SetNextStampForUnitTest(stamp.Value);
+                    _PostOffice.Stamp = stamp.Value;
                 }
                 aircraft.CopyFromMessage(message);
             }
             if(lookup != null) {
                 if(stamp != null) {
-                    PostOffice.SetNextStampForUnitTest(stamp.Value);
+                    _PostOffice.Stamp = stamp.Value;
                 }
                 lookup.Success = true;
                 aircraft.CopyFromLookup(lookup);
@@ -162,7 +164,7 @@ namespace Tests.VirtualRadar.WebSite
                 GroundSpeedKnots = speed,
                 GroundTrackDegrees = heading,
             };
-            PostOffice.SetNextStampForUnitTest(stamp);
+            _PostOffice.Stamp = stamp;
             aircraft.CopyFromMessage(message);
         }
 
@@ -288,13 +290,11 @@ namespace Tests.VirtualRadar.WebSite
         [TestMethod]
         public void Build_Sets_ServerTime_Correctly()
         {
-            // In earlier versions of VRS this was the actual server time but with code to ensure that
-            // the ticks could never go backwards. In VRS Core we have the post office stamp for that.
-            PostOffice.SetNextStampForUnitTest(1234);
+            _Clock.Now = new(2001, 2, 3, 4, 5, 6, TimeSpan.Zero);
 
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
-            Assert.AreEqual(1234L, json.ServerTime);
+            Assert.AreEqual(_Clock.UtcNowUnixMilliseconds, json.ServerTime);
         }
 
         [TestMethod]
