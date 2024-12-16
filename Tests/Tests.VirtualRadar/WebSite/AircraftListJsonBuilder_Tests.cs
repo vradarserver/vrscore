@@ -458,6 +458,16 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
+        public void Build_Sets_64_Bit_LastDataVersion_From_AircraftList_Stamp()
+        {
+            _AircraftListToArrayStamp = 5666777888L;
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+
+            Assert.AreEqual("5666777888", json.LastDataVersion);
+        }
+
+        [TestMethod]
         public void Build_Sets_LastDataVersion_To_Zero_If_Receiver_Is_Missing()
         {
             _Receiver = null;

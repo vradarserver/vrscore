@@ -13,11 +13,28 @@ namespace VirtualRadar.Services
     /// <summary>
     /// The default implementation of <see cref="IPostOffice"/>.
     /// </summary>
-    class PostOffice : IPostOffice
+    class PostOffice(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+        IClock _Clock
+        #pragma warning restore IDE1006
+    ) : IPostOffice
     {
         private long _Stamp = 0;
 
         /// <inheritdoc/>
-        public long GetStamp() => Interlocked.Increment(ref _Stamp);
+        public long GetStamp()
+        {
+            long originalStamp;
+            long newStamp;
+            do {
+                originalStamp = _Stamp;
+                newStamp = _Clock.UtcNow.Ticks;
+                if(newStamp <= originalStamp) {
+                    newStamp = originalStamp + 1;
+                }
+            } while(Interlocked.CompareExchange(ref _Stamp, newStamp, originalStamp) != originalStamp);
+
+            return newStamp;
+        }
     }
 }
