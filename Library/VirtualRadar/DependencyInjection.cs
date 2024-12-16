@@ -110,6 +110,7 @@ namespace VirtualRadar
             services.AddLifetime<IHttpClientService,            Services.HttpClientService>();
             services.AddLifetime<ILog,                          Services.LogService>();
             services.AddLifetime<IModuleInformationService,     Services.ModuleInformationService>();
+            services.AddLifetime<IPostOffice,                   Services.PostOffice>();
             services.AddLifetime<IWebAddressManager,            Services.WebAddressManager>();
             services.AddLifetime<IWorkingFolder,                Services.WorkingFolder>();
 
