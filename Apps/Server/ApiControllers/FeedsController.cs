@@ -83,7 +83,7 @@ namespace VirtualRadar.Server.ApiControllers
                 BrowserLatitude =       model?.Latitude,
                 BrowserLongitude =      model?.Longitude,
                 IsFlightSimulatorList = model?.FlightSimulator ?? false,
-                PreviousDataVersion =   model?.LastDataVersion ?? -1L,
+                PreviousDataVersion =   model?.LastStamp ?? -1L,
                 ResendTrails =          model?.ResendTrails ?? false,
                 SelectedAircraftId =    model?.SelectedAircraft ?? -1,
                 ServerTimeTicks =       model?.ServerTicks ?? -1L,
@@ -114,13 +114,18 @@ namespace VirtualRadar.Server.ApiControllers
         /// <returns></returns>
         [HttpPost]
         [Route("v3/AircraftList.json")]
-        public AircraftListJson AircraftListV2Post(string ids = null, int feed = -1, double? lat = null, double? lng = null, long ldv = -1, long stm = -1, byte refreshTrails = 0, int selAc = -1, string trFmt = null)
+        public AircraftListJson AircraftListV2Post(string ids = null, int feed = -1, double? lat = null, double? lng = null, string ldv = null, long stm = -1, byte refreshTrails = 0, int selAc = -1, string trFmt = null)
         {
+            var lastStamp = -1L;
+            if(!String.IsNullOrEmpty(ldv) && !long.TryParse(ldv, out lastStamp)) {
+                lastStamp = -1;
+            }
+
             var args = new AircraftListJsonBuilderArgs() {
                 BrowserLatitude =       lat,
                 BrowserLongitude =      lng,
                 IsFlightSimulatorList = false,
-                PreviousDataVersion =   ldv,
+                PreviousDataVersion =   lastStamp,
                 ResendTrails =          refreshTrails == 1,
                 SelectedAircraftId =    selAc,
                 ServerTimeTicks =       stm,
