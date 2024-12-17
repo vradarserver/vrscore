@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.Extensions;
+
 namespace VirtualRadar.Message
 {
     /// <summary>
@@ -183,6 +185,44 @@ namespace VirtualRadar.Message
         public TransponderMessage(int aircraftId)
         {
             AircraftId = aircraftId;
+        }
+
+        public override string ToString()
+        {
+            var result = new StringBuilder();
+
+            result.Append($"{MessageReceived:T}");
+            result.Append($" {nameof(AircraftId)}: {AircraftId}");
+            if(IsFakeAircraft) {
+                result.Append(" (FAKE)");
+            }
+            if(SuppressLookup) {
+                result.Append(" (NO LOOKUP)");
+            }
+            if(Icao24 != default)                    result.Append($", {nameof(Icao24)}: {Icao24}");
+            if(Callsign != default)                  result.Append($", {nameof(Callsign)}: {Callsign}");
+            if(CallsignIsSuspect != default)         result.Append($", {nameof(CallsignIsSuspect)}: {CallsignIsSuspect}");
+            if(AltitudeFeet != default)              result.Append($", {nameof(AltitudeFeet)}: {AltitudeFeet}");
+            if(AltitudeType != default)              result.Append($", {nameof(AltitudeType)}: {AltitudeType}");
+            if(VerticalRateFeetPerMinute != default) result.Append($", {nameof(VerticalRateFeetPerMinute)}: {VerticalRateFeetPerMinute}");
+            if(VerticalRateType != default)          result.Append($", {nameof(VerticalRateType)}: {VerticalRateType}");
+            if(GroundSpeedKnots != default)          result.Append($", {nameof(GroundSpeedKnots)}: {GroundSpeedKnots}");
+            if(GroundSpeedType != default)           result.Append($", {nameof(GroundSpeedType)}: {GroundSpeedType}");
+            if(GroundTrackDegrees != default)        result.Append($", {nameof(GroundTrackDegrees)}: {GroundTrackDegrees}");
+            if(GroundTrackIsHeading != default)      result.Append($", {nameof(GroundTrackIsHeading)}: {GroundTrackIsHeading}");
+            if(Location != default)                  result.Append($", {nameof(Location)}: {Location}");
+            if(IdentActive != default)               result.Append($", {nameof(IdentActive)}: {IdentActive}");
+            if(OnGround != default)                  result.Append($", {nameof(OnGround)}: {OnGround}");
+            if(SignalLevelSent != default)           result.Append($", {nameof(SignalLevelSent)}: {SignalLevelSent}");
+            if(SignalLevel != default)               result.Append($", {nameof(SignalLevel)}: {SignalLevel}");
+            if(IsTisb != default)                    result.Append($", {nameof(IsTisb)}: {IsTisb}");
+            if(TransponderType != default)           result.Append($", {nameof(TransponderType)}: {TransponderType}");
+            if(TargetAltitudeFeet != default)        result.Append($", {nameof(TargetAltitudeFeet)}: {TargetAltitudeFeet}");
+            if(TargetHeadingDegrees != default)      result.Append($", {nameof(TargetHeadingDegrees)}: {TargetHeadingDegrees}");
+            if(PressureSettingMillibars != default)  result.Append($", {nameof(PressureSettingMillibars)}: {PressureSettingMillibars}");
+            if(PressureSettingMillibars != default)  result.Append($", {nameof(PressureSettingMillibars)}: {PressureSettingMillibars}");
+
+            return result.ToString();
         }
     }
 }

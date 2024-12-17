@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.AircraftLists;
 using VirtualRadar.Message;
 
 namespace VirtualRadar
@@ -30,10 +31,7 @@ namespace VirtualRadar
         /// aircraft in the list. Adds the aircraft if it does not already exist.
         /// </summary>
         /// <param name="message"></param>
-        /// <remarks>A tuple where the first item indicates whether the message created a
-        /// new aircraft record for the list and the second item indicates whether the message
-        /// changed the aircraft record. A new aircraft will always be considered changed.</remarks>
-        (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message);
+        ApplyMessageOutcome ApplyMessage(TransponderMessage message);
 
         /// <summary>
         /// Applies the outcome of a successful lookup to the state held for the aircraft in

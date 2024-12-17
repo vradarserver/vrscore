@@ -40,6 +40,17 @@ namespace VirtualRadar.StandingData
         }
 
         /// <inheritdoc/>
-        public Route FindRoute(string callsign) => _Repository.Route_GetForCallsign(callsign);
+        public Route FindRoute(string callsign)
+        {
+            Route result = null;
+
+            var parsed = new Callsign(callsign);
+            if(parsed.IsOriginalCallsignValid) {
+                result = _Repository.Route_GetForCallsign(parsed.TrimmedCallsign);
+                // TODO: Port all the callsign alternative shenanigans
+            }
+
+            return result;
+        }
     }
 }

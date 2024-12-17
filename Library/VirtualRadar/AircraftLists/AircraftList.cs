@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.Timers;
+using VirtualRadar.AircraftHistory;
 using VirtualRadar.Message;
 
 namespace VirtualRadar.AircraftLists
@@ -77,23 +78,22 @@ namespace VirtualRadar.AircraftLists
         }
 
         /// <inheritdoc/>
-        public (bool AddedAircraft, bool ChangedAircraft) ApplyMessage(TransponderMessage message)
+        public ApplyMessageOutcome ApplyMessage(TransponderMessage message)
         {
             var isNew = false;
-            var changed = false;
+            ChangeSet changeSet = null;
 
             if(message != null) {
                 lock(_SyncLock) {
                     isNew = !_AircraftById.TryGetValue(message.AircraftId, out var aircraft);
                     if(isNew) {
-                        changed = true;
                         aircraft = new(message.AircraftId, _Clock, _PostOffice);
                         _AircraftById[message.AircraftId] = aircraft;
                     }
 
                     var originalIcao24 = aircraft.Icao24.Value;
 
-                    changed = aircraft.CopyFromMessage(message) || changed;
+                    changeSet = aircraft.CopyFromMessage(message);
                     _Stamp = Math.Max(_Stamp, aircraft.Stamp);
 
                     // Note that if the feed assigns the same ICAO24 to multiple aircraft then things
@@ -111,7 +111,12 @@ namespace VirtualRadar.AircraftLists
                 }
             }
 
-            return (isNew, changed);
+            return new ApplyMessageOutcome(
+                this,
+                message,
+                isNew,
+                changeSet
+            );
         }
 
         /// <inheritdoc/>

@@ -80,6 +80,8 @@ namespace VirtualRadar
 
         public StampedValue<bool?> CallsignIsSuspect { get; } = new();
 
+        public Callsign CallsignParsed { get; private set; } = VirtualRadar.Callsign.NoCallsign;
+
         /// <summary>
         /// The altitude in feet at standard pressure. This is always the pressure altitude, even if the
         /// aircraft is transmitting radar altitudes.
@@ -235,6 +237,7 @@ namespace VirtualRadar
                     MostRecentMessageReceivedUtc =  MostRecentMessageReceivedUtc,
                 };
                 result._StateChangeHistory.CopyFrom(_StateChangeHistory);
+                result.CallsignParsed = CallsignParsed;
 
                 // TRANSMITTED VALUES
                 AirPressureInHg             .CopyTo(result.AirPressureInHg);
@@ -298,9 +301,9 @@ namespace VirtualRadar
         /// Sets aircraft values from the message passed across.
         /// </summary>
         /// <param name="message"></param>
-        public bool CopyFromMessage(TransponderMessage message)
+        public ChangeSet CopyFromMessage(TransponderMessage message)
         {
-            var changed = false;
+            ChangeSet changeSet = null;
 
             if(message != null) {
                 if(message.AircraftId != Id) {
@@ -311,6 +314,8 @@ namespace VirtualRadar
                 }
 
                 lock(_SyncLock) {
+                    var changed = false;
+
                     MostRecentMessageReceivedUtc = _Clock.UtcNow;
                     if(FirstMessageReceivedUtc == default) {
                         changed = true;
@@ -318,7 +323,7 @@ namespace VirtualRadar
                     }
 
                     var stamp = _PostOffice.GetStamp();
-                    var changeSet = new ChangeSet(stamp, MostRecentMessageReceivedUtc);
+                    changeSet = new ChangeSet(stamp, MostRecentMessageReceivedUtc);
 
                     // TRANSMITTED VALUES
                     changeSet.SetIfNotDefault(AircraftHistoryField.AltitudeType,               AltitudeType,               message.AltitudeType);
@@ -341,6 +346,9 @@ namespace VirtualRadar
                     changeSet.SetIfNotDefault(AircraftHistoryField.VerticalRateType,           VerticalRateType,           message.VerticalRateType);
                     changeSet.SetIfNotDefault(AircraftHistoryField.VerticalRateFeetPerMinute,  VerticalRateFeetPerMinute,  message.VerticalRateFeetPerMinute);
 
+                    if(Callsign.Stamp == stamp) {
+                        CallsignParsed = new(Callsign.Value);
+                    }
                     if(Location.Stamp == stamp) {
                         changeSet.SetIfNotDefault(AircraftHistoryField.LocationReceivedUtc, LocationReceivedUtc, MostRecentMessageReceivedUtc);
                     }
@@ -374,7 +382,9 @@ namespace VirtualRadar
                     }
 
                     changed = changed || changeSet.Changed;
-                    if(changed) {
+                    if(!changed) {
+                        changeSet.Lock();
+                    } else {
                         _StateChangeHistory.AddChangeSet(changeSet);
                         SetStamp(stamp);
                         CountMessagesReceived.Set(CountMessagesReceived + 1, stamp);
@@ -382,7 +392,7 @@ namespace VirtualRadar
                 }
             }
 
-            return changed;
+            return changeSet;
         }
 
         /// <summary>

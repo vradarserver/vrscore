@@ -44,6 +44,7 @@ namespace VirtualRadar.Feed.BaseStation
                         CallsignIsSuspect =         false,
                         GroundSpeedKnots =          baseStationMessage.GroundSpeed,
                         GroundSpeedType =           SpeedType.GroundSpeed,
+                        GroundTrackDegrees =        baseStationMessage.Track,
                         IdentActive =               baseStationMessage.IdentActive,
                         IsTisb =                    false,
                         Location =                  Location.FromLatLng(baseStationMessage.Latitude, baseStationMessage.Longitude),

@@ -18,6 +18,11 @@ namespace VirtualRadar
     public class Callsign
     {
         /// <summary>
+        /// The empty callsign.
+        /// </summary>
+        public static readonly Callsign NoCallsign = new("");
+
+        /// <summary>
         /// The regex that can split a callsign into code and number portions.
         /// </summary>
         public static readonly Regex CallsignRegex = new(@"^(?<code>[A-Z]{2,3}|[A-Z][0-9]|[0-9][A-Z])(?<number>\d[A-Z0-9]*)");

@@ -14,6 +14,7 @@ using VirtualRadar.Collections;
 using VirtualRadar.Configuration;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
+using VirtualRadar.StandingData;
 
 namespace VirtualRadar.Receivers
 {
@@ -117,7 +118,9 @@ namespace VirtualRadar.Receivers
                     connector,
                     feedDecoder,
                     aircraftList,
-                    serviceProvider.GetRequiredService<IAircraftOnlineLookupService>()
+                    serviceProvider.GetRequiredService<ILog>(),
+                    serviceProvider.GetRequiredService<IAircraftOnlineLookupService>(),
+                    serviceProvider.GetRequiredService<IStandingDataManager>()
                 );
             }
 
