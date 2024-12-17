@@ -352,6 +352,8 @@ namespace VirtualRadar.WebSite
 
         private void PopulateShortTrail(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
         {
+            var includesAltitude = state.Args.TrailType.IncludesAltitude();
+            var includesSpeed =    state.Args.TrailType.IncludesSpeed();
             var browserLastStamp = state.Args.ResendTrails
                 ? -1L
                 : state.Args.PreviousDataVersion;
@@ -366,11 +368,17 @@ namespace VirtualRadar.WebSite
             }
 
             Location location = null;
+            int? altitude = null;
+            float? speed = null;
 
             foreach(var changeSet in relevantHistory) {
                 location = changeSet.Location ?? location;
+                altitude = changeSet.AltitudePressureFeet ?? altitude;
+                speed = changeSet.GroundSpeedKnots ?? speed;
 
                 var canUse =  location != null
+                           && (!includesAltitude || altitude != null)
+                           && (!includesSpeed || speed != null)
                            && changeSet.Stamp > browserLastStamp
                            && changeSet.Utc >= state.ShortTrailStart;
 
@@ -378,6 +386,11 @@ namespace VirtualRadar.WebSite
                     aircraftJson.ShortCoordinates.Add(location.Latitude);
                     aircraftJson.ShortCoordinates.Add(location.Longitude);
                     aircraftJson.ShortCoordinates.Add(changeSet.Utc.ToUnixMilliseconds());
+                    if(includesAltitude) {
+                        aircraftJson.ShortCoordinates.Add(altitude);
+                    } else if(includesSpeed) {
+                        aircraftJson.ShortCoordinates.Add(speed);
+                    }
                 }
             }
         }

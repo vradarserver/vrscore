@@ -92,6 +92,16 @@ namespace VirtualRadar.WebSite
             AircraftHistoryField.Location,
         ];
 
+        private static readonly AircraftHistoryField[] _ShortPositionsAndAltitude = [
+            AircraftHistoryField.Location,
+            AircraftHistoryField.AltitudePressureFeet,
+        ];
+
+        private static readonly AircraftHistoryField[] _ShortPositionsAndSpeed = [
+            AircraftHistoryField.Location,
+            AircraftHistoryField.GroundSpeedKnots,
+        ];
+
         public static AircraftHistoryField[] ToAircraftHistoryFields(this TrailType trailType, bool useRadarAltitude)
         {
             switch(trailType) {
@@ -99,6 +109,8 @@ namespace VirtualRadar.WebSite
                 case TrailType.FullAltitude:    return _FullPositionsAndAltitude;
                 case TrailType.FullSpeed:       return _FullPositionsAndSpeed;
                 case TrailType.Short:           return _ShortPositions;
+                case TrailType.ShortAltitude:   return _ShortPositionsAndAltitude;
+                case TrailType.ShortSpeed:      return _ShortPositionsAndSpeed;
                 default:                        return [];
             }
         }

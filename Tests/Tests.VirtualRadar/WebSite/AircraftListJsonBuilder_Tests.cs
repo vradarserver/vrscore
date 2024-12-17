@@ -1739,5 +1739,51 @@ namespace Tests.VirtualRadar.WebSite
             Assert.AreEqual(15, actual[idx++]);
             Assert.AreEqual(_Clock.UtcNow.ToUnixMilliseconds(), actual[idx++]);
         }
+
+        [TestMethod]
+        public void Build_Short_Trail_Returns_Positions_And_Times_And_Altitudes()
+        {
+            _Args.TrailType = TrailType.ShortAltitude;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.AltitudeFeet = 1000;
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.ShortCoordinates;
+
+            Assert.AreEqual("a", aircraftJson.TrailType);
+            Assert.AreEqual(4, actual.Count);
+
+            var idx = 0;
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(_StartUtc.ToUnixMilliseconds(), actual[idx++]);
+            Assert.AreEqual(1000, actual[idx++]);
+        }
+
+        [TestMethod]
+        public void Build_Short_Trail_Returns_Positions_And_Times_And_Speeds()
+        {
+            _Args.TrailType = TrailType.ShortSpeed;
+            var aircraft = SetupAircraft(stamp: 2, fillMessage: m => {
+                m.Location = new(10, 11);
+                m.GroundSpeedKnots = 230;
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var aircraftJson = json.Aircraft[0];
+            var actual = aircraftJson.ShortCoordinates;
+
+            Assert.AreEqual("s", aircraftJson.TrailType);
+            Assert.AreEqual(4, actual.Count);
+
+            var idx = 0;
+            Assert.AreEqual(10, actual[idx++]);
+            Assert.AreEqual(11, actual[idx++]);
+            Assert.AreEqual(_StartUtc.ToUnixMilliseconds(), actual[idx++]);
+            Assert.AreEqual(230, actual[idx++]);
+        }
     }
 }
