@@ -1820,9 +1820,9 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         [TestMethod]
-        [DataRow(51.0,    6.0,    28.0,     -4.0,   15.45)]
-        [DataRow(51.0,    6.0,    null,     null,   null)]
-        [DataRow(null,    null,   28.0,     -4.0,   null)]
+        [DataRow(51.0, 6.0,  28.0, -4.0, 15.45)]
+        [DataRow(51.0, 6.0,  null, null, null)]
+        [DataRow(null, null, 28.0, -4.0, null)]
         public void Build_Calculates_Bearing_From_Browser_Latitude_And_Longitude(
             double? aircraftLatitude,
             double? aircraftLongitude,
