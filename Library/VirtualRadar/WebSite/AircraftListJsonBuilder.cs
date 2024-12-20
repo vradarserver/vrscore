@@ -176,6 +176,7 @@ namespace VirtualRadar.WebSite
                                                         ? (long?)null
                                                         : (long)(aircraft.LocationReceivedUtc.Value.Value - Time.UnixEpochUtc).TotalMilliseconds;
                     }
+                    CalculateGreatCircleMaths(state, aircraftJson, aircraft);
                     AddPicture(state, aircraftJson, aircraft);
                     AddRoute(state, aircraftJson, aircraft.Route);
                     AddTrails(state, aircraftJson, aircraft);
@@ -209,6 +210,14 @@ namespace VirtualRadar.WebSite
 
             state.Json.ShowFlags =       IsDirectoryConfiguredAndExists(settings.OperatorFlagsFolder);
             state.Json.ShowSilhouettes = IsDirectoryConfiguredAndExists(settings.TypeFlagsFolder);
+        }
+
+        private void CalculateGreatCircleMaths(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
+        {
+            if(state.Args.BrowserLocation != null && aircraft.Location != null) {
+                aircraftJson.DistanceFromHere = GreatCircleMaths.Distance(state.Args.BrowserLocation, aircraft.Location);
+                aircraftJson.BearingFromHere = GreatCircleMaths.Bearing(state.Args.BrowserLocation, aircraft.Location, null, reverseBearing: false, ignoreCurrentTrack: true);
+            }
         }
 
         private void AddPictures(BuildState state)

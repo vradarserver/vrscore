@@ -53,6 +53,25 @@ namespace VirtualRadar.WebSite
         /// </summary>
         public double? BrowserLongitude { get; set; }
 
+        private Location _BrowserLocation;
+        /// <summary>
+        /// Gets <see cref="BrowserLatitude"/> and <see cref="BrowserLongitude"/> expressed as a <see
+        /// cref="Location"/>.
+        /// </summary>
+        public Location BrowserLocation
+        {
+            get {
+                if(_BrowserLocation == null && BrowserLatitude != null && BrowserLongitude != null) {
+                    if(   BrowserLatitude >= -90.0 && BrowserLatitude <= 90
+                       && BrowserLongitude >= -180.0 && BrowserLongitude <= 180
+                    ) {
+                        _BrowserLocation = new(BrowserLatitude.Value, BrowserLongitude.Value);
+                    }
+                }
+                return _BrowserLocation;
+            }
+        }
+
         /// <summary>
         /// Gets the list of aircraft that the browser was told about the last time it asked for a list.
         /// </summary>

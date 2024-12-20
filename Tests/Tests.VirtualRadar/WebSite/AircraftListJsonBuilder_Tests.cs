@@ -1785,5 +1785,70 @@ namespace Tests.VirtualRadar.WebSite
             Assert.AreEqual(_StartUtc.ToUnixMilliseconds(), actual[idx++]);
             Assert.AreEqual(230, actual[idx++]);
         }
+
+        [TestMethod]
+        [DataRow(51.0,    6.0,    28.0,     -4.0,   2691.8)]
+        [DataRow(51.0,    6.0,    null,     null,   null)]
+        [DataRow(null,    null,   28.0,     -4.0,   null)]
+        [DataRow(51.2345, 6.1234, -12.3928, 4.1256, 7077.68)]
+        public void Build_Calculates_Distance_From_Browser_Latitude_And_Longitude(
+            double? aircraftLatitude,
+            double? aircraftLongitude,
+            double? browserLatitude,
+            double? browserLongitude,
+            double? expected
+        )
+        {
+            _Args.BrowserLatitude = browserLatitude;
+            _Args.BrowserLongitude = browserLongitude;
+            var aircraft = SetupAircraft(fillMessage: m => {
+                m.GroundSpeedKnots = 100;
+                if(aircraftLatitude != null) {
+                    m.Location = new(aircraftLatitude.Value, aircraftLongitude.Value);
+                }
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].DistanceFromHere;
+
+            if(expected == null) {
+                Assert.IsNull(actual);
+            } else {
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(expected.Value, actual.Value, 0.01);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(51.0,    6.0,    28.0,     -4.0,   15.45)]
+        [DataRow(51.0,    6.0,    null,     null,   null)]
+        [DataRow(null,    null,   28.0,     -4.0,   null)]
+        public void Build_Calculates_Bearing_From_Browser_Latitude_And_Longitude(
+            double? aircraftLatitude,
+            double? aircraftLongitude,
+            double? browserLatitude,
+            double? browserLongitude,
+            double? expected
+        )
+        {
+            _Args.BrowserLatitude = browserLatitude;
+            _Args.BrowserLongitude = browserLongitude;
+            var aircraft = SetupAircraft(fillMessage: m => {
+                m.GroundSpeedKnots = 100;
+                if(aircraftLatitude != null) {
+                    m.Location = new(aircraftLatitude.Value, aircraftLongitude.Value);
+                }
+            });
+
+            var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
+            var actual = json.Aircraft[0].BearingFromHere;
+
+            if(expected == null) {
+                Assert.IsNull(actual);
+            } else {
+                Assert.IsNotNull(actual);
+                Assert.AreEqual(expected.Value, actual.Value, 0.01);
+            }
+        }
     }
 }
