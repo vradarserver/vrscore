@@ -216,7 +216,10 @@ namespace VirtualRadar.WebSite
         {
             if(state.Args.BrowserLocation != null && aircraft.Location != null) {
                 aircraftJson.DistanceFromHere = GreatCircleMaths.Distance(state.Args.BrowserLocation, aircraft.Location);
-                aircraftJson.BearingFromHere = GreatCircleMaths.Bearing(state.Args.BrowserLocation, aircraft.Location, null, reverseBearing: false, ignoreCurrentTrack: true);
+                var bearing = GreatCircleMaths.Bearing(state.Args.BrowserLocation, aircraft.Location, null, reverseBearing: false, ignoreCurrentTrack: true);
+                aircraftJson.BearingFromHere = bearing == null
+                    ? null
+                    : Math.Round(bearing.Value, 1, MidpointRounding.AwayFromZero);
             }
         }
 
