@@ -35,6 +35,27 @@ namespace VirtualRadar
         string GetDirectory(string fullPath);
 
         /// <summary>
+        /// Returns the filename portion of a full path.
+        /// </summary>
+        /// <param name="fullPath"></param>
+        /// <returns></returns>
+        string GetFileName(string fullPath);
+
+        /// <summary>
+        /// Returns the filename portion of a full path without the extension.
+        /// </summary>
+        /// <param name="fullPath"></param>
+        /// <returns></returns>
+        string GetFileNameWithoutExtension(string fullPath);
+
+        /// <summary>
+        /// Returns the extension of a full path.
+        /// </summary>
+        /// <param name="fullPath"></param>
+        /// <returns></returns>
+        string GetExtension(string fullPath);
+
+        /// <summary>
         /// Returns true if the directory exists.
         /// </summary>
         /// <param name="path"></param>

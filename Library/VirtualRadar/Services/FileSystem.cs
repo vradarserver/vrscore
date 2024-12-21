@@ -26,6 +26,15 @@ namespace VirtualRadar.Services
         public string GetDirectory(string fullPath) => Path.GetDirectoryName(fullPath);
 
         /// <inheritdoc/>
+        public string GetFileName(string fullPath) => Path.GetFileName(fullPath);
+
+        /// <inheritdoc/>
+        public string GetFileNameWithoutExtension(string fullPath) => Path.GetFileNameWithoutExtension(fullPath);
+
+        /// <inheritdoc/>
+        public string GetExtension(string fullPath) => Path.GetExtension(fullPath);
+
+        /// <inheritdoc/>
         public void CopyFile(string sourceFileName, string destFileName, bool overwrite) => File.Copy(sourceFileName, destFileName, overwrite);
 
         /// <inheritdoc/>

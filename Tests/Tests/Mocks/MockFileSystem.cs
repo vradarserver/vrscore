@@ -165,6 +165,12 @@ namespace Tests.Mocks
         /// <returns></returns>
         public string GetDirectory(string fullPath) => Path.GetDirectoryName(fullPath);
 
+        public string GetFileName(string fullPath) => Path.GetFileName(fullPath);
+
+        public string GetFileNameWithoutExtension(string fullPath) => Path.GetFileNameWithoutExtension(fullPath);
+
+        public string GetExtension(string fullPath) => Path.GetExtension(fullPath);
+
         public void CopyFile(string sourceFileName, string destFileName, bool overwrite)
         {
             if(!UseFileContent) {
