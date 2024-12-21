@@ -137,6 +137,7 @@ namespace VirtualRadar
             services.AddLifetime<TileServer.IDownloadedTileServerSettingsStorage,       DownloadedTileServerSettingsStorage>();
 
             services.AddLifetime<WebSite.IAircraftListJsonBuilder, WebSite.AircraftListJsonBuilder>();
+            services.AddLifetime<WebSite.GetImageModelBuilder>();
             services.AddLifetime<WebSite.ServerConfigJsonFactory>();
 
             AircraftLists.AircraftListConfig.RegisterAssembly();

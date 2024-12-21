@@ -8,18 +8,31 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.AspNetCore.Builder;
-
-namespace VirtualRadar.Server.Middleware
+namespace VirtualRadar.Drawing
 {
-    public static class V3MiddlewareExtensions
+    public static class ImageFormatExtensions
     {
-        public static IApplicationBuilder UseV3StaticFileMiddleware(this IApplicationBuilder builder)
+        public static ImageFormat? FromExtension(string extension)
         {
-            builder.UseMiddleware<V3ImageMiddleware>();
-            builder.UseMiddleware<V3MapPluginHtmlMiddleware>();
+            switch(extension?.ToUpperInvariant()) {
+                case ".BMP":    return ImageFormat.Bmp;
+                case ".GIF":    return ImageFormat.Gif;
+                case ".JPG":    return ImageFormat.Jpeg;
+                case ".JPEG":   return ImageFormat.Jpeg;
+                case ".PNG":    return ImageFormat.Png;
+                default:        return null;
+            }
+        }
 
-            return builder;
+        public static string ToMimeType(this ImageFormat imageFormat)
+        {
+            switch(imageFormat) {
+                case ImageFormat.Bmp:   return MimeType.BitmapImage;
+                case ImageFormat.Gif:   return MimeType.GifImage;
+                case ImageFormat.Jpeg:  return MimeType.JpegImage;
+                case ImageFormat.Png:   return MimeType.PngImage;
+                default:                return "";
+            }
         }
     }
 }

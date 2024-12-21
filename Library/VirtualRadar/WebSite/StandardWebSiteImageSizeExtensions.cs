@@ -8,18 +8,21 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Microsoft.AspNetCore.Builder;
-
-namespace VirtualRadar.Server.Middleware
+namespace VirtualRadar.WebSite
 {
-    public static class V3MiddlewareExtensions
+    public static class StandardWebSiteImageSizeExtensions
     {
-        public static IApplicationBuilder UseV3StaticFileMiddleware(this IApplicationBuilder builder)
+        public static StandardWebSiteImageSize ParseStandardSize(string text)
         {
-            builder.UseMiddleware<V3ImageMiddleware>();
-            builder.UseMiddleware<V3MapPluginHtmlMiddleware>();
-
-            return builder;
+            switch(text.ToUpperInvariant()) {
+                case "DETAIL":          return StandardWebSiteImageSize.PictureDetail;
+                case "FULL":            return StandardWebSiteImageSize.Full;
+                case "LIST":            return StandardWebSiteImageSize.PictureListThumbnail;
+                case "IPADDETAIL":      return StandardWebSiteImageSize.IPadDetail;
+                case "IPHONEDETAIL":    return StandardWebSiteImageSize.IPhoneDetail;
+                case "BASESTATION":     return StandardWebSiteImageSize.BaseStation;
+                default:                return StandardWebSiteImageSize.None;
+            }
         }
     }
 }

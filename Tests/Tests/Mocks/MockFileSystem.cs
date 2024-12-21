@@ -158,6 +158,12 @@ namespace Tests.Mocks
         /// <returns></returns>
         public string Combine(params string[] paths) => Path.Combine(paths);
 
+        public bool IsValidFileNameResult { get; set; } = true;
+        public bool IsValidFileName(string fileName) => IsValidFileNameResult;
+
+        public bool IsValidPathNameResult { get; set; } = true;
+        public bool IsValidPathName(string path) => IsValidPathNameResult;
+
         /// <summary>
         /// This is not mocked, it just passes through to Path.
         /// </summary>

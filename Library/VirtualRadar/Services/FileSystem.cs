@@ -23,6 +23,20 @@ namespace VirtualRadar.Services
         public string Combine(params string[] paths) => Path.Combine(paths);
 
         /// <inheritdoc/>
+        public bool IsValidFileName(string fileName)
+        {
+            return !String.IsNullOrEmpty(fileName)
+                && fileName.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
+        }
+
+        /// <inheritdoc/>
+        public bool IsValidPathName(string path)
+        {
+            return !String.IsNullOrEmpty(path)
+                && path.IndexOfAny(Path.GetInvalidPathChars()) == -1;
+        }
+
+        /// <inheritdoc/>
         public string GetDirectory(string fullPath) => Path.GetDirectoryName(fullPath);
 
         /// <inheritdoc/>

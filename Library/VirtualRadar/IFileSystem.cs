@@ -28,6 +28,21 @@ namespace VirtualRadar
         string Combine(params string[] paths);
 
         /// <summary>
+        /// True if the filename has no invalid characters in it and does not contain any folder separator
+        /// characters.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        bool IsValidFileName(string fileName);
+
+        /// <summary>
+        /// True if the path does not contain any invalid path characters.
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        bool IsValidPathName(string path);
+
+        /// <summary>
         /// Returns the folder portion of a full path.
         /// </summary>
         /// <param name="fullPath"></param>
