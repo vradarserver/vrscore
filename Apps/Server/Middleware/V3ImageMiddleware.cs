@@ -19,13 +19,13 @@ namespace VirtualRadar.Server.Middleware
     /// <summary>
     /// Handles requests for images for the V3 site.
     /// </summary>
-    /// <param name="_NextMiddleware"></param>
     public class V3ImageMiddleware(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        RequestDelegate _NextMiddleware,
-        GetImageModelBuilder _RequestBuilder,
-        IFileSystem _FileSystem,
-        ISettings<OperatorAndTypeFlagSettings> _OperatorFlagSettings
+        RequestDelegate                         _NextMiddleware,
+        GetImageModelBuilder                    _RequestBuilder,
+        IGraphics                               _Graphics,
+        IFileSystem                             _FileSystem,
+        ISettings<OperatorAndTypeFlagSettings>  _OperatorFlagSettings
         #pragma warning restore IDE1006
     )
     {
@@ -73,17 +73,28 @@ namespace VirtualRadar.Server.Middleware
                     .File
                     .Split(_PipeCharacterArray, StringSplitOptions.RemoveEmptyEntries);
 
+                byte[] imageBytes = null;
                 foreach(var chunk in chunks) {
                     if(_FileSystem.IsValidFileName(chunk)) {
                         var fullPath = _FileSystem.Combine(folder, $"{chunk}.bmp");
                         if(_FileSystem.FileExists(fullPath)) {
                             result = true;
-                            var imageBytes = await _FileSystem.ReadAllBytesAsync(fullPath);
-                            context.Response.ContentType = imageRequest.ImageFormat.ToMimeType();
-                            await context.Response.Body.WriteAsync(imageBytes);
+                            imageBytes = await _FileSystem.ReadAllBytesAsync(fullPath);
                             break;
                         }
                     }
+                }
+
+                if(imageBytes == null) {
+                    imageBytes = _Graphics
+                        .CreateBlankImage(settings.FlagWidthPixels, settings.FlagHeightPixels)
+                        .GetImageBytes(imageRequest.ImageFormat);
+                }
+
+                if(imageBytes != null) {
+                    result = true;
+                    context.Response.ContentType = imageRequest.ImageFormat.ToMimeType();
+                    await context.Response.Body.WriteAsync(imageBytes);
                 }
             }
 
