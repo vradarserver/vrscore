@@ -16,6 +16,7 @@ namespace VirtualRadar.Server.Middleware
     {
         public static IApplicationBuilder UseV3StaticFileMiddleware(this IApplicationBuilder builder)
         {
+            builder.UseMiddleware<V3ExceptionLoggingMiddleware>();
             builder.UseMiddleware<V3ImageMiddleware>();
             builder.UseMiddleware<V3MapPluginHtmlMiddleware>();
 
