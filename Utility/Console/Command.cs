@@ -20,6 +20,8 @@ namespace VirtualRadar.Utility.CLIConsole
 
         List,
 
+        Log,
+
         Lookup,
 
         Open,

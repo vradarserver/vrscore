@@ -61,6 +61,9 @@ namespace VirtualRadar.Utility.CLIConsole
                                 break;
                         }
                         break;
+                    case "log":
+                        result.Command = ParseCommand(result, Command.Log);
+                        break;
                     case "lookup":
                         result.Command = ParseCommand(result, Command.Lookup);
                         result.LookupEntity = ParseEnum<LookupEntity>(UseNextArg(arg, nextArg, ref i));
@@ -174,6 +177,7 @@ namespace VirtualRadar.Utility.CLIConsole
                              // 123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789
             Console.WriteLine($"Console command [options]");
             Console.WriteLine($"  version             Show version information");
+            Console.WriteLine($"  log                 Show the log");
             Console.WriteLine($"  list <entity>       List stuff: {String.Join(", ", Enum.GetNames<ListEntity>())}");
             Console.WriteLine($"  lookup <entity>     Look something up: {String.Join(", ", Enum.GetNames<LookupEntity>())}");
             Console.WriteLine($"  open <entity>       Open something: {String.Join(", ", Enum.GetNames<OpenEntity>())}");

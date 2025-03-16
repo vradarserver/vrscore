@@ -11,7 +11,7 @@
 namespace VirtualRadar
 {
     /// <summary>
-    /// Writes to the application log.
+    /// Reads and writes the application log.
     /// </summary>
     [Lifetime(Lifetime.Singleton)]
     public interface ILog
@@ -28,5 +28,11 @@ namespace VirtualRadar
         /// <param name="ex"></param>
         /// <param name="message"></param>
         void Exception(Exception ex, string message = null);
+
+        /// <summary>
+        /// Reads all lines from the log.
+        /// </summary>
+        /// <returns></returns>
+        IReadOnlyList<string> ReadLines();
     }
 }

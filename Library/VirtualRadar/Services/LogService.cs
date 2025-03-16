@@ -61,6 +61,9 @@ namespace VirtualRadar.Services
             }
         }
 
+        /// <inheritdoc/>
+        public IReadOnlyList<string> ReadLines() => LoadContent();
+
         private List<string> LoadContent()
         {
             var result = new List<string>();
