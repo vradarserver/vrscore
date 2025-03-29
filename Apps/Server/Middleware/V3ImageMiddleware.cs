@@ -62,6 +62,7 @@ namespace VirtualRadar.Server.Middleware
         private async Task<bool> ServeFlag(HttpContext context, GetImageModel imageRequest, bool isTypeFlag)
         {
             var result = false;
+            byte[] imageBytes = null;
 
             var settings = _OperatorFlagSettings.LatestValue;
             var folder = isTypeFlag
@@ -73,7 +74,6 @@ namespace VirtualRadar.Server.Middleware
                     .File
                     .Split(_PipeCharacterArray, StringSplitOptions.RemoveEmptyEntries);
 
-                byte[] imageBytes = null;
                 foreach(var chunk in chunks) {
                     if(_FileSystem.IsValidFileName(chunk)) {
                         var fullPath = _FileSystem.Combine(folder, $"{chunk}.bmp");
@@ -84,18 +84,18 @@ namespace VirtualRadar.Server.Middleware
                         }
                     }
                 }
+            }
 
-                if(imageBytes == null) {
-                    imageBytes = _Graphics
-                        .CreateBlankImage(settings.FlagWidthPixels, settings.FlagHeightPixels)
-                        .GetImageBytes(imageRequest.ImageFormat);
-                }
+            if(imageBytes == null) {
+                imageBytes = _Graphics
+                    .CreateBlankImage(settings.FlagWidthPixels, settings.FlagHeightPixels)
+                    .GetImageBytes(imageRequest.ImageFormat);
+            }
 
-                if(imageBytes != null) {
-                    result = true;
-                    context.Response.ContentType = imageRequest.ImageFormat.ToMimeType();
-                    await context.Response.Body.WriteAsync(imageBytes);
-                }
+            if(imageBytes != null) {
+                result = true;
+                context.Response.ContentType = imageRequest.ImageFormat.ToMimeType();
+                await context.Response.Body.WriteAsync(imageBytes);
             }
 
             return result;
