@@ -65,62 +65,54 @@ namespace VirtualRadar.Server.Middleware
 
         private async Task<bool> ServeFlag(HttpContext context, GetImageModel imageRequest, bool isTypeFlag)
         {
-            var result = false;
-
             var settings = _OperatorFlagSettings.LatestValue;
             var folder = isTypeFlag
                 ? settings.TypeFlagsFolder
                 : settings.OperatorFlagsFolder;
 
+            IImage image = null;
             if(!String.IsNullOrEmpty(folder)) {
                 var chunks = imageRequest
                     .File
                     .Split(_PipeCharacterArray, StringSplitOptions.RemoveEmptyEntries);
 
-                IImage image = null;
                 foreach(var chunk in chunks) {
                     if(_FileSystem.IsValidFileName(chunk)) {
                         var fullPath = _FileSystem.Combine(folder, $"{chunk}.bmp");
                         if(_FileSystem.FileExists(fullPath)) {
-                            result = true;
                             var imageBytes = await _FileSystem.ReadAllBytesAsync(fullPath);
                             image = _Graphics.CreateImage(imageBytes);
                             break;
                         }
                     }
                 }
-                image ??= _Graphics.CreateBlankImage(settings.FlagWidthPixels, settings.FlagHeightPixels);
-
-                try {
-                    result = await SendImage(context, image, imageRequest.ImageFormat);
-                } finally {
-                    image.Dispose();
-                }
             }
+            image ??= _Graphics.CreateBlankImage(imageRequest.Width ?? 1, imageRequest.Height ?? 1);
 
-            return result;
-        }
-
-        private async Task<bool> ServeResourceImage(HttpContext context, byte[] inputImageBytes, GetImageModel imageRequest)
-        {
-            var result = false;
-
-            var image = _Graphics.CreateImage(inputImageBytes);
             try {
-                if((imageRequest.RotateDegrees ?? 0) != 0) {
-                    image = RotateImage(image, imageRequest.RotateDegrees.Value);
-                }
-                result = await SendImage(context, image, imageRequest.ImageFormat);
+                return await SendImage(context, image, imageRequest.ImageFormat);
             } finally {
                 image.Dispose();
             }
-
-            return result;
         }
 
-        private IImage RotateImage(IImage originalImage, double rotateDegrees)
+        private async Task<bool> ServeResourceImage(HttpContext context, byte[] imageBytes, GetImageModel imageRequest)
         {
-            var newImage = _Graphics.RotateImage(originalImage, rotateDegrees);
+            var image = _Graphics.CreateImage(imageBytes);
+
+            try {
+                if((imageRequest.RotateDegrees ?? 0) != 0) {
+                    image = SwapImage(image, image.Rotate(imageRequest.RotateDegrees.Value));
+                }
+
+                return await SendImage(context, image, imageRequest.ImageFormat);
+            } finally {
+                image.Dispose();
+            }
+        }
+
+        private IImage SwapImage(IImage originalImage, IImage newImage)
+        {
             originalImage.Dispose();
             return newImage;
         }
