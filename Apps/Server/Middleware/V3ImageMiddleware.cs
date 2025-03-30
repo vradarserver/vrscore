@@ -11,6 +11,7 @@
 using Microsoft.AspNetCore.Http;
 using VirtualRadar.Configuration;
 using VirtualRadar.Drawing;
+using ImageResources = VirtualRadar.Resources.Images;
 using VirtualRadar.WebSite;
 using VirtualRadar.WebSite.Models;
 
@@ -36,7 +37,7 @@ namespace VirtualRadar.Server.Middleware
             } else {
                 var requestHandled = await ProcessRequest(context);
                 if(!requestHandled) {
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    await _NextMiddleware(context);
                 }
             }
         }
@@ -48,9 +49,12 @@ namespace VirtualRadar.Server.Middleware
 
             if(result) {
                 result = false;
+
                 switch(imageRequest.ImageName) {
-                    case "OPFLAG":  result = await ServeFlag(context, imageRequest, isTypeFlag: false); break;
-                    case "TYPE":    result = await ServeFlag(context, imageRequest, isTypeFlag: true); break;
+                    case "COMPASS":     result = await ServeResourceImage(context, ImageResources.Compass, imageRequest); break;
+                    case "OPFLAG":      result = await ServeFlag(context, imageRequest, isTypeFlag: false); break;
+                    case "TYPE":        result = await ServeFlag(context, imageRequest, isTypeFlag: true); break;
+                    case "YOUAREHERE":  result = await ServeResourceImage(context, ImageResources.BlueBall, imageRequest); break;
                 }
             }
 
@@ -73,29 +77,63 @@ namespace VirtualRadar.Server.Middleware
                     .File
                     .Split(_PipeCharacterArray, StringSplitOptions.RemoveEmptyEntries);
 
-                byte[] imageBytes = null;
+                IImage image = null;
                 foreach(var chunk in chunks) {
                     if(_FileSystem.IsValidFileName(chunk)) {
                         var fullPath = _FileSystem.Combine(folder, $"{chunk}.bmp");
                         if(_FileSystem.FileExists(fullPath)) {
                             result = true;
-                            imageBytes = await _FileSystem.ReadAllBytesAsync(fullPath);
+                            var imageBytes = await _FileSystem.ReadAllBytesAsync(fullPath);
+                            image = _Graphics.CreateImage(imageBytes);
                             break;
                         }
                     }
                 }
+                image ??= _Graphics.CreateBlankImage(settings.FlagWidthPixels, settings.FlagHeightPixels);
 
-                if(imageBytes == null) {
-                    imageBytes = _Graphics
-                        .CreateBlankImage(settings.FlagWidthPixels, settings.FlagHeightPixels)
-                        .GetImageBytes(imageRequest.ImageFormat);
+                try {
+                    result = await SendImage(context, image, imageRequest.ImageFormat);
+                } finally {
+                    image.Dispose();
                 }
+            }
 
-                if(imageBytes != null) {
-                    result = true;
-                    context.Response.ContentType = imageRequest.ImageFormat.ToMimeType();
-                    await context.Response.Body.WriteAsync(imageBytes);
+            return result;
+        }
+
+        private async Task<bool> ServeResourceImage(HttpContext context, byte[] inputImageBytes, GetImageModel imageRequest)
+        {
+            var result = false;
+
+            var image = _Graphics.CreateImage(inputImageBytes);
+            try {
+                if((imageRequest.RotateDegrees ?? 0) != 0) {
+                    image = RotateImage(image, imageRequest.RotateDegrees.Value);
                 }
+                result = await SendImage(context, image, imageRequest.ImageFormat);
+            } finally {
+                image.Dispose();
+            }
+
+            return result;
+        }
+
+        private IImage RotateImage(IImage originalImage, double rotateDegrees)
+        {
+            var newImage = _Graphics.RotateImage(originalImage, rotateDegrees);
+            originalImage.Dispose();
+            return newImage;
+        }
+
+        private async Task<bool> SendImage(HttpContext context, IImage image, ImageFormat format)
+        {
+            var result = false;
+
+            var imageBytes = image?.GetImageBytes(format);
+            if(imageBytes != null) {
+                result = true;
+                context.Response.ContentType = format.ToMimeType();
+                await context.Response.Body.WriteAsync(imageBytes);
             }
 
             return result;

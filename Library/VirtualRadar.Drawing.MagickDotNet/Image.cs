@@ -8,7 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.IO;
 using ImageMagick;
 
 namespace VirtualRadar.Drawing.MagickDotNet
@@ -54,15 +53,27 @@ namespace VirtualRadar.Drawing.MagickDotNet
         {
         }
 
+        /// <summary>
+        /// Creates a new image from the bytes of an existing image.
+        /// </summary>
+        /// <param name="imageBytes"></param>
+        public Image(byte[] imageBytes) : this(new MagickImage(imageBytes))
+        {
+        }
+
         public IImage AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
             throw new NotImplementedException();
         }
 
-        public IImage Clone()
-        {
-            throw new NotImplementedException();
-        }
+        /// <inheritdoc/>
+        IImage IImage.Clone() => ((Image)this).Clone();
+
+        /// <summary>
+        /// Clones the image.
+        /// </summary>
+        /// <returns></returns>
+        public Image Clone() => new(new MagickImage(_Image));
 
         public void Dispose()
         {
@@ -90,9 +101,12 @@ namespace VirtualRadar.Drawing.MagickDotNet
             throw new NotImplementedException();
         }
 
-        public IImage Rotate(float degrees)
+        /// <inheritdoc/>
+        public IImage Rotate(double degrees)
         {
-            throw new NotImplementedException();
+            var result = Clone();
+            result._Image.Rotate(degrees);
+            return result;
         }
 
         public IImage WidenImage(int width, bool centreHorizontally)

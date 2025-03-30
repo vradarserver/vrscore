@@ -36,6 +36,7 @@
         <ProjectReference Include="..\..\Library\VirtualRadar.Drawing.MagickDotNet\VirtualRadar.Drawing.MagickDotNet.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.Vatsim\VirtualRadar.Feed.Vatsim.csproj" />
+        <ProjectReference Include="..\..\Library\VirtualRadar.Resources\VirtualRadar.Resources.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>
 

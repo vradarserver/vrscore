@@ -24,6 +24,8 @@ namespace VirtualRadar.Drawing.MagickDotNet
 
         public IImage CreateBlankImage(int width, int height) => new Image(width, height);
 
+        public IImage CreateImage(byte[] bytes) => new Image(bytes);
+
         public IImage CreateIPhoneSplash(string webSiteAddress, bool isIPad, List<string> pathParts)
         {
             throw new NotImplementedException();
@@ -44,10 +46,8 @@ namespace VirtualRadar.Drawing.MagickDotNet
             throw new NotImplementedException();
         }
 
-        public IImage RotateImage(IImage original, double degrees)
-        {
-            throw new NotImplementedException();
-        }
+        /// <inheritdoc/>
+        public IImage RotateImage(IImage original, double degrees) => original.Rotate(degrees);
 
         public IImage UseImage(IImage tempImage, IImage newImage)
         {

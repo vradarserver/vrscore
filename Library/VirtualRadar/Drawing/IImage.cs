@@ -59,7 +59,7 @@ namespace VirtualRadar.Drawing
         /// </summary>
         /// <param name="degrees"></param>
         /// <returns></returns>
-        IImage Rotate(float degrees);
+        IImage Rotate(double degrees);
 
         /// <summary>
         /// Returns a copy of the image with the text lines drawn onto the bottom of it. Used to draw pin text onto map markers.

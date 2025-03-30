@@ -74,6 +74,13 @@ namespace VirtualRadar.Drawing
         IImage CreateBlankImage(int width, int height);
 
         /// <summary>
+        /// Creates an image from the bytes passed across.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        IImage CreateImage(byte[] bytes);
+
+        /// <summary>
         /// Creates an iPhone splash page image.
         /// </summary>
         /// <param name="webSiteAddress"></param>
