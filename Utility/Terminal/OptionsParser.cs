@@ -123,7 +123,7 @@ namespace VirtualRadar.Utility.Terminal
                              // 123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789
             Console.WriteLine($"Terminal <command> [options]");
 
-            if (!String.IsNullOrEmpty(message)) {
+            if(!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();
                 Console.WriteLine(message);
             }

@@ -30,7 +30,7 @@ namespace VirtualRadar.Utility.CLIConsole
 
             await WriteLine($"Using {_SettingsStorage.SettingsLocation()}");
 
-            if (_Options.Update) {
+            if(_Options.Update) {
                 await WriteLine($"Resaving settings with new entries, this will not overwrite existing entries");
                 _SettingsStorage.SaveChanges();
             }

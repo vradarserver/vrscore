@@ -137,7 +137,7 @@ namespace VirtualRadar.Server
             Console.WriteLine($"  -showLog            Show server log on screen [{defaults.ShowLog}]");
             Console.WriteLine($"  -folder <path>      Set working folder [{defaults.WorkingFolder}]");
 
-            if (!String.IsNullOrEmpty(message)) {
+            if(!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();
                 Console.WriteLine(message);
             }

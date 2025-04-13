@@ -215,7 +215,7 @@ namespace VirtualRadar.Utility.CLIConsole
             Console.WriteLine($"SETTINGS OPTIONS");
             Console.WriteLine($"  -update             Load and then re-save the settings [{defaults.Update}]");
 
-            if (!String.IsNullOrEmpty(message)) {
+            if(!String.IsNullOrEmpty(message)) {
                 Console.WriteLine();
                 Console.WriteLine(message);
             }
