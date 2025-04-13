@@ -63,6 +63,7 @@ namespace VirtualRadar.Server.Middleware
         {
             var path = context.Request.Path;
             return path.StartsWithSegments("/v3/desktop.html", StringComparison.InvariantCultureIgnoreCase)
+                || path.StartsWithSegments("/v3/mobile.html", StringComparison.InvariantCultureIgnoreCase)
                 ;
         }
 
