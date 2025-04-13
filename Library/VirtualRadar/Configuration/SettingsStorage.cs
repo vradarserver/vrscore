@@ -248,7 +248,7 @@ namespace VirtualRadar.Configuration
         public void ChangeValue<T>(T newValue) => ChangeValue(typeof(T), newValue);
 
         /// <inheritdoc/>
-        public  void SaveChanges()
+        public void SaveChanges()
         {
             string contentFileName = null;
 
