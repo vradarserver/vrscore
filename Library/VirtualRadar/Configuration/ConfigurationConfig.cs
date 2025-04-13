@@ -126,7 +126,10 @@ namespace VirtualRadar.Configuration
                 ArgumentNullException.ThrowIfNull(defaultValue);
                 ArgumentOutOfRangeException.ThrowIfEqual(false, defaultValue.GetType().IsAssignableTo(optionsType), nameof(defaultValue));
 
-                var defaultJObject = JObject.FromObject(defaultValue);
+                var defaultJObject = JObject.FromObject(
+                    defaultValue,
+                    JsonConfiguration.JsonSerialiser
+                );
                 lock(_SyncLock) {
                     if(_SettingKeyToDefaultsMap.TryGetValue(key, out var mergedObject)) {
                         mergedObject.Merge(defaultJObject, new() {

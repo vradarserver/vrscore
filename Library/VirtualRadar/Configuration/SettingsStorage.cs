@@ -9,7 +9,6 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 
 namespace VirtualRadar.Configuration
@@ -34,9 +33,6 @@ namespace VirtualRadar.Configuration
         private Dictionary<string, JObject> _SettingKeyToJObject;
         private readonly Dictionary<string, object> _ParsedContent = [];
         private string _ContentFileName;
-        private JsonSerializerSettings _JsonSerialiserSettings;
-        private JsonSerializer _JsonSerialiser;
-        private JsonSerializerSettings _JsonDeserialiserSettings;
         private readonly CallbackWithParamList<ValueChangedCallbackArgs> _ValueChangedCallbacks = new();
         private readonly CallbackNoParamList _SavedChangesCallbacks = new();
 
@@ -60,14 +56,6 @@ namespace VirtualRadar.Configuration
             _WorkingFolder = workingFolder;
             _SettingsConfiguration = settingsConfiguration;
             _Log = log;
-
-            _JsonDeserialiserSettings = new();
-            _JsonDeserialiserSettings.Converters.Add(new SettingsProviderJsonConverter());
-
-            _JsonSerialiserSettings = new();
-            _JsonSerialiserSettings.Converters.Add(new StringEnumConverter());
-
-            _JsonSerialiser = JsonSerializer.Create(_JsonSerialiserSettings);
         }
 
         /// <summary>
@@ -143,7 +131,7 @@ namespace VirtualRadar.Configuration
                     var deserialised = JsonConvert.DeserializeObject(
                         fileJObject.ToString(),
                         optionType,
-                        _JsonDeserialiserSettings
+                        JsonConfiguration.JsonDeserialiserSettings
                     );
 
                     result = deserialised;
@@ -222,7 +210,7 @@ namespace VirtualRadar.Configuration
             lock(_SyncLock) {
                 var latestValue = LatestValue(contentKey, optionType);
                 if(!latestValue.Equals(newValue)) {
-                    var newJObject = JObject.FromObject(newValue, _JsonSerialiser);
+                    var newJObject = JObject.FromObject(newValue, JsonConfiguration.JsonSerialiser);
 
                     if(_SettingKeyToJObject.TryGetValue(contentKey, out var currentJObject)) {
                         MergeJObjects(currentJObject, newJObject);
@@ -266,7 +254,7 @@ namespace VirtualRadar.Configuration
                 var json = JsonConvert.SerializeObject(
                     _SettingKeyToJObject,
                     Formatting.Indented,
-                    _JsonSerialiserSettings
+                    JsonConfiguration.JsonSerialiserSettings
                 );
                 _FileSystem.WriteAllText(contentFileName, json);
             }
