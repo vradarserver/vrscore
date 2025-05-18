@@ -26,7 +26,7 @@ namespace VirtualRadar.Drawing.MagickDotNet
         private readonly MagickImage _Image;
 
         /// <inheritdoc/>
-        public Size Size { get; }
+        public Size Size { get; private set; }
 
         /// <inheritdoc/>
         public int Width => Size.Width;
@@ -44,7 +44,7 @@ namespace VirtualRadar.Drawing.MagickDotNet
         public Image(MagickImage image, bool isCachedOriginal)
         {
             _Image = image;
-            Size = new Size((int)image.Width, (int)image.Height);
+            RebuildSize();
             IsCachedOriginal = isCachedOriginal;
         }
 
@@ -160,6 +160,7 @@ namespace VirtualRadar.Drawing.MagickDotNet
                     centreVertically ? Gravity.Center : Gravity.Northwest,
                     MagickColors.Transparent
                 );
+                RebuildSize();
             }
         }
 
@@ -221,6 +222,7 @@ namespace VirtualRadar.Drawing.MagickDotNet
                     if(left != 0 || top != 0) {
                         _Image.Shave((uint)left, (uint)top);
                     }
+                    RebuildSize();
                 }
             }
         }
@@ -255,6 +257,7 @@ namespace VirtualRadar.Drawing.MagickDotNet
                     centreHorizontally ? Gravity.Center : Gravity.Northwest,
                     MagickColors.Transparent
                 );
+                RebuildSize();
             }
         }
 
@@ -263,6 +266,11 @@ namespace VirtualRadar.Drawing.MagickDotNet
             if(IsCachedOriginal) {
                 throw new InvalidOperationException("An attempt was made to modify a cached original image");
             }
+        }
+
+        private void RebuildSize()
+        {
+            Size = new Size((int)_Image.Width, (int)_Image.Height);
         }
     }
 }
