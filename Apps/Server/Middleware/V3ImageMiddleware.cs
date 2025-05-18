@@ -28,7 +28,8 @@ namespace VirtualRadar.Server.Middleware
         GetImageModelBuilder                    _RequestBuilder,
         IGraphics                               _Graphics,
         IFileSystem                             _FileSystem,
-        ISettings<OperatorAndTypeFlagSettings>  _OperatorFlagSettings
+        ISettings<OperatorAndTypeFlagSettings>  _OperatorFlagSettings,
+        ISettings<InternetClientSettings>       _InternetClientSettings
         #pragma warning restore IDE1006
     )
     {
@@ -57,12 +58,15 @@ namespace VirtualRadar.Server.Middleware
 
                 if(imageRequest.WebSiteFileName != null) {
                     result = await ServeImageFromFile(context, imageRequest);
-                } else {
+                }
+                if(!result) {
                     switch(imageRequest.ImageName) {
-                        case "COMPASS":     result = await ServeResourceImage(context, ImageResources.Compass, imageRequest); break;
-                        case "OPFLAG":      result = await ServeFlag(context, imageRequest, isTypeFlag: false); break;
-                        case "TYPE":        result = await ServeFlag(context, imageRequest, isTypeFlag: true); break;
-                        case "YOUAREHERE":  result = await ServeResourceImage(context, ImageResources.BlueBall, imageRequest); break;
+                        case "AIRPLANE":            result = await ServeResourceImage(context, ImageResources.Marker_Airplane, imageRequest); break;
+                        case "AIRPLANESELECTED":    result = await ServeResourceImage(context, ImageResources.Marker_AirplaneSelected, imageRequest); break;
+                        case "COMPASS":             result = await ServeResourceImage(context, ImageResources.Compass, imageRequest); break;
+                        case "OPFLAG":              result = await ServeFlag(context, imageRequest, isTypeFlag: false); break;
+                        case "TYPE":                result = await ServeFlag(context, imageRequest, isTypeFlag: true); break;
+                        case "YOUAREHERE":          result = await ServeResourceImage(context, ImageResources.BlueBall, imageRequest); break;
                     }
                 }
             }
@@ -116,7 +120,7 @@ namespace VirtualRadar.Server.Middleware
                 var bytes = await _FileSystem.ReadAllBytesAsync(fileInfo.PhysicalPath);
                 var image = _Graphics.CreateImage(bytes);
                 try {
-                    image = ApplyTransformations(image, imageRequest);
+                    image = ApplyTransformations(context, image, imageRequest);
                     result = await SendImage(context, image, imageRequest.ImageFormat);
                 } finally {
                     _Graphics.DisposeIfNotCachedOriginal(image);
@@ -131,14 +135,14 @@ namespace VirtualRadar.Server.Middleware
             var image = _Graphics.CreateImage(imageBytes);
 
             try {
-                image = ApplyTransformations(image, imageRequest);
+                image = ApplyTransformations(context, image, imageRequest);
                 return await SendImage(context, image, imageRequest.ImageFormat);
             } finally {
                 _Graphics.DisposeIfNotCachedOriginal(image);
             }
         }
 
-        private IImage ApplyTransformations(IImage image, GetImageModel imageRequest)
+        private IImage ApplyTransformations(HttpContext context, IImage image, GetImageModel imageRequest)
         {
             if(imageRequest.IsHighDpi) {
                 image = _Graphics.ResizeForHiDpi(image);
@@ -153,6 +157,14 @@ namespace VirtualRadar.Server.Middleware
                 image = _Graphics.AddAltitudeStalk(image, imageRequest.Height ?? 1, imageRequest.CentreX ?? 1);
             } else if(imageRequest.Height != null) {
                 image = _Graphics.HeightenImage(image, imageRequest.Height.Value, imageRequest.CentreImageVertically);
+            }
+
+            if(imageRequest.HasTextLines) {
+                var isInternet = context.Items.ContainsKey(HttpContextItemKey.VrsIsInternet);
+                var isAllowed = !isInternet || _InternetClientSettings.LatestValue.CanShowPinText;
+                if(isAllowed) {
+                    image = _Graphics.AddTextLines(image, imageRequest.TextLines, centreText: true, isHighDpi: imageRequest.IsHighDpi);
+                }
             }
 
             return image;

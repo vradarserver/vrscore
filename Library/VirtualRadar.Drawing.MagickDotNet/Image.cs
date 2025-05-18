@@ -71,9 +71,37 @@ namespace VirtualRadar.Drawing.MagickDotNet
         {
         }
 
-        public IImage AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
+        /// <summary>
+        /// Implements <see cref="IGraphics.AddTextLines"/>
+        /// </summary>
+        /// <param name="textLines"></param>
+        /// <param name="centreText"></param>
+        /// <param name="isHighDpi"></param>
+        public void AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
-            throw new NotImplementedException();
+            AssertMutable();
+            lock(_SyncLock) {
+                var lines = textLines.Where(tl => tl != null).ToList();
+                var lineHeight = isHighDpi ? 24f : 12f;
+                var topOffset = 5f;
+                var startPointSize = isHighDpi ? 20f : 10f;
+                var haloMod = isHighDpi ? 8 : 4;
+                var haloTrans = isHighDpi ? 0.125f : 0.25f;
+                var left = centreText ? Width / 2 : 0;
+                var top = (Height - topOffset) - (lines.Count * lineHeight);
+
+                foreach(var line in lines) {
+                    if(line.Length > 0) {
+                        var settings = new Drawables()
+                            .FontPointSize(10)
+                            .FillColor(MagickColors.Black)
+                            .TextAlignment(centreText ? TextAlignment.Center : TextAlignment.Left)
+                            .Text(left, top + lineHeight, line);
+                        settings.Draw(_Image);
+                    }
+                    top += lineHeight;
+                }
+            }
         }
 
         /// <summary>
