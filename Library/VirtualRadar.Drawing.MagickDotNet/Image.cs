@@ -9,12 +9,16 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using ImageMagick;
+using ImageMagick.Drawing;
+using VirtualRadar.Extensions;
 
 namespace VirtualRadar.Drawing.MagickDotNet
 {
     class Image : IImage
     {
         private readonly object _SyncLock = new();
+        private static readonly DrawableStrokeColor _DrawBlack = new(MagickColors.Black);
+        private static readonly DrawableStrokeWidth _Draw1px = new(1);
 
         /// <summary>
         /// The wrapped image.
@@ -30,14 +34,18 @@ namespace VirtualRadar.Drawing.MagickDotNet
         /// <inheritdoc/>
         public int Height => Size.Height;
 
+        public bool IsCachedOriginal { get; }
+
         /// <summary>
         /// Creates a new object.
         /// </summary>
         /// <param name="image"></param>
-        public Image(MagickImage image)
+        /// <param name="isCachedOriginal"></param>
+        public Image(MagickImage image, bool isCachedOriginal)
         {
             _Image = image;
             Size = new Size((int)image.Width, (int)image.Height);
+            IsCachedOriginal = isCachedOriginal;
         }
 
         /// <summary>
@@ -45,11 +53,12 @@ namespace VirtualRadar.Drawing.MagickDotNet
         /// </summary>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public Image(int width, int height) : this(new MagickImage(
+        /// <param name="isCachedOriginal"></param>
+        public Image(int width, int height, bool isCachedOriginal) : this(new MagickImage(
             MagickColors.Transparent,
             (uint)width,
             (uint)height
-        ))
+        ), isCachedOriginal)
         {
         }
 
@@ -57,7 +66,8 @@ namespace VirtualRadar.Drawing.MagickDotNet
         /// Creates a new image from the bytes of an existing image.
         /// </summary>
         /// <param name="imageBytes"></param>
-        public Image(byte[] imageBytes) : this(new MagickImage(imageBytes))
+        /// <param name="isCachedOriginal"></param>
+        public Image(byte[] imageBytes, bool isCachedOriginal) : this(new MagickImage(imageBytes), isCachedOriginal)
         {
         }
 
@@ -66,20 +76,20 @@ namespace VirtualRadar.Drawing.MagickDotNet
             throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
-        IImage IImage.Clone() => ((Image)this).Clone();
-
         /// <summary>
         /// Clones the image.
         /// </summary>
         /// <returns></returns>
-        public Image Clone() => new(new MagickImage(_Image));
+        public Image Clone() => new(new MagickImage(_Image), isCachedOriginal: false);
 
-        public void Dispose()
-        {
-            _Image.Dispose();
-        }
+        /// <inheritdoc/>
+        public void Dispose() => _Image.Dispose();
 
+        /// <summary>
+        /// Implements <see cref="IGraphics.GetImageBytes"/>.
+        /// </summary>
+        /// <param name="imageFormat"></param>
+        /// <returns></returns>
         public byte[] GetImageBytes(ImageFormat imageFormat)
         {
             var magickFormat = imageFormat.ToMagickFormat();
@@ -91,27 +101,168 @@ namespace VirtualRadar.Drawing.MagickDotNet
             }
         }
 
-        public IImage HeightenImage(int height, bool centreVertically)
+        /// <summary>
+        /// Implements <see cref="IGraphics.AddAltitudeStalk"/>.
+        /// </summary>
+        /// <param name="height"></param>
+        /// <param name="centreX"></param>
+        public Image CopyWithAltitudeStalk(int height, int centreX)
         {
-            throw new NotImplementedException();
-        }
+            var result = new Image(Width, height, isCachedOriginal: false);
+            var startOfAltitudeLine = Height / 2;
 
-        public IImage Resize(int width, int height, ResizeMode mode = ResizeMode.Normal, IBrush zoomBackground = null, bool preferSpeedOverQuality = true)
-        {
-            throw new NotImplementedException();
-        }
+            lock(_SyncLock) {
+                // Draw the altitude line
+                result._Image.Draw(
+                    _DrawBlack, _Draw1px,
+                    new DrawableLine(
+                        centreX, startOfAltitudeLine,
+                        centreX, height - 3
+                    )
+                );
 
-        /// <inheritdoc/>
-        public IImage Rotate(double degrees)
-        {
-            var result = Clone();
-            result._Image.Rotate(degrees);
+                // Draw the X at the bottom of the altitude line
+                result._Image.Draw(
+                    _DrawBlack, _Draw1px,
+                    new DrawableLine(
+                        centreX - 2, height - 5,
+                        centreX + 3, height - 1
+                    )
+                );
+                result._Image.Draw(
+                    _DrawBlack, _Draw1px,
+                    new DrawableLine(
+                        centreX - 3, height - 1,
+                        centreX + 2, height - 5
+                    )
+                );
+
+                // Draw this image on top of all the lines
+                result._Image.Composite(_Image, 0, 0, CompositeOperator.Over);
+            }
+
             return result;
         }
 
-        public IImage WidenImage(int width, bool centreHorizontally)
+        /// <summary>
+        /// Implements <see cref="IGraphics.HeightenImage"/>.
+        /// </summary>
+        /// <param name="height"></param>
+        /// <param name="centreVertically"></param>
+        /// <returns></returns>
+        public void HeightenImage(int height, bool centreVertically)
         {
-            throw new NotImplementedException();
+            AssertMutable();
+            lock(_SyncLock) {
+                _Image.Extent(
+                    (uint)Width,
+                    (uint)height,
+                    centreVertically ? Gravity.Center : Gravity.Northwest,
+                    MagickColors.Transparent
+                );
+            }
+        }
+
+        /// <summary>
+        /// Implements <see cref="IGraphics.ResizeBitmap()"/>
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="mode"></param>
+        /// <param name="zoomBackground"></param>
+        /// <param name="preferSpeedOverQuality"></param>
+        public void Resize(
+            int width,
+            int height,
+            ResizeMode mode,
+            Colour zoomBackground,
+            bool preferSpeedOverQuality
+        )
+        {
+            AssertMutable();
+
+            var newWidth = width;
+            var newHeight = height;
+            var left = 0;
+            var top = 0;
+
+            if(mode != ResizeMode.Stretch) {
+                var widthPercent = (double)newWidth / (double)Width;
+                var heightPercent = (double)newHeight / (double)Height;
+                switch(mode) {
+                    case ResizeMode.Zoom:
+                        if(widthPercent > heightPercent) {
+                            newWidth = Math.Min(newWidth, (int)(Width * heightPercent).Round(0));
+                        } else if(heightPercent > widthPercent) {
+                            newHeight = Math.Min(newHeight, (int)(Height * widthPercent).Round(0));
+                        }
+                        break;
+                    case ResizeMode.Normal:
+                    case ResizeMode.Centre:
+                        if(widthPercent > heightPercent) {
+                            newHeight = Math.Max(newHeight, (int)(Height * widthPercent).Round(0));
+                        } else if(heightPercent > widthPercent) {
+                            newWidth = Math.Max(newWidth, (int)(Width * heightPercent).Round(0));
+                        }
+                        break;
+                }
+
+                if(mode != ResizeMode.Normal) {
+                    left = (width - newWidth) / 2;
+                    top = (height - newHeight) / 2;
+                }
+
+                lock(_SyncLock) {
+                    _Image.FilterType = preferSpeedOverQuality
+                        ? FilterType.Cubic
+                        : FilterType.Lanczos;
+                    _Image.Resize((uint)newWidth, (uint)newHeight);
+                    _Image.Extent((uint)width, (uint)height, Gravity.Northwest, zoomBackground.ToMagickColor());
+                    if(left != 0 || top != 0) {
+                        _Image.Shave((uint)left, (uint)top);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Implements <see cref="IGraphics.Rotate"/>.
+        /// </summary>
+        /// <param name="degrees"></param>
+        public void Rotate(double degrees)
+        {
+            AssertMutable();
+            lock(_SyncLock) {
+                _Image.BackgroundColor = MagickColors.Transparent;
+                _Image.Rotate(degrees);
+            }
+        }
+
+        /// <summary>
+        /// Implements <see cref="IGraphics.WidenImage"/>.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="centreHorizontally"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public void WidenImage(int width, bool centreHorizontally)
+        {
+            AssertMutable();
+            lock(_SyncLock) {
+                _Image.Extent(
+                    (uint)width,
+                    (uint)Height,
+                    centreHorizontally ? Gravity.Center : Gravity.Northwest,
+                    MagickColors.Transparent
+                );
+            }
+        }
+
+        private void AssertMutable()
+        {
+            if(IsCachedOriginal) {
+                throw new InvalidOperationException("An attempt was made to modify a cached original image");
+            }
         }
     }
 }

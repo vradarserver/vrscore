@@ -14,6 +14,7 @@ using VirtualRadar.Drawing;
 using ImageResources = VirtualRadar.Resources.Images;
 using VirtualRadar.WebSite;
 using VirtualRadar.WebSite.Models;
+using Microsoft.AspNetCore.Hosting;
 
 namespace VirtualRadar.Server.Middleware
 {
@@ -23,6 +24,7 @@ namespace VirtualRadar.Server.Middleware
     public class V3ImageMiddleware(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         RequestDelegate                         _NextMiddleware,
+        IWebHostEnvironment                     _WebHostEnvironment,
         GetImageModelBuilder                    _RequestBuilder,
         IGraphics                               _Graphics,
         IFileSystem                             _FileSystem,
@@ -30,9 +32,12 @@ namespace VirtualRadar.Server.Middleware
         #pragma warning restore IDE1006
     )
     {
+        const string _PathPrefix = "/v3/";
+        const string _ImagesPrefix = _PathPrefix + "images";
+
         public async Task InvokeAsync(HttpContext context)
         {
-            if(!context.Request.Path.StartsWithSegments("/v3/images", StringComparison.InvariantCultureIgnoreCase)) {
+            if(!context.Request.Path.StartsWithSegments(_ImagesPrefix, StringComparison.InvariantCultureIgnoreCase)) {
                 await _NextMiddleware(context);
             } else {
                 var requestHandled = await ProcessRequest(context);
@@ -50,11 +55,15 @@ namespace VirtualRadar.Server.Middleware
             if(result) {
                 result = false;
 
-                switch(imageRequest.ImageName) {
-                    case "COMPASS":     result = await ServeResourceImage(context, ImageResources.Compass, imageRequest); break;
-                    case "OPFLAG":      result = await ServeFlag(context, imageRequest, isTypeFlag: false); break;
-                    case "TYPE":        result = await ServeFlag(context, imageRequest, isTypeFlag: true); break;
-                    case "YOUAREHERE":  result = await ServeResourceImage(context, ImageResources.BlueBall, imageRequest); break;
+                if(imageRequest.WebSiteFileName != null) {
+                    result = await ServeImageFromFile(context, imageRequest);
+                } else {
+                    switch(imageRequest.ImageName) {
+                        case "COMPASS":     result = await ServeResourceImage(context, ImageResources.Compass, imageRequest); break;
+                        case "OPFLAG":      result = await ServeFlag(context, imageRequest, isTypeFlag: false); break;
+                        case "TYPE":        result = await ServeFlag(context, imageRequest, isTypeFlag: true); break;
+                        case "YOUAREHERE":  result = await ServeResourceImage(context, ImageResources.BlueBall, imageRequest); break;
+                    }
                 }
             }
 
@@ -92,8 +101,29 @@ namespace VirtualRadar.Server.Middleware
             try {
                 return await SendImage(context, image, imageRequest.ImageFormat);
             } finally {
-                image.Dispose();
+                _Graphics.DisposeIfNotCachedOriginal(image);
             }
+        }
+
+        private async Task<bool> ServeImageFromFile(HttpContext context, GetImageModel imageRequest)
+        {
+            var result = false;
+
+            var fileName = $"{_PathPrefix}{imageRequest.WebSiteFileName}";
+            var fileProvider = _WebHostEnvironment.WebRootFileProvider;
+            var fileInfo = fileProvider.GetFileInfo(fileName);
+            if(fileInfo.Exists) {
+                var bytes = await _FileSystem.ReadAllBytesAsync(fileInfo.PhysicalPath);
+                var image = _Graphics.CreateImage(bytes);
+                try {
+                    image = ApplyTransformations(image, imageRequest);
+                    result = await SendImage(context, image, imageRequest.ImageFormat);
+                } finally {
+                    _Graphics.DisposeIfNotCachedOriginal(image);
+                }
+            }
+
+            return result;
         }
 
         private async Task<bool> ServeResourceImage(HttpContext context, byte[] imageBytes, GetImageModel imageRequest)
@@ -101,28 +131,39 @@ namespace VirtualRadar.Server.Middleware
             var image = _Graphics.CreateImage(imageBytes);
 
             try {
-                if((imageRequest.RotateDegrees ?? 0) != 0) {
-                    image = SwapImage(image, image.Rotate(imageRequest.RotateDegrees.Value));
-                }
-
+                image = ApplyTransformations(image, imageRequest);
                 return await SendImage(context, image, imageRequest.ImageFormat);
             } finally {
-                image.Dispose();
+                _Graphics.DisposeIfNotCachedOriginal(image);
             }
         }
 
-        private IImage SwapImage(IImage originalImage, IImage newImage)
+        private IImage ApplyTransformations(IImage image, GetImageModel imageRequest)
         {
-            originalImage.Dispose();
-            return newImage;
+            if(imageRequest.IsHighDpi) {
+                image = _Graphics.ResizeForHiDpi(image);
+            }
+            if((imageRequest.RotateDegrees ?? 0) != 0) {
+                image = _Graphics.RotateImage(image, imageRequest.RotateDegrees.Value);
+            }
+            if(imageRequest.Width != null) {
+                image = _Graphics.WidenImage(image, imageRequest.Width.Value, imageRequest.CentreImageHorizontally);
+            }
+            if(imageRequest.ShowAltitudeStalk) {
+                image = _Graphics.AddAltitudeStalk(image, imageRequest.Height ?? 1, imageRequest.CentreX ?? 1);
+            } else if(imageRequest.Height != null) {
+                image = _Graphics.HeightenImage(image, imageRequest.Height.Value, imageRequest.CentreImageVertically);
+            }
+
+            return image;
         }
 
         private async Task<bool> SendImage(HttpContext context, IImage image, ImageFormat format)
         {
             var result = false;
 
-            var imageBytes = image?.GetImageBytes(format);
-            if(imageBytes != null) {
+            var imageBytes = image == null ? [] : _Graphics.GetImageBytes(image, format);
+            if(imageBytes?.Length > 0) {
                 result = true;
                 context.Response.ContentType = format.ToMimeType();
                 await context.Response.Body.WriteAsync(imageBytes);

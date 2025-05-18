@@ -10,11 +10,22 @@
 
 namespace VirtualRadar.Drawing.MagickDotNet
 {
+    /// <summary>
+    /// The ImageMagick implementation of <see cref="IGraphics"/>.
+    /// </summary>
     class Graphics : IGraphics
     {
+        /// <inheritdoc/>
         public IImage AddAltitudeStalk(IImage original, int height, int centreX)
         {
-            throw new NotImplementedException();
+            var result = original;
+
+            if(original is Image image) {
+                result = image.CopyWithAltitudeStalk(height, centreX);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         public IImage AddTextLines(IImage image, IEnumerable<string> textLines, bool centreText, bool isHighDpi)
@@ -22,41 +33,109 @@ namespace VirtualRadar.Drawing.MagickDotNet
             throw new NotImplementedException();
         }
 
-        public IImage CreateBlankImage(int width, int height) => new Image(width, height);
+        /// <inheritdoc/>
+        public IImage CreateBlankImage(int width, int height, bool isCachedOriginal) => new Image(width, height, isCachedOriginal);
 
-        public IImage CreateImage(byte[] bytes) => new Image(bytes);
+        /// <inheritdoc/>
+        public IImage CreateImage(byte[] bytes, bool isCachedOriginal) => new Image(bytes, isCachedOriginal);
 
         public IImage CreateIPhoneSplash(string webSiteAddress, bool isIPad, List<string> pathParts)
         {
             throw new NotImplementedException();
         }
 
-        public IImage HeightenImage(IImage original, int height, bool centreVertically)
+        /// <inheritdoc/>
+        public void DisposeIfNotCachedOriginal(IImage image)
         {
-            throw new NotImplementedException();
+            if(!image.IsCachedOriginal) {
+                image.Dispose();
+            }
         }
 
-        public IImage ResizeBitmap(IImage original, int width, int height, ResizeMode mode, IBrush zoomBackground, bool preferSpeedOverQuality)
+        /// <inheritdoc/>
+        public byte[] GetImageBytes(IImage image, ImageFormat imageFormat)
         {
-            throw new NotImplementedException();
+            byte[] result = [];
+
+            if(image is Image wrapper) {
+                result = wrapper.GetImageBytes(imageFormat);
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public IImage HeightenImage(IImage original, int height, bool centreVertically)
+        {
+            var result = CloneOrReuse(original);
+            if(result is Image image) {
+                image.HeightenImage(height, centreVertically);
+            }
+
+            return result;
+        }
+
+        public IImage ResizeBitmap(IImage original, int width, int height, ResizeMode mode, Colour zoomBackground, bool preferSpeedOverQuality)
+        {
+            var result = CloneOrReuse(original);
+            if(result is Image image) {
+                image.Resize(width, height, mode, zoomBackground, preferSpeedOverQuality);
+            }
+
+            return result;
         }
 
         public IImage ResizeForHiDpi(IImage original)
         {
-            throw new NotImplementedException();
+            return ResizeBitmap(
+                original,
+                original.Width * 2,
+                original.Height * 2,
+                ResizeMode.Normal,
+                Colour.Transparent,
+                preferSpeedOverQuality: false
+            );
         }
 
         /// <inheritdoc/>
-        public IImage RotateImage(IImage original, double degrees) => original.Rotate(degrees);
-
-        public IImage UseImage(IImage tempImage, IImage newImage)
+        public IImage RotateImage(IImage original, double degrees)
         {
-            throw new NotImplementedException();
+            var result = CloneOrReuse(original);
+            if(result is Image image) {
+                image.Rotate(degrees);
+            }
+
+            return result;
         }
 
+        /// <inheritdoc/>
         public IImage WidenImage(IImage original, int width, bool centreHorizontally)
         {
-            throw new NotImplementedException();
+            var result = CloneOrReuse(original);
+            if(result is Image image) {
+                image.WidenImage(width, centreHorizontally);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// If the image is a cached original then a clone is returned, otherwise the
+        /// image is returned. We only need to clone a cached image once, after that
+        /// we can keep reusing the same image.
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
+        private IImage CloneOrReuse(IImage original)
+        {
+            var result = original;
+            if(original is Image image) {
+                result = image.IsCachedOriginal
+                    ? image.Clone()
+                    : image;
+            }
+
+            return result;
         }
     }
 }

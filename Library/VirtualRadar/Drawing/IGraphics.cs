@@ -18,6 +18,37 @@ namespace VirtualRadar.Drawing
     public interface IGraphics
     {
         /// <summary>
+        /// Creates a fully-transparent image of the size specified.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="isCachedOriginal"></param>
+        /// <returns></returns>
+        IImage CreateBlankImage(int width, int height, bool isCachedOriginal = false);
+
+        /// <summary>
+        /// Creates an image from the bytes passed across.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="isCachedOriginal"></param>
+        /// <returns></returns>
+        IImage CreateImage(byte[] bytes, bool isCachedOriginal = false);
+
+        /// <summary>
+        /// Disposes of the image if it's not a cached original.
+        /// </summary>
+        /// <param name="image"></param>
+        void DisposeIfNotCachedOriginal(IImage image);
+
+        /// <summary>
+        /// Returns the bytes representing the image formatted as per the parameter.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="imageFormat"></param>
+        /// <returns></returns>
+        byte[] GetImageBytes(IImage image, ImageFormat imageFormat);
+
+        /// <summary>
         /// Rotates the image passed across by a number of degrees, running clockwise with 0 being north.
         /// </summary>
         /// <param name="original"></param>
@@ -63,22 +94,14 @@ namespace VirtualRadar.Drawing
         /// <param name="zoomBackground"></param>
         /// <param name="preferSpeedOverQuality"></param>
         /// <returns></returns>
-        IImage ResizeBitmap(IImage original, int width, int height, ResizeMode mode, IBrush zoomBackground, bool preferSpeedOverQuality);
-
-        /// <summary>
-        /// Creates a fully-transparent image of the size specified.
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <returns></returns>
-        IImage CreateBlankImage(int width, int height);
-
-        /// <summary>
-        /// Creates an image from the bytes passed across.
-        /// </summary>
-        /// <param name="bytes"></param>
-        /// <returns></returns>
-        IImage CreateImage(byte[] bytes);
+        IImage ResizeBitmap(
+            IImage original,
+            int width,
+            int height,
+            ResizeMode mode,
+            Colour zoomBackground,
+            bool preferSpeedOverQuality
+        );
 
         /// <summary>
         /// Creates an iPhone splash page image.
@@ -108,15 +131,5 @@ namespace VirtualRadar.Drawing
         /// <param name="isHighDpi"></param>
         /// <returns></returns>
         IImage AddTextLines(IImage image, IEnumerable<string> textLines, bool centreText, bool isHighDpi);
-
-        /// <summary>
-        /// When passed the current temporary image and the image that will become the new temporary image this
-        /// disposes of the old temporary image and returns the new one. Can cope when the same image is passed
-        /// across for both the temporary and new image.
-        /// </summary>
-        /// <param name="tempImage"></param>
-        /// <param name="newImage"></param>
-        /// <returns></returns>
-        IImage UseImage(IImage tempImage, IImage newImage);
     }
 }
