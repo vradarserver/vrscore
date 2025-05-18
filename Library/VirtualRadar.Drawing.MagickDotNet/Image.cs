@@ -74,10 +74,11 @@ namespace VirtualRadar.Drawing.MagickDotNet
         /// <summary>
         /// Implements <see cref="IGraphics.AddTextLines"/>
         /// </summary>
+        /// <param name="fontFileName"></param>
         /// <param name="textLines"></param>
         /// <param name="centreText"></param>
         /// <param name="isHighDpi"></param>
-        public void AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
+        public void AddTextLines(string fontFileName, IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
             AssertMutable();
             lock(_SyncLock) {
@@ -92,6 +93,7 @@ namespace VirtualRadar.Drawing.MagickDotNet
 
                 foreach(var line in lines) {
                     if(line.Length > 0) {
+                        _Image.Settings.Font = System.IO.Path.GetFullPath(fontFileName);
                         var settings = new Drawables()
                             .FontPointSize(10)
                             .FillColor(MagickColors.Black)

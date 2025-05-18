@@ -163,7 +163,10 @@ namespace VirtualRadar.Server.Middleware
                 var isInternet = context.Items.ContainsKey(HttpContextItemKey.VrsIsInternet);
                 var isAllowed = !isInternet || _InternetClientSettings.LatestValue.CanShowPinText;
                 if(isAllowed) {
-                    image = _Graphics.AddTextLines(image, imageRequest.TextLines, centreText: true, isHighDpi: imageRequest.IsHighDpi);
+                    var fileName = "/v3/fonts/Roboto-Regular.ttf";
+                    var fileProvider = _WebHostEnvironment.WebRootFileProvider;
+                    var fileInfo = fileProvider.GetFileInfo(fileName);
+                    image = _Graphics.AddTextLines(image, fileInfo.PhysicalPath, imageRequest.TextLines, centreText: true, isHighDpi: imageRequest.IsHighDpi);
                 }
             }
 

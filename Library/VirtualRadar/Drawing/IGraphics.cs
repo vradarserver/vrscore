@@ -126,10 +126,11 @@ namespace VirtualRadar.Drawing
         /// Overlays lines of text onto the image.
         /// </summary>
         /// <param name="image"></param>
+        /// <param name="fontFileName"></param>
         /// <param name="textLines"></param>
         /// <param name="centreText"></param>
         /// <param name="isHighDpi"></param>
         /// <returns></returns>
-        IImage AddTextLines(IImage image, IEnumerable<string> textLines, bool centreText, bool isHighDpi);
+        IImage AddTextLines(IImage image, string fontFileName, IEnumerable<string> textLines, bool centreText, bool isHighDpi);
     }
 }

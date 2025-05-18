@@ -29,11 +29,11 @@ namespace VirtualRadar.Drawing.MagickDotNet
         }
 
         /// <inheritdoc/>
-        public IImage AddTextLines(IImage original, IEnumerable<string> textLines, bool centreText, bool isHighDpi)
+        public IImage AddTextLines(IImage original, string fontFileName, IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
             var result = CloneOrReuse(original);
             if(result is Image image) {
-                image.AddTextLines(textLines, centreText, isHighDpi);
+                image.AddTextLines(fontFileName, textLines, centreText, isHighDpi);
             }
 
             return result;
