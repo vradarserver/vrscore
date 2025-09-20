@@ -70,7 +70,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Feed.Vatsim", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Drawing.MagickDotNet", "Library\VirtualRadar.Drawing.MagickDotNet\VirtualRadar.Drawing.MagickDotNet.csproj", "{CF67223D-50B4-4A8D-9C0A-06441E6E5E15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.Resources", "Library\VirtualRadar.Resources\VirtualRadar.Resources.csproj", "{B7837A1E-9D9E-4055-87B4-AA56537D6ED1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Resources", "Library\VirtualRadar.Resources\VirtualRadar.Resources.csproj", "{B7837A1E-9D9E-4055-87B4-AA56537D6ED1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.Drawing.ImageSharp", "Library\VirtualRadar.Drawing.ImageSharp\VirtualRadar.Drawing.ImageSharp.csproj", "{72708E06-FB17-45F4-9C8A-E91A930BA881}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +132,10 @@ Global
 		{B7837A1E-9D9E-4055-87B4-AA56537D6ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7837A1E-9D9E-4055-87B4-AA56537D6ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7837A1E-9D9E-4055-87B4-AA56537D6ED1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{DA3322EB-3702-4AFB-8469-8446FCFA2CE2} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
 		{CF67223D-50B4-4A8D-9C0A-06441E6E5E15} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
 		{B7837A1E-9D9E-4055-87B4-AA56537D6ED1} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
+		{72708E06-FB17-45F4-9C8A-E91A930BA881} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D195B5EE-B00F-47BE-9FA3-F8175F6563DD}

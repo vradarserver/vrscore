@@ -56,10 +56,7 @@ namespace VirtualRadar.Server
                     .Services
                     .AddControllers()                               // <-- need this for web API
                     .AddNewtonsoftJson(config => {
-                        // The .NET JSON serialiser is off-limits until such a time as it honours
-                        // DataMember attributes as well as its own (which I don't think will
-                        // happen, the current programmers show no interest in separating the
-                        // serialiser from the model - quite the opposite, they want you tied in).
+                        // The .NET JSON serialiser is off-limits
                         config.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver() {
                             NamingStrategy = new Newtonsoft.Json.Serialization.DefaultNamingStrategy(),
                         };
