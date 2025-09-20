@@ -39,6 +39,7 @@ namespace VirtualRadar.WebSite
                 ? null
                 : new GetImageModel() {
                     ImageName = _FileSystem.GetFileNameWithoutExtension(fileName).ToUpperInvariant(),
+                    ImageFormat = imageFormat.Value,
                 };
             if(result != null) {
                 ExtractImageRequestFromPathSegments(requestPath, fileName, result);
