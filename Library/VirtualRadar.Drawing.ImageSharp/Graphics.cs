@@ -13,9 +13,17 @@ namespace VirtualRadar.Drawing.ImageSharp
     /// <inheritdoc/>
     class Graphics : IGraphics
     {
+        /// <inheritdoc/>
         public IImage AddAltitudeStalk(IImage original, int height, int centreX)
         {
-            return CloneOrReuse(original);
+            var result = original;
+
+            if(original is ImageWrapper wrapper) {
+                result = wrapper.CopyWithAltitudeStalk(height, centreX);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         public IImage AddTextLines(IImage image, string fontFileName, IEnumerable<string> textLines, bool centreText, bool isHighDpi)
@@ -64,12 +72,26 @@ namespace VirtualRadar.Drawing.ImageSharp
 
         public IImage HeightenImage(IImage original, int height, bool centreVertically)
         {
-            return CloneOrReuse(original);
+            var result = original;
+
+            if(original is ImageWrapper wrapper) {
+                result = wrapper.ChangeDimension(changeWidth: false, height, centreVertically);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         public IImage ResizeBitmap(IImage original, int width, int height, ResizeMode mode, Colour zoomBackground, bool preferSpeedOverQuality)
         {
-            return CloneOrReuse(original);
+            var result = original;
+
+            if(original is ImageWrapper wrapper) {
+                result = wrapper.ResizeBitmap(width, height, mode, zoomBackground, preferSpeedOverQuality);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         public IImage ResizeForHiDpi(IImage original)
@@ -84,7 +106,14 @@ namespace VirtualRadar.Drawing.ImageSharp
 
         public IImage WidenImage(IImage original, int width, bool centreHorizontally)
         {
-            return CloneOrReuse(original);
+            var result = original;
+
+            if(original is ImageWrapper wrapper) {
+                result = wrapper.ChangeDimension(changeWidth: true, width, centreHorizontally);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         /// <summary>

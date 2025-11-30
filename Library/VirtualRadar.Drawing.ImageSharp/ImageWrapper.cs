@@ -10,12 +10,11 @@
 
 using System.IO;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Bmp;
-using SixLabors.ImageSharp.Formats.Gif;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Transforms;
+using ISProcessing = SixLabors.ImageSharp.Processing;
 
 namespace VirtualRadar.Drawing.ImageSharp
 {
@@ -129,10 +128,7 @@ namespace VirtualRadar.Drawing.ImageSharp
                             _Native.SaveAsJpeg(stream);
                             break;
                         case ImageFormat.Png:
-                            var encoder = new PngEncoder() {
-                                TransparentColorMode = PngTransparentColorMode.Preserve,
-                            };
-                            _Native.SaveAsPng(stream, encoder);
+                            _Native.SaveAsPng(stream);
                             break;
                         default:
                             throw new NotImplementedException();
@@ -143,6 +139,169 @@ namespace VirtualRadar.Drawing.ImageSharp
             }
 
             return result ?? [];
+        }
+
+        /// <summary>
+        /// Implements <see cref="IGraphics.AddAltitudeStalk"/>.
+        /// </summary>
+        /// <param name="height"></param>
+        /// <param name="centreX"></param>
+        public ImageWrapper CopyWithAltitudeStalk(int height, int centreX)
+        {
+            var result = new ImageWrapper(Width, height, isCachedOriginal: false);
+            var startOfAltitudeLine = Height / 2;
+
+            result._Native.Mutate(context => context
+                // Draw the altitude line
+                .DrawLine(
+                    Color.Black,
+                    1F,
+                    new PointF(centreX, startOfAltitudeLine),
+                    new PointF(centreX, height - 3)
+                )
+
+                // Draw the X at the bottom of the altitude line
+                .DrawLine(
+                    Color.Black,
+                    1F,
+                    new PointF(centreX - 2, height - 5),
+                    new PointF(centreX + 3, height - 1)
+                )
+                .DrawLine(
+                    Color.Black,
+                    1F,
+                    new PointF(centreX - 3, height - 1),
+                    new PointF(centreX + 2, height - 5)
+                )
+
+                // Draw this image on top of all the lines
+                .DrawImage(_Native, 1F)
+            );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Implements <see cref="IGraphics.ResizeBitmap"/>.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="mode"></param>
+        /// <param name="zoomBackground"></param>
+        /// <param name="preferSpeedOverQuality"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public ImageWrapper ResizeBitmap(int width, int height, ResizeMode mode, Colour zoomBackground, bool preferSpeedOverQuality)
+        {
+            ImageWrapper result;
+
+            switch(mode) {
+                case ResizeMode.Zoom:
+                    result = ResizeZoom(width, height, zoomBackground);
+                    break;
+                default:
+                    result = Resize(mode, width, height);
+                    break;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Performs a zoom resize.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="padBrush"></param>
+        /// <returns></returns>
+        private ImageWrapper ResizeZoom(int width, int height, Colour zoomBackground)
+        {
+            var resizeWidth = width;
+            var resizeHeight = height;
+            var widthPercent = (double)width / (double)_Native.Width;
+            var heightPercent = (double)height / (double)_Native.Height;
+            if(widthPercent > heightPercent)        resizeWidth = Math.Min(width, (int)(((double)_Native.Width * heightPercent) + 0.5));
+            else if(heightPercent > widthPercent)   resizeHeight = Math.Min(height, (int)(((double)_Native.Height * widthPercent) + 0.5));
+
+            var left = (width - resizeWidth) / 2;
+            var top = (height - resizeHeight) / 2;
+
+            var result = new ImageWrapper(Width, height, isCachedOriginal: false);
+
+            using(var resizedClone = _Native.Clone(context => context.Resize(resizeWidth, resizeHeight, new NearestNeighborResampler()))) {
+                result._Native.Mutate(context => context
+                    .Fill(zoomBackground.ToImageSharp())
+                    .DrawImage(resizedClone, new Point(left, top), 1F)
+                );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Implements all resize methods except zoom.
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private ImageWrapper Resize(ResizeMode mode, int width, int height)
+        {
+            var options = new ResizeOptions() {
+                Mode =      ISProcessing.ResizeMode.Crop,
+                Position =  AnchorPositionMode.TopLeft,
+                Size =      new SixLabors.ImageSharp.Size(width, height),
+                Sampler =   new NearestNeighborResampler(),
+            };
+
+            switch(mode) {
+                case ResizeMode.Centre:
+                    options.Position = AnchorPositionMode.Center;
+                    break;
+                case ResizeMode.Stretch:
+                    options.Mode = ISProcessing.ResizeMode.Stretch;
+                    break;
+                case ResizeMode.Normal:
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            var clone = _Native.Clone(context => context.Resize(options));
+            return new ImageWrapper(clone, isCachedOriginal: false);
+        }
+
+        public ImageWrapper ChangeDimension(bool changeWidth, int newValue, bool centre)
+        {
+            var width = changeWidth ? newValue : _Native.Width;
+            var height = changeWidth ? _Native.Height : newValue;
+            var x = 0;
+            var y = 0;
+
+            if(centre) {
+                int centredValue(int oldValue)
+                {
+                    var centredFloat = ((float)newValue - (float)oldValue) / 2F;
+                    centredFloat += 0.5F;
+                    return (int)centredFloat;
+                }
+
+                if(changeWidth) {
+                    x = centredValue(_Native.Width);
+                } else {
+                    y = centredValue(_Native.Height);
+                }
+            }
+
+            var result = new ImageWrapper(width, height, isCachedOriginal: false);
+            result._Native.Mutate(context => context.DrawImage(
+                _Native,
+                new Point(x, y),
+                1F
+            ));
+
+            return result;
         }
     }
 }
