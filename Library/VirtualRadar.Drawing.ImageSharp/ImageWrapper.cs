@@ -272,6 +272,13 @@ namespace VirtualRadar.Drawing.ImageSharp
             return new ImageWrapper(clone, isCachedOriginal: false);
         }
 
+        /// <summary>
+        /// Returns a copy of the image with the size altered in one dimension.
+        /// </summary>
+        /// <param name="changeWidth"></param>
+        /// <param name="newValue"></param>
+        /// <param name="centre"></param>
+        /// <returns></returns>
         public ImageWrapper ChangeDimension(bool changeWidth, int newValue, bool centre)
         {
             var width = changeWidth ? newValue : _Native.Width;

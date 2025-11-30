@@ -70,6 +70,7 @@ namespace VirtualRadar.Drawing.ImageSharp
             return result ?? [];
         }
 
+        /// <inheritdoc/>
         public IImage HeightenImage(IImage original, int height, bool centreVertically)
         {
             var result = original;
@@ -82,6 +83,7 @@ namespace VirtualRadar.Drawing.ImageSharp
             return result;
         }
 
+        /// <inheritdoc/>
         public IImage ResizeBitmap(IImage original, int width, int height, ResizeMode mode, Colour zoomBackground, bool preferSpeedOverQuality)
         {
             var result = original;
@@ -104,6 +106,7 @@ namespace VirtualRadar.Drawing.ImageSharp
             return CloneOrReuse(original);
         }
 
+        /// <inheritdoc/>
         public IImage WidenImage(IImage original, int width, bool centreHorizontally)
         {
             var result = original;
@@ -123,13 +126,12 @@ namespace VirtualRadar.Drawing.ImageSharp
         /// </summary>
         /// <param name="original"></param>
         /// <returns></returns>
-        private IImage CloneOrReuse(IImage original)
+        private static IImage CloneOrReuse(IImage original)
         {
             var result = original;
-            if(original is ImageWrapper image) {
-                result = image.IsCachedOriginal
-                    ? image.Clone()
-                    : image;
+
+            if(original is ImageWrapper image && image.IsCachedOriginal) {
+                result = image.Clone();
             }
 
             return result;
