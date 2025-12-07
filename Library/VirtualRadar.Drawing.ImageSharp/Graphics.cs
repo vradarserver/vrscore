@@ -101,9 +101,17 @@ namespace VirtualRadar.Drawing.ImageSharp
             return CloneOrReuse(original);
         }
 
+        /// <inheritdoc/>
         public IImage RotateImage(IImage original, double degrees)
         {
-            return CloneOrReuse(original);
+            var result = original;
+
+            if(degrees != 0 && original is ImageWrapper wrapper) {
+                result = wrapper.RotateImage((float)degrees);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

@@ -310,5 +310,16 @@ namespace VirtualRadar.Drawing.ImageSharp
 
             return result;
         }
+
+        /// <summary>
+        /// Returns a clone of the image that has been rotated clockwise.
+        /// </summary>
+        /// <param name="degrees"></param>
+        /// <returns></returns>
+        public ImageWrapper RotateImage(float degrees)
+        {
+            var clone = _Native.Clone(context => context.Rotate(degrees));
+            return new(clone, isCachedOriginal: false);
+        }
     }
 }
