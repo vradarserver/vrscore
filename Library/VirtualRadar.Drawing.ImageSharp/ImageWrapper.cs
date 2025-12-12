@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.IO;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -324,34 +325,47 @@ namespace VirtualRadar.Drawing.ImageSharp
 
         public ImageWrapper AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
-            var result = _Native.Clone(context => {
+            var clone = _Native.Clone(context => {
                     var lines =          textLines.Where(tl => tl != null).ToList();
                     var lineHeight =     isHighDpi ? 24f : 12f;
                     var topOffset =      5f;
                     var startPointSize = isHighDpi ? 20f : 10f;
-                    var outlinePen =     isHighDpi ? _MarkerTextOutlinePenHiDpi : _MarkerTextOutlinePen;
+                    var outlinePen =     isHighDpi ? PenCache.MarkerTextOutlinePenHiDpi : PenCache.MarkerTextOutlinePen;
                     var left =           centreText ? ((float)Width / 2.0F) : outlinePen.StrokeWidth / 2.0F;
                     var top =            (Height - topOffset) - (lines.Count * lineHeight);
                     var width =          Math.Max(0F, Width - outlinePen.StrokeWidth);
 
                     var lineTop = top;
                     foreach(var line in lines) {
-                        using(var fontAndText = _FontFactory.GetFontForRectangle(drawing, _MarkerTextFontFamily, _MarkerTextFontStyle, startPointSize, 6.0F, width, lineHeight * 2F, line, useCache: true)) {
-                            drawing.DrawText(
-                                fontAndText.Text,
-                                fontAndText.Font,
-                                _MarkerTextFillBrush,
-                                _MarkerTextOutlinePen,
-                                left,
-                                lineTop,
-                                centreText ? VrsDrawing.HorizontalAlignment.Centre : VrsDrawing.HorizontalAlignment.Left,
-                                preferSpeedOverQuality: false
-                            );
-                        }
+                        var fontAndText = FontCache.GetFontForText(
+                            FontCache.MarkerTextFontFamilyName,
+                            FontCache.MarkerTextFontStyle,
+                            startPointSize,
+                            6F,
+                            width,
+                            lineHeight * 2F,
+                            line,
+                            useCache: true
+                        );
+
+                        var textOptions = new RichTextOptions(fontAndText.Font) {
+                            Origin = new PointF(left, lineTop),
+                            TextAlignment = centreText ? TextAlignment.Center : TextAlignment.Start,
+                        };
+
+                        context.DrawText(
+                            textOptions,
+                            fontAndText.Text,
+                            BrushCache.MarkerTextFillBrush,
+                            outlinePen
+                        );
 
                         lineTop += lineHeight;
                     }
             });
+
+            var result = new ImageWrapper(clone, isCachedOriginal: false);
+            return result;
         }
     }
 }
