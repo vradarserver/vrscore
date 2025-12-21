@@ -326,42 +326,53 @@ namespace VirtualRadar.Drawing.ImageSharp
         public ImageWrapper AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
             var clone = _Native.Clone(context => {
-                    var lines =          textLines.Where(tl => tl != null).ToList();
-                    var lineHeight =     isHighDpi ? 24f : 12f;
-                    var topOffset =      5f;
-                    var startPointSize = isHighDpi ? 20f : 10f;
-                    var outlinePen =     isHighDpi ? PenCache.MarkerTextOutlinePenHiDpi : PenCache.MarkerTextOutlinePen;
-                    var left =           centreText ? ((float)Width / 2.0F) : outlinePen.StrokeWidth / 2.0F;
-                    var top =            (Height - topOffset) - (lines.Count * lineHeight);
-                    var width =          Math.Max(0F, Width - outlinePen.StrokeWidth);
+                var lines =          textLines.Where(tl => tl != null).ToList();
+                var lineHeight =     isHighDpi ? 24f : 12f;
+                var topOffset =      5f;
+                var startPointSize = isHighDpi ? 20f : 10f;
+                var outlinePen =     isHighDpi ? PenCache.MarkerTextOutlinePenHiDpi : PenCache.MarkerTextOutlinePen;
+                var left =           centreText
+                                        ? ((float)Width / 2f)
+                                        : outlinePen.StrokeWidth / 2f;
+                var top =            (Height - topOffset) - (lines.Count * lineHeight);
+                var width =          Math.Max(0F, Width - outlinePen.StrokeWidth);
+                var fillOffset =     outlinePen.StrokeWidth / 2f;
 
-                    var lineTop = top;
-                    foreach(var line in lines) {
-                        var fontAndText = FontCache.GetFontForText(
-                            FontCache.MarkerTextFontFamilyName,
-                            FontCache.MarkerTextFontStyle,
-                            startPointSize,
-                            6F,
-                            width,
-                            lineHeight * 2F,
-                            line,
-                            useCache: true
-                        );
+                var lineTop = top;
+                foreach(var line in lines) {
+                    var fontAndText = FontCache.GetFontForText(
+                        FontCache.MarkerTextFontFamilyName,
+                        FontCache.MarkerTextFontStyle,
+                        startPointSize,
+                        6f,
+                        width,
+                        lineHeight * 2f,
+                        line,
+                        useCache: true
+                    );
 
-                        var textOptions = new RichTextOptions(fontAndText.Font) {
-                            Origin = new PointF(left, lineTop),
-                            TextAlignment = centreText ? TextAlignment.Center : TextAlignment.Start,
-                        };
+                    var textOptions = new RichTextOptions(fontAndText.Font) {
+                        Origin = new PointF(left + fillOffset, lineTop + fillOffset),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    };
 
-                        context.DrawText(
-                            textOptions,
-                            fontAndText.Text,
-                            BrushCache.MarkerTextFillBrush,
-                            outlinePen
-                        );
+                    context.DrawText(
+                        textOptions,
+                        fontAndText.Text,
+                        BrushCache.MarkerTextOutlineBrush,
+                        outlinePen
+                    );
 
-                        lineTop += lineHeight;
-                    }
+                    textOptions.Origin = new PointF(left, lineTop);
+
+                    context.DrawText(
+                        textOptions,
+                        fontAndText.Text,
+                        BrushCache.MarkerTextFillBrush
+                    );
+
+                    lineTop += lineHeight;
+                }
             });
 
             var result = new ImageWrapper(clone, isCachedOriginal: false);

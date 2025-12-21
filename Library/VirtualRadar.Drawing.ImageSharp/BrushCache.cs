@@ -15,6 +15,8 @@ namespace VirtualRadar.Drawing.ImageSharp
 {
     static class BrushCache
     {
+        public static Brush MarkerTextOutlineBrush { get; } = new SolidBrush(Color.Black);
+
         public static Brush MarkerTextFillBrush { get; } = new SolidBrush(Color.White);
     }
 }

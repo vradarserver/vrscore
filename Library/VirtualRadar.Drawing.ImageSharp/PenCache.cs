@@ -15,8 +15,8 @@ namespace VirtualRadar.Drawing.ImageSharp
 {
     static class PenCache
     {
-        public static Pen MarkerTextOutlinePen { get; } = new SolidPen(Color.Black, 4F);
+        public static Pen MarkerTextOutlinePen { get; } = new SolidPen(Color.Black, 2F);
 
-        public static Pen MarkerTextOutlinePenHiDpi { get; } = new SolidPen(Color.Black, 6F);
+        public static Pen MarkerTextOutlinePenHiDpi { get; } = new SolidPen(Color.Black, 3F);
     }
 }

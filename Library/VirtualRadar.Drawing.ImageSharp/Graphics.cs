@@ -26,9 +26,23 @@ namespace VirtualRadar.Drawing.ImageSharp
             return result;
         }
 
-        public IImage AddTextLines(IImage image, string fontFileName, IEnumerable<string> textLines, bool centreText, bool isHighDpi)
+        /// <inheritdoc/>
+        public IImage AddTextLines(
+            IImage original,
+            string fontFileName,
+            IEnumerable<string> textLines,
+            bool centreText,
+            bool isHighDpi
+        )
         {
-            return CloneOrReuse(image);
+            var result = original;
+
+            if(original is ImageWrapper wrapper) {
+                result = wrapper.AddTextLines(textLines, centreText, isHighDpi);
+                DisposeIfNotCachedOriginal(original);
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
