@@ -466,6 +466,19 @@ namespace VirtualRadar.Extensions
         }
 
         /// <summary>
+        /// Shorthand for creating a new scope and then running a parallel task within it.
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static async Task WithinNewScopeAsync(this IServiceProvider serviceProvider, Func<IServiceScope, Task> action)
+        {
+            using(var scope = serviceProvider.CreateScope()) {
+                await action(scope);
+            }
+        }
+
+        /// <summary>
         /// Injects services into an object that was not instantiated via dependency injection. Be careful
         /// about lifetimes! Use the <see cref="InjectedServiceAttribute"/> to control which public
         /// properties, fields and methods are injected.
