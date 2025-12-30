@@ -25,5 +25,11 @@ namespace VirtualRadar.Configuration
         {
             return ConfigurationConfig.GetKeyForOptionType(optionType);
         }
+
+        /// <inheritdoc/>
+        public Dictionary<string, List<Type>> GetTopLevelTypesMap()
+        {
+            return ConfigurationConfig.GetTopLevelTypesMap();
+        }
     }
 }

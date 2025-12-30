@@ -55,6 +55,22 @@
         TObject LatestValue<TObject>();
 
         /// <summary>
+        /// True if there are settings in the configuration for the type passed across, false
+        /// if defaults will be used if this type is passed to <see cref="LatestValue(Type)"/>.
+        /// </summary>
+        /// <param name="optionType"></param>
+        /// <returns></returns>
+        bool IsConfigured(Type optionType);
+
+        /// <summary>
+        /// True if there are settings in the configuration for the type passed across, false
+        /// if defaults will be used if this type is passed to <see cref="LatestValue{TObject}()"/>.
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <returns></returns>
+        bool IsConfigured<TObject>();
+
+        /// <summary>
         /// Assigns a new value to the options associated with the option type passed across, assuming that
         /// the option type uniquely identifies a top-level key. This does not update persistent storage.
         /// </summary>
@@ -79,5 +95,12 @@
         /// Saves changes to the settings back to persistent storage.
         /// </summary>
         void SaveChanges();
+
+        /// <summary>
+        /// Returns a string representation of a configuration object.
+        /// </summary>
+        /// <param name="configurationObject"></param>
+        /// <returns></returns>
+        string ToString(object configurationObject);
     }
 }

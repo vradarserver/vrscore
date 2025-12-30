@@ -229,5 +229,31 @@ namespace VirtualRadar.Configuration
                 return result;
             }
         }
+
+        /// <summary>
+        /// Returns a dictionary of top-level key names to the types that are registered
+        /// against that key.
+        /// </summary>
+        /// <returns></returns>
+        internal static Dictionary<string, List<Type>> GetTopLevelTypesMap()
+        {
+            var result = new Dictionary<string, List<Type>>();
+
+            lock(_SyncLock) {
+                foreach(var kvp in _SettingTypeToKeyMap) {
+                    var type = kvp.Key;
+                    var topLevelKey = kvp.Value;
+
+                    if(!result.TryGetValue(topLevelKey, out var typesForKey)) {
+                        typesForKey = [];
+                        result.Add(topLevelKey, typesForKey);
+                    }
+
+                    typesForKey.Add(type);
+                }
+            }
+
+            return result;
+        }
     }
 }

@@ -31,6 +31,7 @@ namespace VirtualRadar.Configuration
 
         private readonly object _SyncLock = new();
         private Dictionary<string, JObject> _SettingKeyToJObject;
+        private HashSet<string> _ConfiguredKeys = [];
         private readonly Dictionary<string, object> _ParsedContent = [];
         private string _ContentFileName;
         private readonly CallbackWithParamList<ValueChangedCallbackArgs> _ValueChangedCallbacks = new();
@@ -142,6 +143,28 @@ namespace VirtualRadar.Configuration
             return result;
         }
 
+        /// <inheritdoc/>
+        public bool IsConfigured<TObject>() => IsConfigured(typeof(TObject));
+
+        /// <inheritdoc/>
+        public bool IsConfigured(Type optionType)
+        {
+            var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
+            return IsConfigured(contentKey);
+        }
+
+        private bool IsConfigured(string contentKey)
+        {
+            LoadContent();
+
+            bool result;
+            lock(_SyncLock) {
+                result = _ConfiguredKeys.Contains(contentKey);
+            }
+
+            return result;
+        }
+
         private void LoadContent()
         {
             var contentFileName = SettingsLocation();
@@ -154,6 +177,7 @@ namespace VirtualRadar.Configuration
                     if(contentNeedsLoading()) {
                         _ContentFileName = _FileSystem.Combine(_WorkingFolder.Folder, FileName);
                         _SettingKeyToJObject = [];
+                        _ConfiguredKeys.Clear();
 
                         var defaultKeys = _SettingsConfiguration.GetDefaultKeys();
                         foreach(var kvp in defaultKeys) {
@@ -183,6 +207,8 @@ namespace VirtualRadar.Configuration
                                 }
 
                                 _SettingKeyToJObject[key] = actualContent;
+
+                                _ConfiguredKeys.Add(key);
                             }
                         }
                     }
@@ -251,11 +277,7 @@ namespace VirtualRadar.Configuration
                     FileName
                 );
             
-                var json = JsonConvert.SerializeObject(
-                    _SettingKeyToJObject,
-                    Formatting.Indented,
-                    JsonConfiguration.JsonSerialiserSettings
-                );
+                var json = ToString(_SettingKeyToJObject);
                 _FileSystem.WriteAllText(contentFileName, json);
             }
 
@@ -271,6 +293,22 @@ namespace VirtualRadar.Configuration
                 MergeArrayHandling = MergeArrayHandling.Replace,
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });
+        }
+
+        /// <inheritdoc/>
+        public string ToString(object configurationObject)
+        {
+            var result = "";
+
+            if(configurationObject != null) {
+                result = JsonConvert.SerializeObject(
+                    configurationObject,
+                    Formatting.Indented,
+                    JsonConfiguration.JsonSerialiserSettings
+                );
+            }
+
+            return result;
         }
     }
 }

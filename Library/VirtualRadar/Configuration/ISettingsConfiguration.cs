@@ -29,5 +29,16 @@ namespace VirtualRadar.Configuration
         /// </summary>
         /// <returns></returns>
         Dictionary<string, Newtonsoft.Json.Linq.JObject> GetDefaultKeys();
+
+        /// <summary>
+        /// Returns all of the registered top-level object types indexed by their top-level
+        /// key name.
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// More than one configuration object can be registered against a key. The code
+        /// will merge their values together when storing settings against the key.
+        /// </remarks>
+        Dictionary<string, List<Type>> GetTopLevelTypesMap();
     }
 }

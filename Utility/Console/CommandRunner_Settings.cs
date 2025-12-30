@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.IO;
 using VirtualRadar.Configuration;
 
 namespace VirtualRadar.Utility.CLIConsole
@@ -15,6 +16,7 @@ namespace VirtualRadar.Utility.CLIConsole
     class CommandRunner_Settings(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         ISettingsStorage _SettingsStorage,
+        ISettingsConfiguration _SettingsConfig,
         Options _Options,
         HeaderService _Header
         #pragma warning restore IDE1006
@@ -28,14 +30,71 @@ namespace VirtualRadar.Utility.CLIConsole
                 ("Update", _Options.Update.ToString())
             );
 
-            await WriteLine($"Using {_SettingsStorage.SettingsLocation()}");
+            var configExists = File.Exists(_SettingsStorage.SettingsLocation());
+            Ansi.WriteLine(
+                "Using ",
+                Ansi.WhiteBold,
+                _SettingsStorage.SettingsLocation(),
+                Ansi.White,
+                " (",
+                configExists ? Ansi.White : Ansi.RedBold,
+                configExists ? "exists" : "does not exist",
+                Ansi.White,
+                ")"
+            );
 
             if(_Options.Update) {
-                await WriteLine($"Resaving settings with new entries, this will not overwrite existing entries");
-                _SettingsStorage.SaveChanges();
+                UpdateSettings();
+            } else {
+                DumpSettings();
             }
 
             return true;
+        }
+
+        private void UpdateSettings()
+        {
+            Console.WriteLine($"Resaving settings with new entries, this will not overwrite existing entries");
+            _SettingsStorage.SaveChanges();
+        }
+
+        private void DumpSettings()
+        {
+            Console.WriteLine("Configuration content:");
+            Console.WriteLine();
+
+            var keysToTypes = _SettingsConfig.GetTopLevelTypesMap();
+            foreach(var kvp in keysToTypes.OrderBy(r => r.Key, StringComparer.InvariantCultureIgnoreCase)) {
+                var keyName = kvp.Key;
+                var keyTypes = kvp.Value;
+
+                Ansi.WriteLine(
+                    "+ ",
+                    Ansi.WhiteBold,
+                    keyName
+                );
+
+                foreach(var keyType in keyTypes) {
+                    var isConfigured = _SettingsStorage.IsConfigured(keyType);
+                    var value = _SettingsStorage.LatestValue(keyType);
+                    var serialised = _SettingsStorage.ToString(value);
+
+                    Ansi.WriteLine(
+                        "    + ",
+                        Ansi.YellowBold,
+                        keyType.Name,
+                        Ansi.White,
+                        " (",
+                        isConfigured ? Ansi.White : Ansi.RedBold,
+                        isConfigured ? "from config" : "default, not in config",
+                        Ansi.White,
+                        ")"
+                    );
+                    foreach(var line in serialised.Split([ "\r\n", "\n" ], StringSplitOptions.None)) {
+                        Console.WriteLine($"      {line}");
+                    }
+                }
+            }
         }
     }
 }
