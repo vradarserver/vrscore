@@ -14,7 +14,7 @@ using VirtualRadar.Receivers;
 namespace VirtualRadar.Feed.Vatsim
 {
     [SettingsProvider(_ProviderName)]
-    public record VatsimConnectorOptions(
+    public record VatsimConnectorSettingsDto(
         GeofenceCentreOn CentreOn,
         Location CentreOnLocation,
         int CentreOnPilotCid,
@@ -31,7 +31,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// <summary>
         /// Default ctor.
         /// </summary>
-        public VatsimConnectorOptions() : this(
+        public VatsimConnectorSettingsDto() : this(
             CentreOn:               GeofenceCentreOn.Coordinate,
             CentreOnLocation:       new(54.497989, -4.555628),
             CentreOnPilotCid:       0,

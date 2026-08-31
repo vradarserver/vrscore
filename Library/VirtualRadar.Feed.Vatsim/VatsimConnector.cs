@@ -18,19 +18,19 @@ namespace VirtualRadar.Feed.Vatsim
     /// <summary>
     /// The connector for VATSIM feeds. This just latches onto the <see cref="VatsimDownloader"/>.
     /// </summary>
-    [ReceiveConnector(typeof(VatsimConnectorOptions))]
+    [ReceiveConnector(typeof(VatsimConnectorSettingsDto))]
     public class VatsimConnector : IReceiveConnector
     {
         private object _SyncLock = new();
         private ICallbackHandle _DownloaderDataDownloadedHandle;
 
         /// <summary>
-        /// The options that the connector was created with.
+        /// The configurable settings that the connector was created with.
         /// </summary>
-        public VatsimConnectorOptions Options { get; }
+        public VatsimConnectorSettingsDto SettingsDto { get; }
 
         /// <inheritdoc/>
-        IConnectorOptions IConnector.Options => Options;
+        IConnectorOptions IConnector.SettingsDto => SettingsDto;
 
         /// <summary>
         /// The downloader that the connector is listening to for VATSIM data.
@@ -111,16 +111,16 @@ namespace VirtualRadar.Feed.Vatsim
         /// Creates a new object.
         /// </summary>
         /// <param name="vatsimDownloader"></param>
-        /// <param name="options"></param>
+        /// <param name="settingsDto"></param>
         /// <param name="standingData"></param>
         public VatsimConnector(
             IVatsimDownloader vatsimDownloader,
-            VatsimConnectorOptions options,
+            VatsimConnectorSettingsDto settingsDto,
             IStandingDataManager standingData
         )
         {
             VatsimDownloader = vatsimDownloader;
-            Options = options;
+            SettingsDto = settingsDto;
             StandingData = standingData;
         }
 
@@ -208,16 +208,16 @@ namespace VirtualRadar.Feed.Vatsim
         private LocationRectangle BuildGeofence(VatsimDataV3 data)
         {
             Location centre;
-            switch(Options.CentreOn) {
+            switch(SettingsDto.CentreOn) {
                 case GeofenceCentreOn.Airport:
-                    var airport = StandingData.FindAirportForCode(Options.CentreOnAirport);
+                    var airport = StandingData.FindAirportForCode(SettingsDto.CentreOnAirport);
                     centre = airport?.Location;
                     break;
                 case GeofenceCentreOn.Coordinate:
-                    centre = Options.CentreOnLocation;
+                    centre = SettingsDto.CentreOnLocation;
                     break;
                 case GeofenceCentreOn.PilotCid:
-                    var pilot = data.Pilots.FirstOrDefault(pilot => pilot.Cid == Options.CentreOnPilotCid);
+                    var pilot = data.Pilots.FirstOrDefault(pilot => pilot.Cid == SettingsDto.CentreOnPilotCid);
                     centre = pilot?.Location;
                     break;
                 default:
@@ -228,9 +228,9 @@ namespace VirtualRadar.Feed.Vatsim
                 ? LocationRectangle.Empty
                 : LocationRectangle.FromCentre(
                       centre,
-                      Options.GeofenceDistanceUnit,
-                      Options.GeofenceWidth,
-                      Options.GeofenceHeight
+                      SettingsDto.GeofenceDistanceUnit,
+                      SettingsDto.GeofenceWidth,
+                      SettingsDto.GeofenceHeight
                   );
         }
     }

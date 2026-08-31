@@ -16,9 +16,9 @@ namespace VirtualRadar.Connection
     public interface IConnector : IAsyncDisposable
     {
         /// <summary>
-        /// Exposes the immutable options that the connector was built with.
+        /// Exposes the immutable settings DTO that the connector was built with.
         /// </summary>
-        IConnectorOptions Options { get; }
+        IConnectorOptions SettingsDto { get; }
 
         /// <summary>
         /// A terse description of the connection.

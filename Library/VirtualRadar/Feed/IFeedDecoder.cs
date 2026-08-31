@@ -19,9 +19,9 @@ namespace VirtualRadar.Feed
     public interface IFeedDecoder : IAsyncDisposable
     {
         /// <summary>
-        /// Gets the options that were used to create this decoder instance.
+        /// Gets the settings DTO that was used to create this decoder instance.
         /// </summary>
-        IFeedDecoderSettingsDto Options { get; }
+        IFeedDecoderSettingsDto SettingsDto { get; }
 
         /// <summary>
         /// True if the feed contains lookup details, information that is not transmitted by Mode-S

@@ -11,27 +11,14 @@
 using VirtualRadar.Configuration;
 using VirtualRadar.Receivers;
 
-namespace VirtualRadar.Feed.BaseStation
+namespace VirtualRadar.Feed.Vatsim
 {
-    /// <summary>
-    /// The options for BaseStation feed decoders.
-    /// </summary>
-    /// <param name="Icao24CanHaveNonHexDigits">True if invalid characters in ICAOs are accepted.</param>
     [SettingsProvider(SettingsProviderName)]
-    public record BaseStationFeedDecoderOptions(
-        bool Icao24CanHaveNonHexDigits
-    ) : IReceiverFeedDecoderSettingsDto
+    public record VatsimFeedDecoderSettingsDto() : IReceiverFeedDecoderSettingsDto
     {
-        public const string SettingsProviderName = "BaseStationFeedDecoder";
+        public const string SettingsProviderName = "VatsimFeedDecoder";
 
         /// <inheritdoc/>
         public string SettingsProvider => SettingsProviderName;
-
-        /// <summary>
-        /// Default ctor.
-        /// </summary>
-        public BaseStationFeedDecoderOptions() : this(false)
-        {
-        }
     }
 }

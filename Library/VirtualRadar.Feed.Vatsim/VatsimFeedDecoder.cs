@@ -15,7 +15,7 @@ using VirtualRadar.StandingData;
 
 namespace VirtualRadar.Feed.Vatsim
 {
-    [FeedDecoder(typeof(VatsimFeedDecoderOptions))]
+    [FeedDecoder(typeof(VatsimFeedDecoderSettingsDto))]
     public class VatsimFeedDecoder : IFeedDecoder
     {
         private CommonFeedParser _CommonFeedParser;
@@ -23,10 +23,10 @@ namespace VirtualRadar.Feed.Vatsim
         /// <summary>
         /// The options used to create the decoder.
         /// </summary>
-        public VatsimFeedDecoderOptions Options { get; }
+        public VatsimFeedDecoderSettingsDto SettingsDto { get; }
 
         /// <inheritdoc/>
-        IFeedDecoderSettingsDto IFeedDecoder.Options => Options;
+        IFeedDecoderSettingsDto IFeedDecoder.SettingsDto => SettingsDto;
 
         /// <inheritdoc/>
         public bool FeedContainsLookups => true;
@@ -58,14 +58,14 @@ namespace VirtualRadar.Feed.Vatsim
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="settingsDto"></param>
         /// <param name="commonFeedParser"></param>
         public VatsimFeedDecoder(
-            VatsimFeedDecoderOptions options,
+            VatsimFeedDecoderSettingsDto settingsDto,
             CommonFeedParser commonFeedParser
         )
         {
-            Options = options;
+            SettingsDto = settingsDto;
             _CommonFeedParser = commonFeedParser;
         }
 

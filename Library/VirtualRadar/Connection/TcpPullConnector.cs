@@ -79,7 +79,7 @@ namespace VirtualRadar.Connection
         /// <inheritdoc/>
         public TcpPullConnectorSettingsDto Options => _Options;
 
-        IConnectorOptions IConnector.Options => Options;
+        IConnectorOptions IConnector.SettingsDto => Options;
 
         /// <inheritdoc/>
         public string Description => $"tcp://{Options.Address}:{Options.Port}";

@@ -17,14 +17,14 @@ namespace VirtualRadar.AircraftLists
     /// <summary>
     /// The default implementation of <see cref="IAircraftList"/>.
     /// </summary>
-    [AircraftList(typeof(AircraftListOptions))]
+    [AircraftList(typeof(AircraftListSettingsDto))]
     public class AircraftList : IAircraftList
     {
         private readonly object _SyncLock = new();
         private readonly Dictionary<int, Aircraft> _AircraftById = [];
         private readonly Dictionary<Icao24, Aircraft> _AircraftByIcao24 = [];
         private long _Stamp = 0L;
-        private readonly AircraftListOptions _Options;
+        private readonly AircraftListSettingsDto _SettingsDto;
         private readonly ILog _Log;
         private readonly IClock _Clock;
         private readonly IPostOffice _PostOffice;
@@ -36,18 +36,18 @@ namespace VirtualRadar.AircraftLists
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="settingsDto"></param>
         /// <param name="log"></param>
         /// <param name="clock"></param>
         /// <param name="postOffice"></param>
         public AircraftList(
-            AircraftListOptions options,
+            AircraftListSettingsDto settingsDto,
             ILog log,
             IClock clock,
             IPostOffice postOffice
         )
         {
-            _Options = options;
+            _SettingsDto = settingsDto;
             _Log = log;
             _Clock = clock;
             _PostOffice = postOffice;
@@ -189,7 +189,7 @@ namespace VirtualRadar.AircraftLists
         public Aircraft[] ToArray(out long arrayStamp, bool applyDisplayTimeout)
         {
             var timeoutThreshold = applyDisplayTimeout
-                ? DateTime.UtcNow.AddSeconds(-_Options.DisplayTimeoutSeconds)
+                ? DateTime.UtcNow.AddSeconds(-_SettingsDto.DisplayTimeoutSeconds)
                 : DateTime.MinValue;
 
             lock(_SyncLock) {
@@ -218,7 +218,7 @@ namespace VirtualRadar.AircraftLists
         /// </summary>
         private void RemoveOldAircraft()
         {
-            var threshold = DateTime.UtcNow.AddSeconds(-_Options.TrackingTimeoutSeconds);
+            var threshold = DateTime.UtcNow.AddSeconds(-_SettingsDto.TrackingTimeoutSeconds);
             lock(_SyncLock) {
                 foreach(var candidate in _AircraftById.Values.ToArray()) {
                     if(candidate.MostRecentMessageReceivedUtc <= threshold) {

@@ -10,6 +10,9 @@
 
 namespace VirtualRadar.Feed
 {
+    /// <summary>
+    /// Base interface for all feed decoder configurable setting DTOs.
+    /// </summary>
     public interface IFeedDecoderSettingsDto
     {
     }

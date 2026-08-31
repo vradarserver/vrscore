@@ -25,7 +25,7 @@ namespace VirtualRadar.Feed.Recording
         public RecordingPlaybackConnectorOptions Options { get; }
 
         /// <inheritdoc/>
-        IConnectorOptions IConnector.Options => Options;
+        IConnectorOptions IConnector.SettingsDto => Options;
 
         /// <inheritdoc/>
         public string Description => $"{Options.RecordingFileName} x{Options.PlaybackSpeed}";

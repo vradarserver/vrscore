@@ -86,7 +86,7 @@ namespace VirtualRadar.Utility.Terminal
 
         private IFeedDecoder CreateFeedDecoder(IServiceProvider serviceProvider)
         {
-            var decoderOptions = new BaseStationFeedDecoderOptions();
+            var decoderOptions = new BaseStationFeedDecoderSettingsDto();
             var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
             var decoder = decoderFactory.Create(decoderOptions);
 

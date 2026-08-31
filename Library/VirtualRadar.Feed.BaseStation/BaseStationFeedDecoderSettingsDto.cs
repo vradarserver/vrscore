@@ -11,21 +11,27 @@
 using VirtualRadar.Configuration;
 using VirtualRadar.Receivers;
 
-namespace VirtualRadar.AircraftLists
+namespace VirtualRadar.Feed.BaseStation
 {
     /// <summary>
-    /// The configuration settings for generic aircraft lists.
+    /// The options for BaseStation feed decoders.
     /// </summary>
-    /// <param name="DisplayTimeoutSeconds"></param>
-    /// <param name="TrackingTimeoutSeconds"></param>
+    /// <param name="Icao24CanHaveNonHexDigits">True if invalid characters in ICAOs are accepted.</param>
     [SettingsProvider(SettingsProviderName)]
-    public record AircraftListOptions(
-        int DisplayTimeoutSeconds = 30,
-        int TrackingTimeoutSeconds = 600
-    ) : IAircraftListSettingsDto, IReceiverAircraftListSettingsDto
+    public record BaseStationFeedDecoderSettingsDto(
+        bool Icao24CanHaveNonHexDigits
+    ) : IReceiverFeedDecoderSettingsDto
     {
-        public const string SettingsProviderName = "GenericAircraftList";
+        public const string SettingsProviderName = "BaseStationFeedDecoder";
 
+        /// <inheritdoc/>
         public string SettingsProvider => SettingsProviderName;
+
+        /// <summary>
+        /// Default ctor.
+        /// </summary>
+        public BaseStationFeedDecoderSettingsDto() : this(false)
+        {
+        }
     }
 }

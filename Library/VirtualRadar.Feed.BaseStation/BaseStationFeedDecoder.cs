@@ -16,7 +16,7 @@ namespace VirtualRadar.Feed.BaseStation
     /// <summary>
     /// The default implementation of <see cref="IFeedDecoder"/> for BaseStation feeds.
     /// </summary>
-    [FeedDecoder(typeof(BaseStationFeedDecoderOptions))]
+    [FeedDecoder(typeof(BaseStationFeedDecoderSettingsDto))]
     public class BaseStationFeedDecoder : IFeedDecoder
     {
         private AsciiLineChunker _StreamChunker = new();
@@ -24,10 +24,10 @@ namespace VirtualRadar.Feed.BaseStation
         private BaseStationMessageConverter _MessageConverter;
 
         /// <inheritdoc/>
-        public BaseStationFeedDecoderOptions Options { get; }
+        public BaseStationFeedDecoderSettingsDto SettingsDto { get; }
 
         /// <inheritdoc/>
-        IFeedDecoderSettingsDto IFeedDecoder.Options => Options;
+        IFeedDecoderSettingsDto IFeedDecoder.SettingsDto => SettingsDto;
 
         /// <inheritdoc/>
         public bool FeedContainsLookups => false;
@@ -52,17 +52,17 @@ namespace VirtualRadar.Feed.BaseStation
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="formatConfig"></param>
         /// <param name="messageConverter"></param>
+        /// <param name="settingsDto"></param>
         public BaseStationFeedDecoder(
             BaseStationMessageConverter messageConverter,
-            BaseStationFeedDecoderOptions options
+            BaseStationFeedDecoderSettingsDto settingsDto
         )
         {
-            Options = options;
+            SettingsDto = settingsDto;
             _MessageConverter = messageConverter;
             _MessageConverter.Options = new() {
-                Icao24CanHaveNonHexDigits = options.Icao24CanHaveNonHexDigits,
+                Icao24CanHaveNonHexDigits = settingsDto.Icao24CanHaveNonHexDigits,
             };
 
             _StreamChunker.ChunkRead += (_, chunk) => {

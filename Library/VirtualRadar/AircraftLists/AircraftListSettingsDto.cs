@@ -11,14 +11,21 @@
 using VirtualRadar.Configuration;
 using VirtualRadar.Receivers;
 
-namespace VirtualRadar.Feed.Vatsim
+namespace VirtualRadar.AircraftLists
 {
+    /// <summary>
+    /// The configuration settings for generic aircraft lists.
+    /// </summary>
+    /// <param name="DisplayTimeoutSeconds"></param>
+    /// <param name="TrackingTimeoutSeconds"></param>
     [SettingsProvider(SettingsProviderName)]
-    public record VatsimFeedDecoderOptions() : IReceiverFeedDecoderSettingsDto
+    public record AircraftListSettingsDto(
+        int DisplayTimeoutSeconds = 30,
+        int TrackingTimeoutSeconds = 600
+    ) : IAircraftListSettingsDto, IReceiverAircraftListSettingsDto
     {
-        public const string SettingsProviderName = "VatsimFeedDecoder";
+        public const string SettingsProviderName = "GenericAircraftList";
 
-        /// <inheritdoc/>
         public string SettingsProvider => SettingsProviderName;
     }
 }
