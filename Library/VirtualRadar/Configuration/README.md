@@ -17,3 +17,7 @@ because value equality can be useful with configuration settings.
 
 Classes with names that end with "SettingsDto" are DTO objects intended to be stored
 and loaded with the homebrew `ISettings` object.
+
+Not to be confused with the odd type here and there that has a "Settings" suffix.
+Those are typically DTOs for settings objects sent by the SDM site, and just have
+the Settings suffix to be consistent with the site.
