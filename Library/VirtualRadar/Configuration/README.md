@@ -13,7 +13,7 @@ because value equality can be useful with configuration settings.
 
 
 
-## Settings
+## SettingsDto
 
-Classes with names that end with "Settings" are intended to be used with the
-homebrew `ISettings` object.
+Classes with names that end with "SettingsDto" are DTO objects intended to be stored
+and loaded with the homebrew `ISettings` object.

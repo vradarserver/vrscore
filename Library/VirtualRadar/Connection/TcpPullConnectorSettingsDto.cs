@@ -16,7 +16,7 @@ using VirtualRadar.Receivers;
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// Carries options for a <see cref="TcpPullConnector"/>.
+    /// Configurable settings for a <see cref="TcpPullConnector"/>.
     /// </summary>
     /// <param name="Address">
     /// The text of the IP address to connect to. This can be IPv4 or IPv6. See <see cref="ParsedAddress"/>
@@ -26,7 +26,7 @@ namespace VirtualRadar.Connection
     /// The port to connect to.
     /// </param>
     [SettingsProvider(_ProviderName)]
-    public record TcpPullConnectorSettings(
+    public record TcpPullConnectorSettingsDto(
         string Address,
         int Port
     ) : IReceiverConnectorOptions
@@ -61,7 +61,7 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Default ctor.
         /// </summary>
-        public TcpPullConnectorSettings() : this(IPAddress.None.ToString(), 0)
+        public TcpPullConnectorSettingsDto() : this(IPAddress.None.ToString(), 0)
         {
         }
 

@@ -28,8 +28,8 @@ namespace VirtualRadar.Server.Middleware
         GetImageModelBuilder                    _RequestBuilder,
         IGraphics                               _Graphics,
         IFileSystem                             _FileSystem,
-        ISettings<OperatorAndTypeFlagSettings>  _OperatorFlagSettings,
-        ISettings<InternetClientSettings>       _InternetClientSettings
+        ISettings<OperatorAndTypeFlagSettingsDto>  _OperatorFlagSettings,
+        ISettings<InternetClientSettingsDto>       _InternetClientSettings
         #pragma warning restore IDE1006
     )
     {

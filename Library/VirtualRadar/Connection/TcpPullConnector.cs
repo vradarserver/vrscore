@@ -19,7 +19,7 @@ namespace VirtualRadar.Connection
     /// <summary>
     /// A connector that actively connects to a remote TCP port and pulls a feed from it.
     /// </summary>
-    [ReceiveConnector(typeof(TcpPullConnectorSettings))]
+    [ReceiveConnector(typeof(TcpPullConnectorSettingsDto))]
     class TcpPullConnector : IPullConnector
     {
         /// <summary>
@@ -74,10 +74,10 @@ namespace VirtualRadar.Connection
         }
 
         private Connection _Connection;             // The current connection
-        private TcpPullConnectorSettings _Options;
+        private TcpPullConnectorSettingsDto _Options;
 
         /// <inheritdoc/>
-        public TcpPullConnectorSettings Options => _Options;
+        public TcpPullConnectorSettingsDto Options => _Options;
 
         IConnectorOptions IConnector.Options => Options;
 
@@ -153,7 +153,7 @@ namespace VirtualRadar.Connection
         /// Creates a new object.
         /// </summary>
         /// <param name="options"></param>
-        public TcpPullConnector(TcpPullConnectorSettings options)
+        public TcpPullConnector(TcpPullConnectorSettingsDto options)
         {
             _Options = options;
         }

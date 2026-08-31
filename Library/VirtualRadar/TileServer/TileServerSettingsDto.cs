@@ -13,15 +13,16 @@ using VirtualRadar.Configuration;
 namespace VirtualRadar.TileServer
 {
     /// <summary>
-    /// Configuration associated with the downloading and selection of tile server settings.
+    /// Configurable settings controlling the downloading and selection of tile server
+    /// settings.
     /// </summary>
     /// <param name="DownloadUrl">The URL to download settings from.</param>
     /// <param name="FolderOverride">
-    /// The folder to store the downloaded settings in. If null or empty then the normal working folder is
-    /// used.
+    /// The folder to store the downloaded settings in. If null or empty then the normal
+    /// working folder is used.
     /// </param>
     [Settings("TileServer")]
-    public record TileServerSettings(
+    public record TileServerSettingsDto(
         string DownloadUrl = "http://sdm.virtualradarserver.co.uk/api/1.01/tile-servers",
         string FolderOverride = null,
         int BlockingDownloadTimeoutSeconds = 10,

@@ -18,7 +18,7 @@ namespace VirtualRadar.TileServer
     /// </summary>
     class DownloadedTileServerSettingsManager(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<TileServerSettings> _Settings,
+        ISettings<TileServerSettingsDto> _Settings,
         IDownloadedTileServerSettingsStorage _Storage,
         IDownloadedTileServerSettingsDownloader _Downloader,
         ILog _Log

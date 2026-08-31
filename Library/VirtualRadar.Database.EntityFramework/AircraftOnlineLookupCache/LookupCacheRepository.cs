@@ -19,7 +19,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
         #pragma warning disable IDE1006 // VS2022 does not support naming rules for class private ctors
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder,
-        ISettings<AircraftOnlineLookupCacheSettings> _Settings
+        ISettings<AircraftOnlineLookupCacheSettingsDto> _Settings
         #pragma warning restore IDE1006
     ) : IAircraftOnlineLookupCache
     {

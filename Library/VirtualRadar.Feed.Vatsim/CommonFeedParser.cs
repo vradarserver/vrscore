@@ -23,7 +23,7 @@ namespace VirtualRadar.Feed.Vatsim
     /// </summary>
     public class CommonFeedParser(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<VatsimSettings> _VatsimSettings,
+        ISettings<VatsimSettingsDto> _VatsimSettings,
         IStandingDataManager _StandingDataManager,
         IRegistrationPrefixLookup _RegistrationPrefixLookup
         #pragma warning restore IDE1006
@@ -165,13 +165,13 @@ namespace VirtualRadar.Feed.Vatsim
             pilotState.Generation = Generation;
         }
 
-        private static bool? SetOnGround(VatsimSettings vatsimSettings, int groundSpeedKnots)
+        private static bool? SetOnGround(VatsimSettingsDto vatsimSettings, int groundSpeedKnots)
         {
             return vatsimSettings.AssumeSlowAircraftAreOnGround
                 && groundSpeedKnots <= vatsimSettings.SlowAircraftThresholdSpeedKnots;
         }
 
-        private string FixRegistrationByExaminingPrefix(VatsimSettings vatsimSettings, string registration)
+        private string FixRegistrationByExaminingPrefix(VatsimSettingsDto vatsimSettings, string registration)
         {
             var result = registration?.ToUpperInvariant().Trim();
             var hasHyphen = result?.Contains('-') ?? false;
@@ -199,7 +199,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         private void LookupAircraftType(
-            VatsimSettings vatsimSettings,
+            VatsimSettingsDto vatsimSettings,
             VatsimDataV3Pilot pilot,
             PilotState pilotState,
             LookupByAircraftIdOutcome lookupOutcome
@@ -226,7 +226,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         private static void GuessManufacturerAndModelFromType(
-            VatsimSettings vatsimSettings,
+            VatsimSettingsDto vatsimSettings,
             AircraftType aircraftType,
             LookupOutcome lookupOutcome
         )

@@ -11,18 +11,20 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The settings for operator and aircraft type images.
+    /// Configurable settings for the default online lookup cache.
     /// </summary>
-    /// <param name="OperatorFlagsFolder">The folder where operator flags are stored.</param>
-    /// <param name="TypeFlagsFolder">The folder where type flags are stored.</param>
-    /// <param name="FlagWidthPixels">The width of all operator and silhouette images in pixels.</param>
-    /// <param name="FlagHeightPixels">The height of operator and silhouette images in pixels.</param>
-    [Settings("OperatorAndTypeFlags")]
-    public record OperatorAndTypeFlagSettings(
-        string OperatorFlagsFolder = "",
-        string TypeFlagsFolder = "",
-        int FlagWidthPixels = 85,
-        int FlagHeightPixels = 20
+    /// <param name="MissLifetimeHours">
+    /// If the online lookup cannot find the details for an ICAO then the cache records the miss and the
+    /// lookup service will not look it up again for this many hours.
+    /// </param>
+    /// <param name="HitLifetimeDays">
+    /// If the online lookup finds the details for an ICAO then the cache records the hit and the lookup
+    /// service will not look it up again for this many days.
+    /// </param>
+    [Settings("AircraftOnlineLookupCache")]
+    public record AircraftOnlineLookupCacheSettingsDto(
+        int MissLifetimeHours = 24,
+        int HitLifetimeDays = 28
     )
     {
     }

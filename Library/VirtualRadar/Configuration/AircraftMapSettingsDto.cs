@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2010 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -11,14 +11,25 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The settings that control the display of aircraft pictures.
+    /// Configurable settings that control how aircraft are shown on the map.
     /// </summary>
-    /// <param name="LocalPicturesFolder"></param>
-    /// <param name="SearchSubFolders"></param>
-    [Settings("AircraftPictures")]
-    public record AircraftPictureSettings(
-        string LocalPicturesFolder = "",
-        bool SearchLocalSubFolders = true
+    [Settings("AircraftMap")]
+    public record AircraftMapSettingsDto(
+        string          GoogleMapsApiKey = "",
+        DistanceUnit    InitialDistanceUnit = DistanceUnit.NauticalMiles,
+        HeightUnit      InitialHeightUnit = HeightUnit.Feet,
+        SpeedUnit       InitialSpeedUnit = SpeedUnit.Knots,
+        MapProvider     MapProvider = MapProvider.Leaflet,
+        double          InitialMapLatitude = 51.0,
+        double          InitialMapLongitude = -0.6,
+        AircraftMapType InitialMapType = AircraftMapType.Roadmap,
+        int             InitialMapZoom = 11,
+        int             InitialRefreshSeconds = 1,
+        int             MinimumRefreshSeconds = 1,
+        int             ShortTrailLengthSeconds = 30,
+        string          TileServerName = "",
+        bool            UseMarkerLabels = false,
+        bool            UseGoogleMapsAPIKeyWithLocalRequests = false
     )
     {
     }

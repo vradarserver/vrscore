@@ -1,4 +1,4 @@
-﻿// Copyright © 2010 onwards, Andrew Whewell
+﻿// Copyright © 2024 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -11,24 +11,16 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The settings that control what browsers connecting from the public Internet are allowed to see and do.
+    /// Configurable settings for web site clients that aren't specific to the aircraft
+    /// map <seealso cref="AircraftMapSettingsDto"/>.
     /// </summary>
-    /// <param name="CanRunReports"></param>
-    /// <param name="CanShowPinText"></param>
-    /// <param name="CanPlayAudio"></param>
-    /// <param name="CanShowPictures"></param>
-    /// <param name="TimeoutMinutes"></param>
-    /// <param name="CanSubmitRoutes"></param>
-    /// <param name="CanShowPolarPlots"></param>
-    [Settings("InternetClients")]
-    public record InternetClientSettings(
-        bool CanRunReports = false,
-        bool CanShowPinText = false,
-        bool CanPlayAudio = false,
-        bool CanShowPictures = false,
-        int TimeoutMinutes = 20,
-        bool CanSubmitRoutes = false,
-        bool CanShowPolarPlots = false
+    [Settings("WebClient")]
+    public record WebClientSettingsDto(
+        bool            IsAudioEnabled = true,
+        AirportCodeType PreferredAirportCodeType = AirportCodeType.Iata,
+        bool            UseSvgGraphicsOnDesktop = true,
+        bool            UseSvgGraphicsOnMobile = true,
+        bool            UseSvgGraphicsOnReports = true
     )
     {
     }

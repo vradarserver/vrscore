@@ -11,16 +11,20 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// General settings for web site clients that aren't specific to the aircraft map <seealso
-    /// cref="AircraftMapSettings"/>.
+    /// Configurable settings for for <see cref="IAircraftOnlineLookupService"/>
+    /// implementations.
     /// </summary>
-    [Settings("WebClient")]
-    public record WebClientSettings(
-        bool            IsAudioEnabled = true,
-        AirportCodeType PreferredAirportCodeType = AirportCodeType.Iata,
-        bool            UseSvgGraphicsOnDesktop = true,
-        bool            UseSvgGraphicsOnMobile = true,
-        bool            UseSvgGraphicsOnReports = true
+    /// <param name="LookupUrl">
+    /// The address to send GET requests to when fetching batches of aircraft by ICAO.
+    /// </param>
+    /// <param name="ExpireQueueAfterMinutes">
+    /// How many minutes of lookup failures are to be endured before the service gives up
+    /// and reports the ICAO missing (without caching it as a miss).
+    /// </param>
+    [Settings("AircraftOnlineLookupService")]
+    public record AircraftOnlineLookupServiceSettingsDto(
+        string LookupUrl = "https://sdm.virtualradarserver.co.uk/Aircraft/GetAircraftLookupSettings?language={language}",
+        int ExpireQueueAfterMinutes = 30
     )
     {
     }

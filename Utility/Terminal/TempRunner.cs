@@ -139,7 +139,7 @@ namespace VirtualRadar.Utility.Terminal
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
 
-            var connectorOptions = new TcpPullConnectorSettings() {
+            var connectorOptions = new TcpPullConnectorSettingsDto() {
                 Address =   address.ToString(),
                 Port =      _Options.Port,
             };

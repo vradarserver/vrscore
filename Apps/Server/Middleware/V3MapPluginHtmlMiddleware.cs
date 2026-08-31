@@ -17,11 +17,11 @@ namespace VirtualRadar.Server.Middleware
     public class V3MapPluginHtmlMiddleware
     {
         private readonly RequestDelegate _Next;
-        private readonly ISettings<AircraftMapSettings> _AircraftMapSettings;
+        private readonly ISettings<AircraftMapSettingsDto> _AircraftMapSettings;
 
         public V3MapPluginHtmlMiddleware(
             RequestDelegate next,
-            ISettings<AircraftMapSettings> aircraftMapSettings
+            ISettings<AircraftMapSettingsDto> aircraftMapSettings
         )
         {
             _Next = next;

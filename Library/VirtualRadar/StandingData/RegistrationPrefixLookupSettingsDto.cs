@@ -8,22 +8,13 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Configuration
+using VirtualRadar.Configuration;
+
+namespace VirtualRadar.StandingData
 {
-    /// <summary>
-    /// Configures values for <see cref="IAircraftOnlineLookupService"/> implementations.
-    /// </summary>
-    /// <param name="LookupUrl">
-    /// The address to send GET requests to when fetching batches of aircraft by ICAO.
-    /// </param>
-    /// <param name="ExpireQueueAfterMinutes">
-    /// How many minutes of lookup failures are to be endured before the service gives up and reports the ICAO
-    /// missing (without caching it as a miss).
-    /// </param>
-    [Settings("AircraftOnlineLookupService")]
-    public record AircraftOnlineLookupServiceSettings(
-        string LookupUrl = "https://sdm.virtualradarserver.co.uk/Aircraft/GetAircraftLookupSettings?language={language}",
-        int ExpireQueueAfterMinutes = 30
+    [Settings("RegistrationPrefixLookup")]
+    public record RegistrationPrefixLookupSettingsDto(
+        string Url = "https://raw.githubusercontent.com/vradarserver/standing-data/main/registration-prefixes/schema-01/reg-prefixes.csv"
     )
     {
     }

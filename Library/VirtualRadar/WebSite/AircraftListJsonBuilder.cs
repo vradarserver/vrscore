@@ -23,11 +23,11 @@ namespace VirtualRadar.WebSite
     /// </summary>
     public class AircraftListJsonBuilder(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<AircraftMapSettings>          _AircraftMapSettings,
-        ISettings<AircraftPictureSettings>      _AircraftPictureSettings,
-        ISettings<InternetClientSettings>       _InternetClientSettings,
-        ISettings<OperatorAndTypeFlagSettings>  _OperatorAndFlagSettings,
-        ISettings<WebClientSettings>            _WebClientSettings,
+        ISettings<AircraftMapSettingsDto>          _AircraftMapSettings,
+        ISettings<AircraftPictureSettingsDto>      _AircraftPictureSettings,
+        ISettings<InternetClientSettingsDto>       _InternetClientSettings,
+        ISettings<OperatorAndTypeFlagSettingsDto>  _OperatorAndFlagSettings,
+        ISettings<WebClientSettingsDto>            _WebClientSettings,
         IReceiverFactory                        _ReceiverFactory,
         IFileSystem                             _FileSystem,
         IClock                                  _Clock
@@ -40,11 +40,11 @@ namespace VirtualRadar.WebSite
             DateTime                    UtcNow,
             AircraftListJsonBuilderArgs Args,
             IReceiver                   Receiver,
-            AircraftMapSettings         AircraftMapSettings,
-            AircraftPictureSettings     AircraftPictureSettings,
-            InternetClientSettings      InternetClientSettings,
-            OperatorAndTypeFlagSettings OperatorAndTypeFlagSettings,
-            WebClientSettings           WebClientSettings,
+            AircraftMapSettingsDto         AircraftMapSettings,
+            AircraftPictureSettingsDto     AircraftPictureSettings,
+            InternetClientSettingsDto      InternetClientSettings,
+            OperatorAndTypeFlagSettingsDto OperatorAndTypeFlagSettings,
+            WebClientSettingsDto           WebClientSettings,
             AircraftListJson            Json
         )
         {

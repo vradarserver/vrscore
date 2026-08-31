@@ -23,7 +23,7 @@ namespace VirtualRadar.Feed.Vatsim
     /// <param name="_HttpClient"></param>
     class VatsimDownloader(
         #pragma warning disable IDE1006 // VS2022 doesn't let you set naming rules for class primary ctors
-        ISettings<VatsimSettings> _Settings,
+        ISettings<VatsimSettingsDto> _Settings,
         ILog _Log,
         IHttpClientService _HttpClient,
         CommonFeedParser _CommonFeedParser

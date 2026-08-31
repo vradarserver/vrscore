@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2010 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -11,20 +11,25 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The configuration for the default online lookup cache.
+    /// Configurable settings that control what browsers connecting from the public
+    /// Internet are allowed to see and do.
     /// </summary>
-    /// <param name="MissLifetimeHours">
-    /// If the online lookup cannot find the details for an ICAO then the cache records the miss and the
-    /// lookup service will not look it up again for this many hours.
-    /// </param>
-    /// <param name="HitLifetimeDays">
-    /// If the online lookup finds the details for an ICAO then the cache records the hit and the lookup
-    /// service will not look it up again for this many days.
-    /// </param>
-    [Settings("AircraftOnlineLookupCache")]
-    public record AircraftOnlineLookupCacheSettings(
-        int MissLifetimeHours = 24,
-        int HitLifetimeDays = 28
+    /// <param name="CanRunReports"></param>
+    /// <param name="CanShowPinText"></param>
+    /// <param name="CanPlayAudio"></param>
+    /// <param name="CanShowPictures"></param>
+    /// <param name="TimeoutMinutes"></param>
+    /// <param name="CanSubmitRoutes"></param>
+    /// <param name="CanShowPolarPlots"></param>
+    [Settings("InternetClients")]
+    public record InternetClientSettingsDto(
+        bool CanRunReports = false,
+        bool CanShowPinText = false,
+        bool CanPlayAudio = false,
+        bool CanShowPictures = false,
+        int TimeoutMinutes = 20,
+        bool CanSubmitRoutes = false,
+        bool CanShowPolarPlots = false
     )
     {
     }

@@ -23,7 +23,7 @@ namespace VirtualRadar.StandingData
     /// </remarks>
     class RegistrationPrefixLookup(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<RegistrationPrefixLookupSettings> _Settings,
+        ISettings<RegistrationPrefixLookupSettingsDto> _Settings,
         IWorkingFolder _WorkingFolder,
         IFileSystem _FileSystem,
         IHttpClientService _HttpClient,

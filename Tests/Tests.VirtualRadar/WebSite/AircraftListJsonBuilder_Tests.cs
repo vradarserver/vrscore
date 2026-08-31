@@ -33,11 +33,11 @@ namespace Tests.VirtualRadar.WebSite
         private long _AircraftListToArrayStamp;
         private Mock<IAircraftList> _AircraftList;
         private List<Mock<IReceiver>> _AllReceivers;
-        private MockSettings<AircraftMapSettings> _AircraftMapSettings;
-        private MockSettings<AircraftPictureSettings> _AircraftPictureSettings;
-        private MockSettings<InternetClientSettings> _InternetClientSettings;
-        private MockSettings<OperatorAndTypeFlagSettings> _OperatorAndTypeFlagSettings;
-        private MockSettings<WebClientSettings> _WebClientSettings;
+        private MockSettings<AircraftMapSettingsDto> _AircraftMapSettings;
+        private MockSettings<AircraftPictureSettingsDto> _AircraftPictureSettings;
+        private MockSettings<InternetClientSettingsDto> _InternetClientSettings;
+        private MockSettings<OperatorAndTypeFlagSettingsDto> _OperatorAndTypeFlagSettings;
+        private MockSettings<WebClientSettingsDto> _WebClientSettings;
         private MockFileSystem _FileSystem;
         private MockClock _Clock;
         private MockPostOffice _PostOffice;

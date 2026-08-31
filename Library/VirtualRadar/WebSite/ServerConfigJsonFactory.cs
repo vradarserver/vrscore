@@ -21,9 +21,9 @@ namespace VirtualRadar.WebSite
     [Lifetime(Lifetime.Singleton)]
     public class ServerConfigJsonFactory(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<AircraftMapSettings> _AircraftMapSettings,
-        ISettings<InternetClientSettings> _InternetClientSettings,
-        ISettings<WebClientSettings> _WebClientSettings,
+        ISettings<AircraftMapSettingsDto> _AircraftMapSettings,
+        ISettings<InternetClientSettingsDto> _InternetClientSettings,
+        ISettings<WebClientSettingsDto> _WebClientSettings,
         IDownloadedTileServerSettingsManager _TileServerManager,
         IReceiverFactory _ReceiverFactory
         #pragma warning restore IDE1006
