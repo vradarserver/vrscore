@@ -17,9 +17,9 @@ namespace VirtualRadar.Utility.CLIConsole
 {
     class HeaderService
     {
-        private ApplicationOptions _ApplicationSettings;
+        private ApplicationSetup _ApplicationSettings;
 
-        public HeaderService(IOptions<ApplicationOptions> applicationSettings)
+        public HeaderService(IOptions<ApplicationSetup> applicationSettings)
         {
             _ApplicationSettings = applicationSettings.Value;
         }

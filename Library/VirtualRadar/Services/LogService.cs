@@ -19,7 +19,7 @@ namespace VirtualRadar.Services
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         IWorkingFolder _WorkingFolder,
         IFileSystem _FileSystem,
-        IOptions<LogOptions> _Settings
+        IOptions<LogSetup> _Settings
         #pragma warning restore IDE1006
     ) : ILog
     {

@@ -3,10 +3,10 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// A standard Microsoft Options object that the application is expected to provide when initialising the
-    /// library.
+    /// A standard Microsoft.Extensions.Options object that the application is expected to
+    /// provide when initialising the library.
     /// </summary>
-    public class ApplicationOptions
+    public class ApplicationSetup
     {
         /// <summary>
         /// The application's name.
@@ -36,7 +36,7 @@ namespace VirtualRadar.Configuration
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        public ApplicationOptions() : this(Assembly.GetEntryAssembly())
+        public ApplicationSetup() : this(Assembly.GetEntryAssembly())
         {
         }
 
@@ -44,7 +44,7 @@ namespace VirtualRadar.Configuration
         /// Creates a new object.
         /// </summary>
         /// <param name="assembly">The assembly to extract all information from.</param>
-        public ApplicationOptions(Assembly assembly)
+        public ApplicationSetup(Assembly assembly)
         {
             ApplicationName =       assembly?.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "No name configured";
             InformationalVersion =  InformationalVersion.FromAssembly(assembly);

@@ -11,9 +11,10 @@
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// A standard Microsoft Options object that the application can optionally provide to control logging.
+    /// A standard Microsoft.Extensions.Options object that the application can optionally
+    /// provide to control logging.
     /// </summary>
-    public class LogOptions
+    public class LogSetup
     {
         /// <summary>
         /// The maximum number of lines to keep in the VRS log file.
