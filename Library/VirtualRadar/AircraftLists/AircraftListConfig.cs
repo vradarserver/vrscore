@@ -53,8 +53,8 @@ namespace VirtualRadar.AircraftLists
             ArgumentNullException.ThrowIfNull(optionsType);
             ArgumentNullException.ThrowIfNull(aircraftListType);
 
-            if(!typeof(IAircraftListOptions).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IAircraftListOptions)}");
+            if(!typeof(IAircraftListSettingsDto).IsAssignableFrom(optionsType)) {
+                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IAircraftListSettingsDto)}");
             }
             if(!typeof(IAircraftList).IsAssignableFrom(aircraftListType)) {
                 throw new InvalidOperationException($"{aircraftListType.Name} does not implement {nameof(IAircraftList)}");

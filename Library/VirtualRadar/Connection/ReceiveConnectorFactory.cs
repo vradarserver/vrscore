@@ -26,7 +26,7 @@ namespace VirtualRadar.Connection
 
         ~ReceiveConnectorFactory() => Dispose(false);
 
-        public IReceiveConnector Create(IReceiveConnectorOptions options)
+        public IReceiveConnector Create(IReceiveConnectorSettingsDto options)
         {
             lock(_SyncLock) {
                 if(options != null && Connector == null) {

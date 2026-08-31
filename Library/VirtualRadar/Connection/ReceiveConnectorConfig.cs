@@ -53,8 +53,8 @@ namespace VirtualRadar.Connection
             ArgumentNullException.ThrowIfNull(optionsType);
             ArgumentNullException.ThrowIfNull(connectorType);
 
-            if(!typeof(IReceiveConnectorOptions).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IReceiveConnectorOptions)}");
+            if(!typeof(IReceiveConnectorSettingsDto).IsAssignableFrom(optionsType)) {
+                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IReceiveConnectorSettingsDto)}");
             }
             if(!typeof(IReceiveConnector).IsAssignableFrom(connectorType)) {
                 throw new InvalidOperationException($"{connectorType.Name} does not implement {nameof(IReceiveConnector)}");

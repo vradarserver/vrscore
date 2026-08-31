@@ -29,7 +29,7 @@ namespace VirtualRadar.Connection
     public record TcpPullConnectorSettingsDto(
         string Address,
         int Port
-    ) : IReceiverConnectorOptions
+    ) : IReceiverConnectorSettingsDto
     {
         private const string _ProviderName = "TcpPullConnector";
 

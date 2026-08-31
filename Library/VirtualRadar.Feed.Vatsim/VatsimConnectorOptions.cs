@@ -22,7 +22,7 @@ namespace VirtualRadar.Feed.Vatsim
         DistanceUnit GeofenceDistanceUnit,
         double GeofenceWidth,
         double GeofenceHeight
-    ) : IReceiverConnectorOptions
+    ) : IReceiverConnectorSettingsDto
     {
         private const string _ProviderName = "VatsimConnector";
 

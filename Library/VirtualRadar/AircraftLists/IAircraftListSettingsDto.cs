@@ -11,9 +11,9 @@
 namespace VirtualRadar.AircraftLists
 {
     /// <summary>
-    /// The interface that all aircraft list options have to implement.
+    /// The interface that all configurable aircraft list settings have to implement.
     /// </summary>
-    public interface IAircraftListOptions
+    public interface IAircraftListSettingsDto
     {
     }
 }

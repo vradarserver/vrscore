@@ -53,8 +53,8 @@ namespace VirtualRadar.Feed
             ArgumentNullException.ThrowIfNull(optionsType);
             ArgumentNullException.ThrowIfNull(feedDecoderType);
 
-            if(!typeof(IFeedDecoderOptions).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IFeedDecoderOptions)}");
+            if(!typeof(IFeedDecoderSettingsDto).IsAssignableFrom(optionsType)) {
+                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IFeedDecoderSettingsDto)}");
             }
             if(!typeof(IFeedDecoder).IsAssignableFrom(feedDecoderType)) {
                 throw new InvalidOperationException($"{feedDecoderType.Name} does not implement {nameof(IFeedDecoder)}");

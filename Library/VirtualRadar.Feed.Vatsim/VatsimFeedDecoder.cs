@@ -26,7 +26,7 @@ namespace VirtualRadar.Feed.Vatsim
         public VatsimFeedDecoderOptions Options { get; }
 
         /// <inheritdoc/>
-        IFeedDecoderOptions IFeedDecoder.Options => Options;
+        IFeedDecoderSettingsDto IFeedDecoder.Options => Options;
 
         /// <inheritdoc/>
         public bool FeedContainsLookups => true;

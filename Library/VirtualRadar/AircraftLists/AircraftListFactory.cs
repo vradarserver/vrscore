@@ -25,7 +25,7 @@ namespace VirtualRadar.AircraftLists
 
         ~AircraftListFactory() => Dispose(false);
 
-        public IAircraftList Create(IAircraftListOptions options)
+        public IAircraftList Create(IAircraftListSettingsDto options)
         {
             lock(_SyncLock) {
                 if(options != null && AircraftList == null) {

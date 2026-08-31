@@ -27,7 +27,7 @@ namespace VirtualRadar.Feed.BaseStation
         public BaseStationFeedDecoderOptions Options { get; }
 
         /// <inheritdoc/>
-        IFeedDecoderOptions IFeedDecoder.Options => Options;
+        IFeedDecoderSettingsDto IFeedDecoder.Options => Options;
 
         /// <inheritdoc/>
         public bool FeedContainsLookups => false;

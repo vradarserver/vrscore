@@ -14,7 +14,7 @@ using VirtualRadar.Receivers;
 namespace VirtualRadar.Feed.Vatsim
 {
     [SettingsProvider(SettingsProviderName)]
-    public record VatsimFeedDecoderOptions() : IReceiverFeedDecoderOptions
+    public record VatsimFeedDecoderOptions() : IReceiverFeedDecoderSettingsDto
     {
         public const string SettingsProviderName = "VatsimFeedDecoder";
 

@@ -22,22 +22,23 @@ namespace VirtualRadar.Receivers
         IReceiver[] Receivers { get; }
 
         /// <summary>
-        /// Returns the current options for the receiver name passed across.
+        /// Returns the current settings DTO for the receiver name passed across.
         /// </summary>
         /// <param name="receiverName"></param>
         /// <returns></returns>
-        ReceiverOptions FindOptionsFor(string receiverName);
+        ReceiverSettingsDto FindSettingsDtoFor(string receiverName);
 
         /// <summary>
-        /// Creates a new receiver using the options passed across. The receiver's lifetime is not managed by
-        /// the factory, and if the factory already has a receiver with the same options then it is not
-        /// reused. Callbacks are not called when this function creates a receiver, nor are they called if/when
-        /// the receiver is disposed. Will return null if the options are invalid.
+        /// Creates a new receiver using the settings DTO passed across. The receiver's
+        /// lifetime is not managed by the factory, and if the factory already has a
+        /// receiver with the same options then it is not reused. Callbacks are not called
+        /// when this function creates a receiver, nor are they called if/when the
+        /// receiver is disposed. Will return null if the DTO is invalid.
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        IReceiver Build(IServiceProvider serviceProvider, ReceiverOptions options);
+        IReceiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto options);
 
         /// <summary>
         /// Returns a receiver previously created by <see cref="FindOrBuild"/> with the name passed across.
@@ -98,7 +99,7 @@ namespace VirtualRadar.Receivers
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        (bool Added, IReceiver Receiver) FindOrBuild(ReceiverOptions options);
+        (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto options);
 
         /// <summary>
         /// Shuts a receiver down.

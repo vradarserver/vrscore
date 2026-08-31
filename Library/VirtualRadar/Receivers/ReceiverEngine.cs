@@ -19,7 +19,7 @@ namespace VirtualRadar.Receivers
     [Lifetime(Lifetime.Singleton)]
     public class ReceiverEngine(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<MessageSourcesOptions> _MessageSourceSettings,
+        ISettings<MessageSourcesSettingsDto> _MessageSourceSettings,
         IReceiverFactory _ReceiverFactory,
         ILog _Log
         #pragma warning restore IDE1006

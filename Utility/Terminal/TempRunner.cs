@@ -99,7 +99,7 @@ namespace VirtualRadar.Utility.Terminal
 
             if(_Options.ReceiverName != null) {
                 Console.WriteLine($"Loading receiver {_Options.ReceiverName}");
-                var receiverOptions = _ReceiverFactory.FindOptionsFor(_Options.ReceiverName.Trim());
+                var receiverOptions = _ReceiverFactory.FindSettingsDtoFor(_Options.ReceiverName.Trim());
                 if(receiverOptions == null) {
                     OptionsParser.Usage($"Could not find receiver options for the \"{_Options.ReceiverName}\" receiver");
                 } else if(receiverOptions.Connector == null || receiverOptions.FeedDecoder == null || receiverOptions.Enabled == false) {

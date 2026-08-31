@@ -1,7 +1,8 @@
 ﻿namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// The interface that the bindable configuration object for all configurable providers has to implement.
+    /// The interface that the bindable configuration object for all configurable
+    /// providers has to implement.
     /// </summary>
     public interface ISettingsProvider
     {

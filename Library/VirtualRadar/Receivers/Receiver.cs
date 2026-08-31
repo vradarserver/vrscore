@@ -26,7 +26,7 @@ namespace VirtualRadar.Receivers
         private IStandingDataManager _StandingDataManager;
 
         /// <inheritdoc/>
-        public ReceiverOptions Options { get; }
+        public ReceiverSettingsDto Options { get; }
 
         /// <inheritdoc/>
         public int Id => Options.Id;
@@ -72,7 +72,7 @@ namespace VirtualRadar.Receivers
         /// <param name="aircraftLookupService"></param>
         /// <param name="standingDataRepository"></param>
         internal Receiver(
-            ReceiverOptions options,
+            ReceiverSettingsDto options,
             IReceiveConnector connector,
             IFeedDecoder feedDecoder,
             IAircraftList aircraftList,

@@ -11,14 +11,14 @@
 namespace VirtualRadar.Receivers
 {
     /// <summary>
-    /// Describes the options for an individual receiver.
+    /// Describes the configurable settings for an individual receiver.
     /// </summary>
     /// <remarks>
     /// This is a class because .NET 8 records equality comparisons don't work with arrays
     /// and objects. If the situation changes in later versions of .NET then we can cut a
     /// lot of code out of this.
     /// </remarks>
-    public class ReceiverOptions
+    public class ReceiverSettingsDto
     {
         public int Id { get; init; }
 
@@ -28,24 +28,24 @@ namespace VirtualRadar.Receivers
 
         public bool Hidden { get; init; }
 
-        public IReceiverConnectorOptions Connector { get; init; }
+        public IReceiverConnectorSettingsDto Connector { get; init; }
 
-        public IReceiverFeedDecoderOptions FeedDecoder { get; init; }
+        public IReceiverFeedDecoderSettingsDto FeedDecoder { get; init; }
 
-        public IReceiverAircraftListOptions AircraftList { get; init; }
+        public IReceiverAircraftListSettingsDto AircraftList { get; init; }
 
-        public ReceiverOptions()
+        public ReceiverSettingsDto()
         {
         }
 
-        public ReceiverOptions(
+        public ReceiverSettingsDto(
             int id,
             string name,
             bool enabled,
             bool hidden,
-            IReceiverConnectorOptions connector,
-            IReceiverFeedDecoderOptions feedDecoder,
-            IReceiverAircraftListOptions aircraftList
+            IReceiverConnectorSettingsDto connector,
+            IReceiverFeedDecoderSettingsDto feedDecoder,
+            IReceiverAircraftListSettingsDto aircraftList
         )
         {
             Id = id;
@@ -57,7 +57,7 @@ namespace VirtualRadar.Receivers
             AircraftList = aircraftList;
         }
 
-        public ReceiverOptions(ReceiverOptions source) : this(
+        public ReceiverSettingsDto(ReceiverSettingsDto source) : this(
             id: source.Id,
             name: source.Name,
             enabled: source.Enabled,
@@ -69,14 +69,14 @@ namespace VirtualRadar.Receivers
         {
         }
 
-        public static bool operator==(ReceiverOptions lhs, ReceiverOptions rhs) => Object.Equals(lhs, rhs);
+        public static bool operator==(ReceiverSettingsDto lhs, ReceiverSettingsDto rhs) => Object.Equals(lhs, rhs);
 
-        public static bool operator!=(ReceiverOptions lhs, ReceiverOptions rhs) => !Object.Equals(lhs, rhs);
+        public static bool operator!=(ReceiverSettingsDto lhs, ReceiverSettingsDto rhs) => !Object.Equals(lhs, rhs);
 
         public override bool Equals(object obj)
         {
             var result = Object.ReferenceEquals(this, obj);
-            if(!result && obj is ReceiverOptions other) {
+            if(!result && obj is ReceiverSettingsDto other) {
                 result =  Id == other.Id
                        && Name == other.Name
                        && Enabled == other.Enabled
@@ -93,7 +93,7 @@ namespace VirtualRadar.Receivers
 
         public override string ToString()
         {
-            return $"{nameof(ReceiverOptions)} {{ "
+            return $"{nameof(ReceiverSettingsDto)} {{ "
                 + $" {nameof(Id)} = {Id},"
                 + $" {nameof(Name)} = {Name},"
                 + $" {nameof(Enabled)} = {Enabled},"

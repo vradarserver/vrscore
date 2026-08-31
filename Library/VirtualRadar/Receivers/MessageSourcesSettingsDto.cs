@@ -13,39 +13,39 @@ using VirtualRadar.Configuration;
 namespace VirtualRadar.Receivers
 {
     /// <summary>
-    /// Describes the options for all sources of aircraft messages.
+    /// Describes the configurable settings for all sources of aircraft messages.
     /// </summary>
     [Settings("MessageSources")]
-    public class MessageSourcesOptions
+    public class MessageSourcesSettingsDto
     {
-        private ReceiverOptions[] _Receivers = [];
-        public ReceiverOptions[] Receivers { get; set; }
+        private ReceiverSettingsDto[] _Receivers = [];
+        public ReceiverSettingsDto[] Receivers { get; set; }
 
         public int DefaultSourceId { get; set; }
 
-        public MessageSourcesOptions()
+        public MessageSourcesSettingsDto()
         {
         }
 
-        public MessageSourcesOptions(ReceiverOptions[] receivers)
+        public MessageSourcesSettingsDto(ReceiverSettingsDto[] receivers)
         {
             _Receivers = receivers;
         }
 
-        public MessageSourcesOptions(MessageSourcesOptions source) : this(
+        public MessageSourcesSettingsDto(MessageSourcesSettingsDto source) : this(
             receivers: source.Receivers
         )
         {
         }
 
-        public static bool operator==(MessageSourcesOptions lhs, MessageSourcesOptions rhs) => Object.Equals(lhs, rhs);
+        public static bool operator==(MessageSourcesSettingsDto lhs, MessageSourcesSettingsDto rhs) => Object.Equals(lhs, rhs);
 
-        public static bool operator!=(MessageSourcesOptions lhs, MessageSourcesOptions rhs) => !Object.Equals(lhs, rhs);
+        public static bool operator!=(MessageSourcesSettingsDto lhs, MessageSourcesSettingsDto rhs) => !Object.Equals(lhs, rhs);
 
         public override bool Equals(object obj)
         {
             var result = Object.ReferenceEquals(this, obj);
-            if(!result && obj is MessageSourcesOptions other) {
+            if(!result && obj is MessageSourcesSettingsDto other) {
                 result = DefaultSourceId == other.DefaultSourceId
                       && Receivers.SequenceEqual(other.Receivers);
             }
@@ -59,7 +59,7 @@ namespace VirtualRadar.Receivers
         {
             var result = new StringBuilder();
 
-            result.AppendLine($"{nameof(MessageSourcesOptions)} {{");
+            result.AppendLine($"{nameof(MessageSourcesSettingsDto)} {{");
             result.AppendLine($"  {nameof(DefaultSourceId)} = {DefaultSourceId}");
             result.AppendLine($"  {nameof(Receivers)} = [");
             foreach(var receiver in Receivers) {

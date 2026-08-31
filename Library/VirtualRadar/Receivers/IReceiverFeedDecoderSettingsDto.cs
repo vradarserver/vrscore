@@ -13,7 +13,7 @@ using VirtualRadar.Feed;
 
 namespace VirtualRadar.Receivers
 {
-    public interface IReceiverFeedDecoderOptions : IFeedDecoderOptions, ISettingsProvider
+    public interface IReceiverFeedDecoderSettingsDto : IFeedDecoderSettingsDto, ISettingsProvider
     {
     }
 }

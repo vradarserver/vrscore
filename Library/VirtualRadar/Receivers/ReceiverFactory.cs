@@ -77,9 +77,9 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public ReceiverOptions FindOptionsFor(string receiverName)
+        public ReceiverSettingsDto FindSettingsDtoFor(string receiverName)
         {
-            var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
+            var messageSources = _Settings.LatestValue<MessageSourcesSettingsDto>();
             return messageSources
                 .Receivers
                 .FirstOrDefault(receiver => String.Equals(
@@ -90,7 +90,7 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public Receiver Build(IServiceProvider serviceProvider, ReceiverOptions options)
+        public Receiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto options)
         {
             Receiver result = null;
 
@@ -128,7 +128,7 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverOptions options) => Build(serviceProvider, options);
+        IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverSettingsDto options) => Build(serviceProvider, options);
 
         /// <inheritdoc/>
         public IReceiver FindByName(string receiverName)
@@ -166,7 +166,7 @@ namespace VirtualRadar.Receivers
         /// <inheritdoc/>
         public IReceiver FindDefaultSource()
         {
-            var messageSources = _Settings.LatestValue<MessageSourcesOptions>();
+            var messageSources = _Settings.LatestValue<MessageSourcesSettingsDto>();
             var receivers = _Receivers;
             return FindById(messageSources.DefaultSourceId)
                 ?? receivers
@@ -182,7 +182,7 @@ namespace VirtualRadar.Receivers
         public ICallbackHandle ReceiverShuttingDownCallback(Action<IReceiver> callback) => _ReceiverShuttingDownCallbacks.Add(callback);
 
         /// <inheritdoc/>
-        public (bool Added, IReceiver Receiver) FindOrBuild(ReceiverOptions options)
+        public (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto options)
         {
             var added = false;
             Receiver receiver = null;

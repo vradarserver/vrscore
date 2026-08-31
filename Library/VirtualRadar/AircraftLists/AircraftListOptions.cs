@@ -22,7 +22,7 @@ namespace VirtualRadar.AircraftLists
     public record AircraftListOptions(
         int DisplayTimeoutSeconds = 30,
         int TrackingTimeoutSeconds = 600
-    ) : IAircraftListOptions, IReceiverAircraftListOptions
+    ) : IAircraftListSettingsDto, IReceiverAircraftListSettingsDto
     {
         public const string SettingsProviderName = "GenericAircraftList";
 

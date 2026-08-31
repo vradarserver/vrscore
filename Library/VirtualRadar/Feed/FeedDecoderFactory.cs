@@ -25,7 +25,7 @@ namespace VirtualRadar.Feed
 
         ~FeedDecoderFactory() => Dispose(false);
 
-        public IFeedDecoder Create(IFeedDecoderOptions options)
+        public IFeedDecoder Create(IFeedDecoderSettingsDto options)
         {
             lock(_SyncLock) {
                 if(options != null && FeedDecoder == null) {

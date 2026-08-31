@@ -20,7 +20,7 @@ namespace VirtualRadar.Feed.BaseStation
     [SettingsProvider(SettingsProviderName)]
     public record BaseStationFeedDecoderOptions(
         bool Icao24CanHaveNonHexDigits
-    ) : IReceiverFeedDecoderOptions
+    ) : IReceiverFeedDecoderSettingsDto
     {
         public const string SettingsProviderName = "BaseStationFeedDecoder";
 

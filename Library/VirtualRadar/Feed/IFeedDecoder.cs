@@ -21,7 +21,7 @@ namespace VirtualRadar.Feed
         /// <summary>
         /// Gets the options that were used to create this decoder instance.
         /// </summary>
-        IFeedDecoderOptions Options { get; }
+        IFeedDecoderSettingsDto Options { get; }
 
         /// <summary>
         /// True if the feed contains lookup details, information that is not transmitted by Mode-S
