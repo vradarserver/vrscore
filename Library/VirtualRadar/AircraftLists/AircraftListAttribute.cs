@@ -11,7 +11,7 @@
 namespace VirtualRadar.AircraftLists
 {
     /// <summary>
-    /// Ties an aircraft list to its options object.
+    /// Ties an aircraft list to its settings DTO type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class AircraftListAttribute : Attribute

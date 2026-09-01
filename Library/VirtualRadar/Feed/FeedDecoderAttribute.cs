@@ -11,7 +11,7 @@
 namespace VirtualRadar.Feed
 {
     /// <summary>
-    /// Ties a feed decoder to its options object.
+    /// Ties a feed decoder to its settings DTO type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class FeedDecoderAttribute : Attribute

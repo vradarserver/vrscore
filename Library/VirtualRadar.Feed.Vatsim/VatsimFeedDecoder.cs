@@ -21,7 +21,7 @@ namespace VirtualRadar.Feed.Vatsim
         private CommonFeedParser _CommonFeedParser;
 
         /// <summary>
-        /// The options used to create the decoder.
+        /// The settings DTO used to create the decoder.
         /// </summary>
         public VatsimFeedDecoderSettingsDto SettingsDto { get; }
 

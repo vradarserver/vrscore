@@ -14,7 +14,7 @@ using VirtualRadar.Receivers;
 namespace VirtualRadar.Feed.BaseStation
 {
     /// <summary>
-    /// The options for BaseStation feed decoders.
+    /// The configurable settings for BaseStation feed decoders.
     /// </summary>
     /// <param name="Icao24CanHaveNonHexDigits">True if invalid characters in ICAOs are accepted.</param>
     [SettingsProvider(SettingsProviderName)]

@@ -1,14 +1,16 @@
 ﻿namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// Default implementation of <see cref="ISettings{TOptions}"/>.
+    /// Default implementation of <see cref="ISettings{TSettingsDto}"/>.
     /// </summary>
-    /// <typeparam name="TOptions"></typeparam>
+    /// <typeparam name="TSettingsDto"></typeparam>
     /// <param name="_Settings"></param>
-    class Settings<TOptions>(
+    class Settings<TSettingsDto>(
+        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
         ISettingsStorage _Settings
-    ) : ISettings<TOptions>
+        #pragma warning restore IDE1006 // .editorconfig does not support naming rules for primary ctors
+    ) : ISettings<TSettingsDto>
     {
-        public TOptions LatestValue => _Settings.LatestValue<TOptions>();
+        public TSettingsDto LatestValue => _Settings.LatestValue<TSettingsDto>();
     }
 }

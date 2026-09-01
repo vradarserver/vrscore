@@ -71,7 +71,7 @@ namespace VirtualRadar.AircraftLists
 
         /// <summary>
         /// Returns the aircraft list type for the settings DTO type passed across or null
-        /// if no aircraft list type has been mapped to the options type.
+        /// if no aircraft list type has been mapped to the settings DTO type.
         /// </summary>
         /// <param name="settingsDtoType"></param>
         /// <returns></returns>

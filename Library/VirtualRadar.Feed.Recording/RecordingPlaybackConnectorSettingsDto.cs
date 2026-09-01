@@ -13,7 +13,7 @@ using VirtualRadar.Connection;
 namespace VirtualRadar.Feed.Recording
 {
     /// <summary>
-    /// Carries options to a <see cref="RecordingPlaybackConnector"/>.
+    /// Carries configurable settings to a <see cref="RecordingPlaybackConnector"/>.
     /// </summary>
     /// <param name="RecordingFileName">
     /// The file containing the recording to play back.

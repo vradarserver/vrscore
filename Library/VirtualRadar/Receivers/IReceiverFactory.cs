@@ -31,8 +31,8 @@ namespace VirtualRadar.Receivers
         /// <summary>
         /// Creates a new receiver using the settings DTO passed across. The receiver's
         /// lifetime is not managed by the factory, and if the factory already has a
-        /// receiver with the same options then it is not reused. Callbacks are not called
-        /// when this function creates a receiver, nor are they called if/when the
+        /// receiver with the same settings DTO then it is not reused. Callbacks are not
+        /// called when this function creates a receiver, nor are they called if/when the
         /// receiver is disposed. Will return null if the DTO is invalid.
         /// </summary>
         /// <param name="serviceProvider"></param>

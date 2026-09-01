@@ -259,7 +259,7 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public void ChangeValue<TSettingDto>(TSettingDto newSettingsDto) => ChangeValue(typeof(TSettingDto), newSettingsDto);
+        public void ChangeValue<TSettingsDto>(TSettingsDto newSettingsDto) => ChangeValue(typeof(TSettingsDto), newSettingsDto);
 
         /// <inheritdoc/>
         public void SaveChanges()

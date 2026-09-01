@@ -22,8 +22,8 @@ namespace Tests.VirtualRadar.Configuration
     [TestClass]
     public class SettingsStorage_Tests
     {
-        record Options(int Id, string Name);
-        readonly Options _DefaultOptions = new(0, null);
+        record SettingsDto(int Id, string Name);
+        readonly SettingsDto _DefaultSettingsDto = new(0, null);
 
         class ArrayOfStrings
         {
@@ -55,8 +55,8 @@ namespace Tests.VirtualRadar.Configuration
         private Mock<ISettingsConfiguration> _MockSettingsConfig;
         private Mock<ILog> _MockLog;
 
-        private Dictionary<Type, string> _OptionTypeToKey;
-        private Dictionary<string, JObject> _OptionKeyToDefaultValue;
+        private Dictionary<Type, string> _SettingsDtoTypeToKey;
+        private Dictionary<string, JObject> _SettingsDtoKeyToDefaultValue;
 
         [TestInitialize]
         public void TestInitialise()
@@ -64,20 +64,20 @@ namespace Tests.VirtualRadar.Configuration
             _FileSystem = new();
             _WorkingFolder = new();
 
-            _OptionTypeToKey = [];
-            _OptionKeyToDefaultValue = [];
+            _SettingsDtoTypeToKey = [];
+            _SettingsDtoKeyToDefaultValue = [];
             _MockSettingsConfig = MockHelper.CreateMock<ISettingsConfiguration>();
             _MockSettingsConfig
                 .Setup(r => r.GetKeyForSettingsDtoType(It.IsAny<Type>()))
                 .Returns((Type type) => {
-                    if(!_OptionTypeToKey.TryGetValue(type, out var result)) {
+                    if(!_SettingsDtoTypeToKey.TryGetValue(type, out var result)) {
                         throw new InvalidOperationException($"Type not registered");
                     }
                     return result;
                 });
             _MockSettingsConfig
                 .Setup(r => r.GetDefaultKeys())
-                .Returns(() => ShallowCollectionCopier.Copy(_OptionKeyToDefaultValue));
+                .Returns(() => ShallowCollectionCopier.Copy(_SettingsDtoKeyToDefaultValue));
             _MockLog = MockHelper.CreateMock<ILog>();
 
             _Service = CreateService();
@@ -98,8 +98,8 @@ namespace Tests.VirtualRadar.Configuration
 
         private void SetupConfigForType<T>(string key, T defaultValue)
         {
-            _OptionTypeToKey[typeof(T)] = key;
-            _OptionKeyToDefaultValue[key] = JObject.FromObject(defaultValue);
+            _SettingsDtoTypeToKey[typeof(T)] = key;
+            _SettingsDtoKeyToDefaultValue[key] = JObject.FromObject(defaultValue);
         }
 
         private string ExpectedSettingsFileName()
@@ -152,20 +152,20 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void LatestValue_Returns_Default_When_File_Missing()
         {
-            SetupConfigForType("options", _DefaultOptions);
+            SetupConfigForType("options", _DefaultSettingsDto);
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
-            Assert.AreEqual(_DefaultOptions, actual);
+            Assert.AreEqual(_DefaultSettingsDto, actual);
         }
 
         [TestMethod]
         public void LatestValue_Can_Deserialise_From_Configuration_File()
         {
-            var expected = new Options(1, "Zaltor");
-            CreateFakeConfigFile("options", _DefaultOptions, expected);
+            var expected = new SettingsDto(1, "Zaltor");
+            CreateFakeConfigFile("options", _DefaultSettingsDto, expected);
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
             Assert.AreEqual(expected, actual);
         }
@@ -173,12 +173,12 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void LatestValue_Defaults_Values_Not_In_Json()
         {
-            var expected = new Options(1, "Zaltor");
+            var expected = new SettingsDto(1, "Zaltor");
 
-            SetupConfigForType<Options>("options", new Options(0, "Zaltor"));
+            SetupConfigForType<SettingsDto>("options", new SettingsDto(0, "Zaltor"));
             SetupConfigFile(@"{ ""options"": { ""Id"": 1 } }");
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
             Assert.AreEqual(expected, actual);
         }
@@ -186,12 +186,12 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void LatestValue_Ignores_Extraneous_Json_Values()
         {
-            var expected = new Options(1, "Zaltor");
+            var expected = new SettingsDto(1, "Zaltor");
 
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"", ""Title"": ""The Merciless"" } }");
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
             Assert.AreEqual(expected, actual);
         }
@@ -199,11 +199,11 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void LatestValue_Allows_Block_Comments_In_Json()
         {
-            var expected = new Options(1, "Zaltor");
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            var expected = new SettingsDto(1, "Zaltor");
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": /* Block Comments */ { ""Id"": 1, ""Name"": ""Zaltor"" } }");
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
             Assert.AreEqual(expected, actual);
         }
@@ -211,27 +211,27 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void LatestValue_Allows_Line_Comments_In_Json()
         {
-            var expected = new Options(1, "Zaltor");
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            var expected = new SettingsDto(1, "Zaltor");
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": {
                 // This line should be ignored
                 ""Id"": 1, ""Name"": ""Zaltor""
             } }");
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
             Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]
-        public void LatestValue_Ignores_Trailing_Comma_In_Object_Json()
+        public void LatestValue_Ignores_Trailing_Comma_In_SettingsDto_Json()
         {
-            var expected = new Options(1, "Zaltor");
+            var expected = new SettingsDto(1, "Zaltor");
 
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"", } }");
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
 
             Assert.AreEqual(expected, actual);
         }
@@ -239,22 +239,22 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void LatestValue_Does_Not_Trigger_Save()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
-            _Service.LatestValue<Options>();
+            _Service.LatestValue<SettingsDto>();
 
             Assert.IsFalse(_FileSystem.FileExists(ExpectedSettingsFileName()));
         }
 
         [TestMethod]
-        public void ChangeValue_Overwrites_Existing_Options()
+        public void ChangeValue_Overwrites_Existing_SettingsDto()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
-            var newOptions = new Options(2, "New Name");
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
+            var newOptions = new SettingsDto(2, "New Name");
 
-            _Service.ChangeValue(typeof(Options), newOptions);
+            _Service.ChangeValue(typeof(SettingsDto), newOptions);
 
-            var actual = _Service.LatestValue<Options>();
+            var actual = _Service.LatestValue<SettingsDto>();
             Assert.AreEqual(newOptions, actual);
         }
 
@@ -262,30 +262,30 @@ namespace Tests.VirtualRadar.Configuration
         [ExpectedException(typeof(ArgumentNullException))]
         public void ChangeValue_Throws_If_Passed_Null_Type()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
-            _Service.ChangeValue(null, new Options(1, ""));
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
+            _Service.ChangeValue(null, new SettingsDto(1, ""));
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ChangeValue_Throws_If_Passed_Null_Value()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
-            _Service.ChangeValue(typeof(Options), null);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
+            _Service.ChangeValue(typeof(SettingsDto), null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidOperationException))]
-        public void ChangeValue_Throws_If_Value_Type_Different_To_Options()
+        public void ChangeValue_Throws_If_Value_Type_Different_To_SettingsDto()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
-            _Service.ChangeValue(typeof(Options), "");
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
+            _Service.ChangeValue(typeof(SettingsDto), "");
         }
 
         [TestMethod]
         public void SaveChanges_Writes_New_Files()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
             _Service.SaveChanges();
 
@@ -295,9 +295,9 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SaveChanges_Saves_New_Values()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
-            _Service.ChangeValue<Options>(new(2, "Gale"));
+            _Service.ChangeValue<SettingsDto>(new(2, "Gale"));
             _Service.SaveChanges();
 
             AssertContent(@"{ ""options"": { ""Id"": 2, ""Name"": ""Gale"" } }");
@@ -306,10 +306,10 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SaveChanges_Overwrites_Existing_Values()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             _Service.SaveChanges();
 
-            _Service.ChangeValue<Options>(new(2, "Gale"));
+            _Service.ChangeValue<SettingsDto>(new(2, "Gale"));
             _Service.SaveChanges();
 
             AssertContent(@"{ ""options"": { ""Id"": 2, ""Name"": ""Gale"" } }");
@@ -318,10 +318,10 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SaveChanges_Merges_Unused_Existing_Values()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"", ""Title"": ""The Merciless"" } }");
 
-            _Service.ChangeValue<Options>(new(Id: 2, Name: "Foo"));
+            _Service.ChangeValue<SettingsDto>(new(Id: 2, Name: "Foo"));
             _Service.SaveChanges();
 
             var content = _FileSystem.GetFileContentAsString(ExpectedSettingsFileName());
@@ -332,15 +332,15 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SaveChanges_Overwrites_Existing_Value_Types()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"" } }");
 
-            var expected = new Options(Id: 2, Name: "Foo");
-            _Service.ChangeValue<Options>(expected);
+            var expected = new SettingsDto(Id: 2, Name: "Foo");
+            _Service.ChangeValue<SettingsDto>(expected);
             _Service.SaveChanges();
 
             using(var newService = CreateService()) {
-                var actual = _Service.LatestValue<Options>();
+                var actual = _Service.LatestValue<SettingsDto>();
                 Assert.AreEqual(expected, actual);
             }
         }
@@ -348,15 +348,15 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SaveChanges_Can_Overwrite_NonNull_With_Null()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
             SetupConfigFile(@"{ ""options"": { ""Id"": 1, ""Name"": ""Zaltor"" } }");
 
-            var expected = new Options(Id: 2, Name: null);
-            _Service.ChangeValue<Options>(expected);
+            var expected = new SettingsDto(Id: 2, Name: null);
+            _Service.ChangeValue<SettingsDto>(expected);
             _Service.SaveChanges();
 
             using(var newService = CreateService()) {
-                var actual = _Service.LatestValue<Options>();
+                var actual = _Service.LatestValue<SettingsDto>();
                 Assert.AreEqual(expected, actual);
             }
         }
@@ -380,9 +380,9 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SettingsChangedCallback_Called_When_Settings_Are_Changed()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
-            var expected = new Options(2, "Honky Tonk Badonkadonk");
+            var expected = new SettingsDto(2, "Honky Tonk Badonkadonk");
             var callCount = 0;
             ValueChangedCallbackArgs actual = null;
             using(_Service.AddValueChangedCallback(args => { actual = args; ++callCount; })) {
@@ -397,9 +397,9 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SettingsChangedCallback_Not_Called_When_Settings_Are_Not_Changed()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
-            var version1 = new Options(2, "Honky Tonk Badonkadonk");
-            var version2 = new Options(2, "Honky Tonk Badonkadonk");
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
+            var version1 = new SettingsDto(2, "Honky Tonk Badonkadonk");
+            var version2 = new SettingsDto(2, "Honky Tonk Badonkadonk");
             _Service.ChangeValue(version1);
 
             var callCount = 0;
@@ -415,10 +415,10 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SettingsChangedCallback_Logs_Exceptions()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
             using(_Service.AddValueChangedCallback(_ => throw new InvalidOperationException())) {
-                _Service.ChangeValue(new Options(2,
+                _Service.ChangeValue(new SettingsDto(2,
                     "Microsoft Visual Studio 2022's text editor is the most aggressively user-hostile " +
                     "text editor that I have ever used. It is full of bugs that Microsoft will never " +
                     "fix. Each release just adds more bugs and more bloat. No bug fix! Only m0are feeturZ."
@@ -431,9 +431,9 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SavedChangesCallback_Called_After_Settings_Save()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
-            _Service.ChangeValue<Options>(new(2, "Gale"));
+            _Service.ChangeValue<SettingsDto>(new(2, "Gale"));
             var callCount = 0;
             using(_Service.AddSavedChangesCallback(() => { ++callCount; })) {
                 _Service.SaveChanges();
@@ -445,9 +445,9 @@ namespace Tests.VirtualRadar.Configuration
         [TestMethod]
         public void SavedChangesCallback_Logs_Exceptions()
         {
-            SetupConfigForType<Options>("options", _DefaultOptions);
+            SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
 
-            _Service.ChangeValue<Options>(new(2, "Gale"));
+            _Service.ChangeValue<SettingsDto>(new(2, "Gale"));
             using(_Service.AddSavedChangesCallback(() => throw new InvalidOperationException())) {
                 _Service.SaveChanges();
             }

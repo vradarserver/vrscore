@@ -11,7 +11,7 @@
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// Ties a connector to its options object.
+    /// Ties a connector to its settings DTO type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ReceiveConnectorAttribute : Attribute
