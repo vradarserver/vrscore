@@ -16,19 +16,19 @@ namespace VirtualRadar.Feed.Recording
     /// <summary>
     /// A VRS connector whose source of feed messages is a recording.
     /// </summary>
-    [ReceiveConnector(typeof(RecordingPlaybackConnectorOptions))]
+    [ReceiveConnector(typeof(RecordingPlaybackConnectorSettingsDto))]
     public class RecordingPlaybackConnector : IReceiveConnector
     {
-        internal PlaybackConnectorState _State;
+        internal PlaybackConnectorState State;
 
         /// <inheritdoc/>
-        public RecordingPlaybackConnectorOptions Options { get; }
+        public RecordingPlaybackConnectorSettingsDto SettingsDto { get; }
 
         /// <inheritdoc/>
-        IConnectorOptions IConnector.SettingsDto => Options;
+        IConnectorSettingsDto IConnector.SettingsDto => SettingsDto;
 
         /// <inheritdoc/>
-        public string Description => $"{Options.RecordingFileName} x{Options.PlaybackSpeed}";
+        public string Description => $"{SettingsDto.RecordingFileName} x{SettingsDto.PlaybackSpeed}";
 
         private ConnectionState _ConnectionState;
         /// <inheritdoc/>
@@ -92,17 +92,17 @@ namespace VirtualRadar.Feed.Recording
             PacketReceived?.Invoke(this, packet);
         }
 
-        public RecordingPlaybackConnector(RecordingPlaybackConnectorOptions options)
+        public RecordingPlaybackConnector(RecordingPlaybackConnectorSettingsDto settingsDto)
         {
-            ArgumentNullException.ThrowIfNull(options);
-            Options = options;
+            ArgumentNullException.ThrowIfNull(settingsDto);
+            SettingsDto = settingsDto;
         }
 
         /// <inheritdoc/>
         public ValueTask DisposeAsync()
         {
             try {
-                _State?.TearDown();
+                State?.TearDown();
             } catch(ConnectionTearDownException) {
                 ;
             }
@@ -123,18 +123,18 @@ namespace VirtualRadar.Feed.Recording
                 ConnectionState = ConnectionState.Opening;
 
                 state = new(this) {
-                    PlaybackSync = new(Options.PlaybackSpeed),
+                    PlaybackSync = new(SettingsDto.PlaybackSpeed),
                     Reader = new(),
-                    FileStream = new FileStream(Options.RecordingFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                    FileStream = new FileStream(SettingsDto.RecordingFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
                 };
                 state.SetupCancellation(cancellationToken);
 
                 await state.Reader.InitialiseStreamAsync(state.FileStream, leaveOpen: true);
 
                 if(!state.LinkedCancelToken.IsCancellationRequested) {
-                    _State = state;
+                    State = state;
                     ConnectionState = ConnectionState.Open;
-                    _State.PumpTask = RunPacketPump(state);
+                    State.PumpTask = RunPacketPump(state);
                 }
             } catch(Exception ex) {
                 LastException = new(ex);
@@ -153,9 +153,9 @@ namespace VirtualRadar.Feed.Recording
         /// <inheritdoc/>
         public Task CloseAsync()
         {
-            if(_State != null) {
-                _State.TearDown();
-                _State = null;
+            if(State != null) {
+                State.TearDown();
+                State = null;
             }
 
             return Task.CompletedTask;

@@ -153,7 +153,7 @@ namespace VirtualRadar.Utility.Terminal
         {
             Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
 
-            var connectorOptions = new RecordingPlaybackConnectorOptions() {
+            var connectorOptions = new RecordingPlaybackConnectorSettingsDto() {
                 RecordingFileName = _Options.FileName,
                 PlaybackSpeed =     _Options.PlaybackSpeed,
             };

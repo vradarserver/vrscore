@@ -18,7 +18,7 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Exposes the immutable settings DTO that the connector was built with.
         /// </summary>
-        IConnectorOptions SettingsDto { get; }
+        IConnectorSettingsDto SettingsDto { get; }
 
         /// <summary>
         /// A terse description of the connection.

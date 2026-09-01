@@ -30,7 +30,7 @@ namespace VirtualRadar.Feed.Vatsim
         public VatsimConnectorSettingsDto SettingsDto { get; }
 
         /// <inheritdoc/>
-        IConnectorOptions IConnector.SettingsDto => SettingsDto;
+        IConnectorSettingsDto IConnector.SettingsDto => SettingsDto;
 
         /// <summary>
         /// The downloader that the connector is listening to for VATSIM data.

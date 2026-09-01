@@ -5,7 +5,7 @@
     /// </summary>
     /// <param name="SchemaVersion"></param>
     [Settings("Version")]
-    public record SettingsVersion(
+    public record SettingsVersionDto(
         int SchemaVersion = 1
     )
     {

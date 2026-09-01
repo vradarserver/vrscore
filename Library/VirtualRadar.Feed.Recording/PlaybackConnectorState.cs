@@ -28,7 +28,7 @@ namespace VirtualRadar.Feed.Recording
         {
             var exceptions = new List<Exception>();
 
-            if(_Parent._State == this) {
+            if(_Parent.State == this) {
                 exceptions.Capture(() => _Parent.ConnectionState = ConnectionState.Closing);
             }
 
@@ -51,7 +51,7 @@ namespace VirtualRadar.Feed.Recording
 
             TearDownCancellationTokens(exceptions);
 
-            if(_Parent._State == this) {
+            if(_Parent.State == this) {
                 exceptions.Capture(() => _Parent.ConnectionState = ConnectionState.Closed);
             }
 

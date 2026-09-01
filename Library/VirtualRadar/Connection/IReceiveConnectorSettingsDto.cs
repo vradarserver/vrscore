@@ -10,7 +10,7 @@
 
 namespace VirtualRadar.Connection
 {
-    public interface IReceiveConnectorSettingsDto : IConnectorOptions
+    public interface IReceiveConnectorSettingsDto : IConnectorSettingsDto
     {
     }
 }
