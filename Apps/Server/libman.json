@@ -13,7 +13,7 @@
             "destination": "wwwroot/lib/bootstrap-icons/"
         },
         {
-            "provider": "unpkg",
+            "provider": "jsdelivr",
             "library": "@popperjs/core@2.11.8",
             "destination": "wwwroot/lib/@popperjs"
         }
