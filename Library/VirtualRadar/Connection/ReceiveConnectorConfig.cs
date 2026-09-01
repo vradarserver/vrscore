@@ -16,16 +16,17 @@ using VirtualRadar.Reflection;
 namespace VirtualRadar.Connection
 {
     /// <summary>
-    /// Records and exposes the links between a configuration type and the receive connector that uses it.
+    /// Records and exposes the links between a settings DTO type and the receive
+    /// connector that uses it.
     /// </summary>
     public static class ReceiveConnectorConfig
     {
         private readonly static object _SyncLock = new();
-        private volatile static Dictionary<Type, Type> _ConfigToConnectorTypeMap = [];
+        private volatile static Dictionary<Type, Type> _SettingsDtoToConnectorTypeMap = [];
 
         /// <summary>
         /// Finds all types that implement <see cref="ReceiveConnectorAttribute"/> and automatically
-        /// register the connection between their options and their type.
+        /// register the connection between their settings DTO and their type.
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
@@ -34,7 +35,7 @@ namespace VirtualRadar.Connection
             assembly ??= Assembly.GetCallingAssembly();
             try {
                 foreach(var typeAttr in AttributeTags.TaggedTypes<ReceiveConnectorAttribute>(assembly)) {
-                    RegisterConnector(typeAttr.Attribute.OptionsType, typeAttr.Type);
+                    RegisterConnector(typeAttr.Attribute.SettingsDtoType, typeAttr.Type);
                 }
             } catch(Exception ex) {
                 ex.AddStringData("Assembly", () => assembly.FullName);
@@ -43,40 +44,40 @@ namespace VirtualRadar.Connection
         }
 
         /// <summary>
-        /// Registers the receive connector that should be built when the factory is given an options object
-        /// of the type passed across.
+        /// Registers the receive connector that should be built when the factory is given
+        /// a settings DTO object of the type passed across.
         /// </summary>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <param name="connectorType"></param>
-        public static void RegisterConnector(Type optionsType, Type connectorType)
+        public static void RegisterConnector(Type settingsDtoType, Type connectorType)
         {
-            ArgumentNullException.ThrowIfNull(optionsType);
+            ArgumentNullException.ThrowIfNull(settingsDtoType);
             ArgumentNullException.ThrowIfNull(connectorType);
 
-            if(!typeof(IReceiveConnectorSettingsDto).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IReceiveConnectorSettingsDto)}");
+            if(!typeof(IReceiveConnectorSettingsDto).IsAssignableFrom(settingsDtoType)) {
+                throw new InvalidOperationException($"{settingsDtoType.Name} does not implement {nameof(IReceiveConnectorSettingsDto)}");
             }
             if(!typeof(IReceiveConnector).IsAssignableFrom(connectorType)) {
                 throw new InvalidOperationException($"{connectorType.Name} does not implement {nameof(IReceiveConnector)}");
             }
 
             lock(_SyncLock) {
-                var newMap = ShallowCollectionCopier.Copy(_ConfigToConnectorTypeMap);
-                newMap[optionsType] = connectorType;
-                _ConfigToConnectorTypeMap = newMap;
+                var newMap = ShallowCollectionCopier.Copy(_SettingsDtoToConnectorTypeMap);
+                newMap[settingsDtoType] = connectorType;
+                _SettingsDtoToConnectorTypeMap = newMap;
             }
         }
 
         /// <summary>
-        /// Returns the connector type for the options type passed across or null if no connector type has
-        /// been mapped to the options type.
+        /// Returns the connector type for the settings DTO type passed across or null if
+        /// no connector type has been mapped to the settings DTO type.
         /// </summary>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <returns></returns>
-        public static Type ReceiveConnectorType(Type optionsType)
+        public static Type ReceiveConnectorType(Type settingsDtoType)
         {
-            var map = _ConfigToConnectorTypeMap;
-            map.TryGetValue(optionsType, out var result);
+            var map = _SettingsDtoToConnectorTypeMap;
+            map.TryGetValue(settingsDtoType, out var result);
             return result;
         }
     }

@@ -68,7 +68,7 @@ namespace Tests.VirtualRadar.Configuration
             _OptionKeyToDefaultValue = [];
             _MockSettingsConfig = MockHelper.CreateMock<ISettingsConfiguration>();
             _MockSettingsConfig
-                .Setup(r => r.GetKeyForSettingDtoType(It.IsAny<Type>()))
+                .Setup(r => r.GetKeyForSettingsDtoType(It.IsAny<Type>()))
                 .Returns((Type type) => {
                     if(!_OptionTypeToKey.TryGetValue(type, out var result)) {
                         throw new InvalidOperationException($"Type not registered");

@@ -21,9 +21,9 @@ namespace VirtualRadar.Configuration
         /// Returns the name of the key that was registered against the setting DTO type
         /// passed across.
         /// </summary>
-        /// <param name="settingDtoType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <returns></returns>
-        string GetKeyForSettingDtoType(Type settingDtoType);
+        string GetKeyForSettingsDtoType(Type settingsDtoType);
 
         /// <summary>
         /// Returns a map of keys to the default values (expressed as a Newtonsoft

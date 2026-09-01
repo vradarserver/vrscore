@@ -121,6 +121,9 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
+        public bool MatchesSettingsDto(ReceiverSettingsDto other) => SettingsDto.Equals(other);
+
+        /// <inheritdoc/>
         public void Start()
         {
             Task.Run(() => Connector.OpenAsync(ConnectionCancellationToken));

@@ -21,9 +21,9 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public string GetKeyForSettingDtoType(Type settingDtoType)
+        public string GetKeyForSettingsDtoType(Type settingDtoType)
         {
-            return ConfigurationConfig.GetKeyForSettingDtoType(settingDtoType);
+            return ConfigurationConfig.GetKeyForSettingsDtoType(settingDtoType);
         }
 
         /// <inheritdoc/>

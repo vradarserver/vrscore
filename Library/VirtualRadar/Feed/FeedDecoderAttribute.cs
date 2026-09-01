@@ -16,11 +16,11 @@ namespace VirtualRadar.Feed
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class FeedDecoderAttribute : Attribute
     {
-        public Type OptionsType { get; set; }
+        public Type SettingsDtoType { get; set; }
 
-        public FeedDecoderAttribute(Type optionsType)
+        public FeedDecoderAttribute(Type settingsDtoType)
         {
-            OptionsType = optionsType;
+            SettingsDtoType = settingsDtoType;
         }
     }
 }

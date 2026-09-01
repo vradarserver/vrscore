@@ -16,11 +16,11 @@ namespace VirtualRadar.Connection
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ReceiveConnectorAttribute : Attribute
     {
-        public Type OptionsType { get; set; }
+        public Type SettingsDtoType { get; set; }
 
-        public ReceiveConnectorAttribute(Type optionsType)
+        public ReceiveConnectorAttribute(Type settingsDtoType)
         {
-            OptionsType = optionsType;
+            SettingsDtoType = settingsDtoType;
         }
     }
 }

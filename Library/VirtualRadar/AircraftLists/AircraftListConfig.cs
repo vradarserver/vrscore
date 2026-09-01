@@ -16,16 +16,18 @@ using VirtualRadar.Reflection;
 namespace VirtualRadar.AircraftLists
 {
     /// <summary>
-    /// Records and exposes the links between a configuration type and the aircraft list that uses it.
+    /// Records and exposes the links between a settings DTO type and the aircraft list
+    /// that uses it.
     /// </summary>
     public static class AircraftListConfig
     {
         private readonly static object _SyncLock = new();
-        private volatile static Dictionary<Type, Type> _ConfigToAircraftListTypeMap = [];
+        private volatile static Dictionary<Type, Type> _SettingsDtoToAircraftListTypeMap = [];
 
         /// <summary>
-        /// Finds all types that implement <see cref="AircraftListAttribute"/> and automatically
-        /// register the connection between their options and their type.
+        /// Finds all types that implement <see cref="AircraftListAttribute"/> and
+        /// automatically register the connection between their settings DTO and their
+        /// type.
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
@@ -34,7 +36,7 @@ namespace VirtualRadar.AircraftLists
             assembly ??= Assembly.GetCallingAssembly();
             try {
                 foreach(var typeAttr in AttributeTags.TaggedTypes<AircraftListAttribute>(assembly)) {
-                    RegisterAircraftList(typeAttr.Attribute.OptionsType, typeAttr.Type);
+                    RegisterAircraftList(typeAttr.Attribute.SettingsDtoType, typeAttr.Type);
                 }
             } catch(Exception ex) {
                 ex.AddStringData("Assembly", () => assembly.FullName);
@@ -43,40 +45,40 @@ namespace VirtualRadar.AircraftLists
         }
 
         /// <summary>
-        /// Registers the aircraftList that should be built when the factory is given an options object
-        /// of the type passed across.
+        /// Registers the aircraftList that should be built when the factory is given a
+        /// settings DTO object of the type passed across.
         /// </summary>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <param name="aircraftListType"></param>
-        public static void RegisterAircraftList(Type optionsType, Type aircraftListType)
+        public static void RegisterAircraftList(Type settingsDtoType, Type aircraftListType)
         {
-            ArgumentNullException.ThrowIfNull(optionsType);
+            ArgumentNullException.ThrowIfNull(settingsDtoType);
             ArgumentNullException.ThrowIfNull(aircraftListType);
 
-            if(!typeof(IAircraftListSettingsDto).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IAircraftListSettingsDto)}");
+            if(!typeof(IAircraftListSettingsDto).IsAssignableFrom(settingsDtoType)) {
+                throw new InvalidOperationException($"{settingsDtoType.Name} does not implement {nameof(IAircraftListSettingsDto)}");
             }
             if(!typeof(IAircraftList).IsAssignableFrom(aircraftListType)) {
                 throw new InvalidOperationException($"{aircraftListType.Name} does not implement {nameof(IAircraftList)}");
             }
 
             lock(_SyncLock) {
-                var newMap = ShallowCollectionCopier.Copy(_ConfigToAircraftListTypeMap);
-                newMap[optionsType] = aircraftListType;
-                _ConfigToAircraftListTypeMap = newMap;
+                var newMap = ShallowCollectionCopier.Copy(_SettingsDtoToAircraftListTypeMap);
+                newMap[settingsDtoType] = aircraftListType;
+                _SettingsDtoToAircraftListTypeMap = newMap;
             }
         }
 
         /// <summary>
-        /// Returns the aircraft list type for the options type passed across or null if no aircraft list type
-        /// has been mapped to the options type.
+        /// Returns the aircraft list type for the settings DTO type passed across or null
+        /// if no aircraft list type has been mapped to the options type.
         /// </summary>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <returns></returns>
-        public static Type AircraftListType(Type optionsType)
+        public static Type AircraftListType(Type settingsDtoType)
         {
-            var map = _ConfigToAircraftListTypeMap;
-            map.TryGetValue(optionsType, out var result);
+            var map = _SettingsDtoToAircraftListTypeMap;
+            map.TryGetValue(settingsDtoType, out var result);
             return result;
         }
     }

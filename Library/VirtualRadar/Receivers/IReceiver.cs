@@ -40,7 +40,7 @@ namespace VirtualRadar.Receivers
 
         long CountMessagesReceived { get; }
 
-        bool MatchesOptions(ReceiverSettingsDto other) => SettingsDto.Equals(other);
+        bool MatchesSettingsDto(ReceiverSettingsDto other);
 
         void Start();
     }

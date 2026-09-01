@@ -16,11 +16,11 @@ namespace VirtualRadar.AircraftLists
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class AircraftListAttribute : Attribute
     {
-        public Type OptionsType { get; set; }
+        public Type SettingsDtoType { get; set; }
 
-        public AircraftListAttribute(Type optionsType)
+        public AircraftListAttribute(Type settingsDtoType)
         {
-            OptionsType = optionsType;
+            SettingsDtoType = settingsDtoType;
         }
     }
 }

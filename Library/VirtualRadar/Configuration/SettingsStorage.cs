@@ -109,13 +109,13 @@ namespace VirtualRadar.Configuration
         /// <inheritdoc/>
         public object LatestValue(Type settingsDtoType)
         {
-            var contentKey = _SettingsConfiguration.GetKeyForSettingDtoType(settingsDtoType);
+            var contentKey = _SettingsConfiguration.GetKeyForSettingsDtoType(settingsDtoType);
             return LatestValue(contentKey, settingsDtoType);
         }
 
-        private object LatestValue(string contentKey, Type settingDtoType)
+        private object LatestValue(string contentKey, Type settingsDtoType)
         {
-            var parsedContentKey = ParsedContentKey(contentKey, settingDtoType);
+            var parsedContentKey = ParsedContentKey(contentKey, settingsDtoType);
 
             LoadContent();
 
@@ -125,13 +125,13 @@ namespace VirtualRadar.Configuration
                     _SettingKeyToJObject.TryGetValue(contentKey, out var fileJObject);
                     if(fileJObject == null) {
                         throw new InvalidOperationException(
-                            $"There is no default and no content stored for the \"{contentKey}\" key assigned to options of type {settingDtoType.Name}"
+                            $"There is no default and no content stored for the \"{contentKey}\" key assigned to setting DTOs of type {settingsDtoType.Name}"
                         );
                     }
 
                     var deserialised = JsonConvert.DeserializeObject(
                         fileJObject.ToString(),
-                        settingDtoType,
+                        settingsDtoType,
                         JsonConfiguration.JsonDeserialiserSettings
                     );
 
@@ -144,12 +144,12 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public bool IsConfigured<TSettingDto>() => IsConfigured(typeof(TSettingDto));
+        public bool IsConfigured<TSettingsDto>() => IsConfigured(typeof(TSettingsDto));
 
         /// <inheritdoc/>
-        public bool IsConfigured(Type settingDtoType)
+        public bool IsConfigured(Type settingsDtoType)
         {
-            var contentKey = _SettingsConfiguration.GetKeyForSettingDtoType(settingDtoType);
+            var contentKey = _SettingsConfiguration.GetKeyForSettingsDtoType(settingsDtoType);
             return IsConfigured(contentKey);
         }
 
@@ -217,26 +217,26 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public void ChangeValue(Type settingDtoType, object newSettingDto)
+        public void ChangeValue(Type settingsDtoType, object newSettingsDto)
         {
-            ArgumentNullException.ThrowIfNull(settingDtoType);
-            ArgumentNullException.ThrowIfNull(newSettingDto);
+            ArgumentNullException.ThrowIfNull(settingsDtoType);
+            ArgumentNullException.ThrowIfNull(newSettingsDto);
 
-            var contentKey = _SettingsConfiguration.GetKeyForSettingDtoType(settingDtoType);
-            if(!settingDtoType.IsAssignableFrom(newSettingDto.GetType())) {
+            var contentKey = _SettingsConfiguration.GetKeyForSettingsDtoType(settingsDtoType);
+            if(!settingsDtoType.IsAssignableFrom(newSettingsDto.GetType())) {
                 throw new InvalidOperationException(
-                      $"Cannot store a value of type {newSettingDto.GetType().Name} against the entry for type "
-                    + $"{settingDtoType.Name} under the key \"{contentKey}\""
+                      $"Cannot store a value of type {newSettingsDto.GetType().Name} against the entry for type "
+                    + $"{settingsDtoType.Name} under the key \"{contentKey}\""
                 );
             }
 
-            var parsedContentKey = ParsedContentKey(contentKey, settingDtoType);
+            var parsedContentKey = ParsedContentKey(contentKey, settingsDtoType);
 
             var runCallbacks = false;
             lock(_SyncLock) {
-                var latestValue = LatestValue(contentKey, settingDtoType);
-                if(!latestValue.Equals(newSettingDto)) {
-                    var newJObject = JObject.FromObject(newSettingDto, JsonConfiguration.JsonSerialiser);
+                var latestValue = LatestValue(contentKey, settingsDtoType);
+                if(!latestValue.Equals(newSettingsDto)) {
+                    var newJObject = JObject.FromObject(newSettingsDto, JsonConfiguration.JsonSerialiser);
 
                     if(_SettingKeyToJObject.TryGetValue(contentKey, out var currentJObject)) {
                         MergeJObjects(currentJObject, newJObject);
@@ -244,22 +244,22 @@ namespace VirtualRadar.Configuration
                     }
 
                     _SettingKeyToJObject[contentKey] = newJObject;
-                    _ParsedContent[parsedContentKey] = newSettingDto;
+                    _ParsedContent[parsedContentKey] = newSettingsDto;
 
                     runCallbacks = true;
                 }
             }
 
             if(runCallbacks) {
-                var exception = _ValueChangedCallbacks.InvokeWithoutExceptions(new(contentKey, newSettingDto));
+                var exception = _ValueChangedCallbacks.InvokeWithoutExceptions(new(contentKey, newSettingsDto));
                 if(exception != null) {
-                    _Log.Exception(exception, $"Thrown when running callbacks after setting the \"{contentKey}\" value to {newSettingDto}");
+                    _Log.Exception(exception, $"Thrown when running callbacks after setting the \"{contentKey}\" value to {newSettingsDto}");
                 }
             }
         }
 
         /// <inheritdoc/>
-        public void ChangeValue<TSettingDto>(TSettingDto newSettingDto) => ChangeValue(typeof(TSettingDto), newSettingDto);
+        public void ChangeValue<TSettingDto>(TSettingDto newSettingsDto) => ChangeValue(typeof(TSettingDto), newSettingsDto);
 
         /// <inheritdoc/>
         public void SaveChanges()

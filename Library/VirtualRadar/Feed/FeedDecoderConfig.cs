@@ -21,11 +21,11 @@ namespace VirtualRadar.Feed
     public static class FeedDecoderConfig
     {
         private readonly static object _SyncLock = new();
-        private volatile static Dictionary<Type, Type> _ConfigToDecoderTypeMap = [];
+        private volatile static Dictionary<Type, Type> _SettingsDtoToDecoderTypeMap = [];
 
         /// <summary>
         /// Finds all types that implement <see cref="FeedDecoderAttribute"/> and automatically
-        /// register the connection between their options and their type.
+        /// register the connection between their settings DTO and their type.
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
@@ -34,7 +34,7 @@ namespace VirtualRadar.Feed
             assembly ??= Assembly.GetCallingAssembly();
             try {
                 foreach(var typeAttr in AttributeTags.TaggedTypes<FeedDecoderAttribute>(assembly)) {
-                    RegisterFeedDecoder(typeAttr.Attribute.OptionsType, typeAttr.Type);
+                    RegisterFeedDecoder(typeAttr.Attribute.SettingsDtoType, typeAttr.Type);
                 }
             } catch(Exception ex) {
                 ex.AddStringData("Assembly", () => assembly.FullName);
@@ -43,40 +43,40 @@ namespace VirtualRadar.Feed
         }
 
         /// <summary>
-        /// Registers the feed decoder that should be built when the factory is given an options object
+        /// Registers the feed decoder that should be built when the factory is given a settings DTO object
         /// of the type passed across.
         /// </summary>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <param name="feedDecoderType"></param>
-        public static void RegisterFeedDecoder(Type optionsType, Type feedDecoderType)
+        public static void RegisterFeedDecoder(Type settingsDtoType, Type feedDecoderType)
         {
-            ArgumentNullException.ThrowIfNull(optionsType);
+            ArgumentNullException.ThrowIfNull(settingsDtoType);
             ArgumentNullException.ThrowIfNull(feedDecoderType);
 
-            if(!typeof(IFeedDecoderSettingsDto).IsAssignableFrom(optionsType)) {
-                throw new InvalidOperationException($"{optionsType.Name} does not implement {nameof(IFeedDecoderSettingsDto)}");
+            if(!typeof(IFeedDecoderSettingsDto).IsAssignableFrom(settingsDtoType)) {
+                throw new InvalidOperationException($"{settingsDtoType.Name} does not implement {nameof(IFeedDecoderSettingsDto)}");
             }
             if(!typeof(IFeedDecoder).IsAssignableFrom(feedDecoderType)) {
                 throw new InvalidOperationException($"{feedDecoderType.Name} does not implement {nameof(IFeedDecoder)}");
             }
 
             lock(_SyncLock) {
-                var newMap = ShallowCollectionCopier.Copy(_ConfigToDecoderTypeMap);
-                newMap[optionsType] = feedDecoderType;
-                _ConfigToDecoderTypeMap = newMap;
+                var newMap = ShallowCollectionCopier.Copy(_SettingsDtoToDecoderTypeMap);
+                newMap[settingsDtoType] = feedDecoderType;
+                _SettingsDtoToDecoderTypeMap = newMap;
             }
         }
 
         /// <summary>
-        /// Returns the feed decoder type for the options type passed across or null if no decoder type has
-        /// been mapped to the options type.
+        /// Returns the feed decoder type for the settings DTO type passed across or null if no decoder type has
+        /// been mapped to the settings DTO type.
         /// </summary>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <returns></returns>
-        public static Type FeedDecoderType(Type optionsType)
+        public static Type FeedDecoderType(Type settingsDtoType)
         {
-            var map = _ConfigToDecoderTypeMap;
-            map.TryGetValue(optionsType, out var result);
+            var map = _SettingsDtoToDecoderTypeMap;
+            map.TryGetValue(settingsDtoType, out var result);
             return result;
         }
     }
