@@ -15,7 +15,7 @@ namespace VirtualRadar.Configuration
     /// </summary>
     /// <param name="LocalPicturesFolder"></param>
     /// <param name="SearchSubFolders"></param>
-    [Settings("AircraftPictures")]
+    [SettingsDto("AircraftPictures")]
     public record AircraftPictureSettingsDto(
         string LocalPicturesFolder = "",
         bool SearchLocalSubFolders = true

@@ -19,7 +19,7 @@ namespace VirtualRadar.TileServer
     /// </summary>
     class DownloadedTileServerSettingsDownloader(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<TileServerSettingsDto> _TileServerSettings,
+        ISettings<TileServerSettingsDto> _TileServerSettingsDto,
         IHttpClientService _HttpClient,
         ILog _Log
         #pragma warning restore IDE1006
@@ -28,7 +28,7 @@ namespace VirtualRadar.TileServer
         /// <inheritdoc/>
         public async Task<IReadOnlyList<DownloadedTileServerSettings>> DownloadAsync(CancellationToken cancellationToken)
         {
-            var url = _TileServerSettings.LatestValue.DownloadUrl;
+            var url = _TileServerSettingsDto.LatestValue.DownloadUrl;
             _Log.Message($"Attempting to download tile server settings from {url}");
             var stopwatch = Stopwatch.StartNew();
             var jsonText = await _HttpClient.Shared.GetStringAsync(

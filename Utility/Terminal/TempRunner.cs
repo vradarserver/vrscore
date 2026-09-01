@@ -86,9 +86,9 @@ namespace VirtualRadar.Utility.Terminal
 
         private IFeedDecoder CreateFeedDecoder(IServiceProvider serviceProvider)
         {
-            var decoderOptions = new BaseStationFeedDecoderSettingsDto();
+            var decoderSettingsDto = new BaseStationFeedDecoderSettingsDto();
             var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
-            var decoder = decoderFactory.Create(decoderOptions);
+            var decoder = decoderFactory.Create(decoderSettingsDto);
 
             return decoder;
         }
@@ -99,23 +99,23 @@ namespace VirtualRadar.Utility.Terminal
 
             if(_Options.ReceiverName != null) {
                 Console.WriteLine($"Loading receiver {_Options.ReceiverName}");
-                var receiverOptions = _ReceiverFactory.FindSettingsDtoFor(_Options.ReceiverName.Trim());
-                if(receiverOptions == null) {
+                var receiverSettingsDto = _ReceiverFactory.FindSettingsDtoFor(_Options.ReceiverName.Trim());
+                if(receiverSettingsDto == null) {
                     OptionsParser.Usage($"Could not find receiver options for the \"{_Options.ReceiverName}\" receiver");
-                } else if(receiverOptions.Connector == null || receiverOptions.FeedDecoder == null || receiverOptions.Enabled == false) {
+                } else if(receiverSettingsDto.Connector == null || receiverSettingsDto.FeedDecoder == null || receiverSettingsDto.Enabled == false) {
                     Console.WriteLine($"Receiver {_Options.ReceiverName} cannot be used.");
-                    if(receiverOptions.Connector == null) {
-                        Console.WriteLine($"* The {nameof(receiverOptions.Connector)} settings cannot be parsed");
+                    if(receiverSettingsDto.Connector == null) {
+                        Console.WriteLine($"* The {nameof(receiverSettingsDto.Connector)} settings cannot be parsed");
                     }
-                    if(receiverOptions.FeedDecoder == null) {
-                        Console.WriteLine($"* The {nameof(receiverOptions.FeedDecoder)} settings cannot be parsed");
+                    if(receiverSettingsDto.FeedDecoder == null) {
+                        Console.WriteLine($"* The {nameof(receiverSettingsDto.FeedDecoder)} settings cannot be parsed");
                     }
-                    if(!receiverOptions.Enabled) {
+                    if(!receiverSettingsDto.Enabled) {
                         Console.WriteLine($"* The receiver is not enabled");
                     }
                     OptionsParser.Usage($"A receiver cannot be built from the options for {_Options.ReceiverName}");
                 } else {
-                    result = _ReceiverFactory.Build(serviceProvider, receiverOptions);
+                    result = _ReceiverFactory.Build(serviceProvider, receiverSettingsDto);
                     if(result == null) {
                         OptionsParser.Usage($"\"{_Options.ReceiverName}\" receiver has good options but a receiver could not be built from them");
                     }
@@ -139,12 +139,12 @@ namespace VirtualRadar.Utility.Terminal
                 OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
             }
 
-            var connectorOptions = new TcpPullConnectorSettingsDto() {
+            var connectorSettingsDto = new TcpPullConnectorSettingsDto() {
                 Address =   address.ToString(),
                 Port =      _Options.Port,
             };
             var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
-            var connector = connectorFactory.Create(connectorOptions);
+            var connector = connectorFactory.Create(connectorSettingsDto);
 
             return connector;
         }
@@ -153,12 +153,12 @@ namespace VirtualRadar.Utility.Terminal
         {
             Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
 
-            var connectorOptions = new RecordingPlaybackConnectorSettingsDto() {
+            var connectorSettingsDto = new RecordingPlaybackConnectorSettingsDto() {
                 RecordingFileName = _Options.FileName,
                 PlaybackSpeed =     _Options.PlaybackSpeed,
             };
             var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
-            var connector = connectorFactory.Create(connectorOptions);
+            var connector = connectorFactory.Create(connectorSettingsDto);
 
             return connector;
         }

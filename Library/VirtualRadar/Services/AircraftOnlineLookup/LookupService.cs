@@ -17,7 +17,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     class LookupService : IAircraftOnlineLookupService
     {
         private readonly object _SyncLock = new();
-        private readonly ISettings<AircraftOnlineLookupServiceSettingsDto> _Settings;
+        private readonly ISettings<AircraftOnlineLookupServiceSettingsDto> _SettingsDto;
         private readonly IAircraftOnlineLookupProvider _Provider;
         private readonly Dictionary<Icao24, DateTime> _LookupMap = new();       // <-- value is the time at UTC when the lookup was added
         private readonly IAircraftOnlineLookupCache[] _Caches;
@@ -43,16 +43,16 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         /// </summary>
         /// <param name="provider"></param>
         /// <param name="caches"></param>
-        /// <param name="settings"></param>
+        /// <param name="settingsDto"></param>
         public LookupService(
             IAircraftOnlineLookupProvider provider,
             IEnumerable<IAircraftOnlineLookupCache> caches,
-            ISettings<AircraftOnlineLookupServiceSettingsDto> settings
+            ISettings<AircraftOnlineLookupServiceSettingsDto> settingsDto
         )
         {
             _Provider = provider;
             _Caches = caches.ToArray();
-            _Settings = settings;
+            _SettingsDto = settingsDto;
             _Timer = new(Timer_Ticked, null, dueTime: 100, period: Timeout.Infinite);
         }
 
@@ -161,7 +161,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
 
         private void RemoveExpiredLookups()
         {
-            var settings = _Settings.LatestValue;
+            var settings = _SettingsDto.LatestValue;
             var threshold = DateTime.UtcNow.AddMinutes(-settings.ExpireQueueAfterMinutes);
 
             Icao24[] expired;

@@ -8,18 +8,19 @@ using VirtualRadar.Reflection;
 namespace VirtualRadar.Configuration
 {
     /// <summary>
-    /// Configures the types that are stored within the Settings.json file in %LOCALAPPDATA%\VirtualRadarCore.
+    /// Configures the types that are stored within the Settings.json file in
+    /// %LOCALAPPDATA%\VirtualRadarCore.
     /// </summary>
     public static class ConfigurationConfig
     {
         private static readonly object _SyncLock = new();
         private static readonly Dictionary<string, Type> _ProviderNameToConfigurationTypeMap = new(StringComparer.InvariantCultureIgnoreCase);
         private static readonly Dictionary<string, JObject> _SettingKeyToDefaultsMap = [];
-        private static readonly Dictionary<Type, string> _SettingTypeToKeyMap = [];
+        private static readonly Dictionary<Type, string> _SettingDtoTypeToKeyMap = [];
 
         /// <summary>
-        /// Calls the various automatic registration functions on the assembly passed across, or the
-        /// calling assembly if null is passed.
+        /// Calls the various automatic registration functions on the assembly passed
+        /// across, or the calling assembly if null is passed.
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
@@ -27,16 +28,17 @@ namespace VirtualRadar.Configuration
         {
             assembly ??= Assembly.GetCallingAssembly();
             RegisterSettingProviders(assembly);
-            RegisterAssemblySettingObjects(addToServices, assembly);
+            RegisterAssemblySettingDtos(addToServices, assembly);
         }
 
         /// <summary>
-        /// Registers a configuration type with a provider name. If more than one registration is made for the
-        /// same provider name then the last one wins.
+        /// Registers a configuration type with a provider name. If more than one
+        /// registration is made for the same provider name then the last one wins.
         /// </summary>
         /// <param name="providerName">Case-insensitive provider name.</param>
         /// <param name="configurationType">
-        /// The type of configuration object. It must implement <see cref="ISettingsProvider"/>.
+        /// The type of configuration object. It must implement <see
+        /// cref="ISettingsProvider"/>.
         /// </param>
         public static void RegisterProvider(string providerName, Type configurationType)
         {
@@ -58,21 +60,23 @@ namespace VirtualRadar.Configuration
         }
 
         /// <summary>
-        /// Registers a configuration type against a provider name. If more than one registration is made for
-        /// the same provider name then the last one wins.
+        /// Registers a configuration type against a provider name. If more than one
+        /// registration is made for the same provider name then the last one wins.
         /// </summary>
-        /// <typeparam name="TConfig"></typeparam>
+        /// <typeparam name="TSettingsProvider"></typeparam>
         /// <param name="providerName">Case-insensitive provider name.</param>
-        public static void RegisterProvider<TConfig>(string providerName) where TConfig : ISettingsProvider
+        public static void RegisterProvider<TSettingsProvider>(string providerName) where TSettingsProvider : ISettingsProvider
         {
-            RegisterProvider(providerName, typeof(TConfig));
+            RegisterProvider(providerName, typeof(TSettingsProvider));
         }
 
         /// <summary>
-        /// Calls <see cref="RegisterProvider"/> on all public types that implement <see cref="ISettingsProvider"/>
-        /// in the assembly passed across.
+        /// Calls <see cref="RegisterProvider"/> on all public types that implement <see
+        /// cref="ISettingsProvider"/> in the assembly passed across.
         /// </summary>
-        /// <param name="assembly">The optional assembly, defaults to the calling assembly if not supplied.</param>
+        /// <param name="assembly">
+        /// The optional assembly, defaults to the calling assembly if not supplied.
+        /// </param>
         public static void RegisterSettingProviders(Assembly assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
@@ -87,8 +91,8 @@ namespace VirtualRadar.Configuration
         }
 
         /// <summary>
-        /// Returns the type associated with the configuration provider name passed across. Returns null if
-        /// the provider name has not been registered.
+        /// Returns the type associated with the configuration provider name passed
+        /// across. Returns null if the provider name has not been registered.
         /// </summary>
         /// <param name="providerName">Case-insensitive provider name.</param>
         /// <returns></returns>
@@ -101,30 +105,31 @@ namespace VirtualRadar.Configuration
         }
 
         /// <summary>
-        /// Returns the type associated with the <see cref="ISettingsProvider.SettingsProvider"/> value from
-        /// the (presumably partially parsed) object passed across.
+        /// Returns the type associated with the <see
+        /// cref="ISettingsProvider.SettingsProvider"/> value from the (presumably
+        /// partially parsed) object passed across.
         /// </summary>
         /// <param name="settingsProvider"></param>
         /// <returns></returns>
         public static Type ProviderType(ISettingsProvider settingsProvider) => ProviderType(settingsProvider.SettingsProvider);
 
         /// <summary>
-        /// Registers a settings type and default value to a key. If more than one object is registered
-        /// against a key then both defaults are merged together (with the later call taking precedence over
-        /// the first on common property names, case sensitive) and both types are registered against the key
-        /// name.
+        /// Registers a settings type and default value to a key. If more than one object
+        /// is registered against a key then both defaults are merged together (with the
+        /// later call taking precedence over the first on common property names, case
+        /// sensitive) and both types are registered against the key name.
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="optionsType"></param>
+        /// <param name="settingsDtoType"></param>
         /// <param name="defaultValue"></param>
         /// <param name="addToServices"></param>
-        public static void RegisterKey(string key, Type optionsType, object defaultValue, IServiceCollection addToServices)
+        public static void RegisterKey(string key, Type settingsDtoType, object defaultValue, IServiceCollection addToServices)
         {
             try {
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(key);
-                ArgumentNullException.ThrowIfNull(optionsType);
+                ArgumentNullException.ThrowIfNull(settingsDtoType);
                 ArgumentNullException.ThrowIfNull(defaultValue);
-                ArgumentOutOfRangeException.ThrowIfEqual(false, defaultValue.GetType().IsAssignableTo(optionsType), nameof(defaultValue));
+                ArgumentOutOfRangeException.ThrowIfEqual(false, defaultValue.GetType().IsAssignableTo(settingsDtoType), nameof(defaultValue));
 
                 var defaultJObject = JObject.FromObject(
                     defaultValue,
@@ -139,10 +144,10 @@ namespace VirtualRadar.Configuration
                         defaultJObject = mergedObject;
                     }
                     _SettingKeyToDefaultsMap[key] = defaultJObject;
-                    _SettingTypeToKeyMap[optionsType] = key;
+                    _SettingDtoTypeToKeyMap[settingsDtoType] = key;
 
                     if(addToServices != null) {
-                        Type[] genericParameters = [ optionsType ];
+                        Type[] genericParameters = [ settingsDtoType ];
                         var serviceType = typeof(ISettings<>).MakeGenericType(genericParameters);
                         var implementationType = typeof(Settings<>).MakeGenericType(genericParameters);
                         addToServices.AddLifetime(serviceType, implementationType);
@@ -150,42 +155,43 @@ namespace VirtualRadar.Configuration
                 }
             } catch(Exception ex) {
                 ex.AddStringData("SettingKey",  () => key);
-                ex.AddStringData("OptionsType", () => optionsType?.FullName);
+                ex.AddStringData("OptionsType", () => settingsDtoType?.FullName);
                 throw;
             }
         }
 
         /// <summary>
-        /// Registers the default values and type for a top-level key in the settings object. If more than
-        /// one object is registered against a key then both defaults are merged together (with the later
-        /// call taking precedence over the first on common property names, case sensitive) and both types
-        /// are registered against the key name.
+        /// Registers the default values and type for a top-level key in the settings DTO
+        /// object. If more than one object is registered against a key then both defaults
+        /// are merged together (with the later call taking precedence over the first on
+        /// common property names, case sensitive) and both types are registered against
+        /// the key name.
         /// </summary>
-        /// <typeparam name="TOptions"></typeparam>
+        /// <typeparam name="TSettingsDto"></typeparam>
         /// <param name="key"></param>
         /// <param name="defaultValue"></param>
         /// <param name="addToServices"></param>
-        public static void RegisterKey<TOptions>(string key, TOptions defaultValue, IServiceCollection addToServices)
+        public static void RegisterKey<TSettingsDto>(string key, TSettingsDto defaultValue, IServiceCollection addToServices)
         {
-            RegisterKey(key, typeof(TOptions), defaultValue, addToServices);
+            RegisterKey(key, typeof(TSettingsDto), defaultValue, addToServices);
         }
 
         /// <summary>
-        /// Searches the assembly for all objects that have been tagged with <see cref="SettingsAttribute"/>
+        /// Searches the assembly for all objects that have been tagged with <see cref="SettingsDtoAttribute"/>
         /// and registers them all.
         /// </summary>
         /// <param name="addToServices">
         /// The optional services to add an <see cref="ISettings{TOptions}"/> configuration to.
         /// </param>
         /// <param name="assembly">
-        /// The assembly to search for objects tagged with <see cref="SettingsAttribute"/>. If this is null
+        /// The assembly to search for objects tagged with <see cref="SettingsDtoAttribute"/>. If this is null
         /// then the calling assembly is searched.
         /// </param>
-        public static void RegisterAssemblySettingObjects(IServiceCollection addToServices, Assembly assembly = null)
+        public static void RegisterAssemblySettingDtos(IServiceCollection addToServices, Assembly assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
             try {
-                foreach(var typeAttr in AttributeTags.TaggedTypes<SettingsAttribute>(assembly)) {
+                foreach(var typeAttr in AttributeTags.TaggedTypes<SettingsDtoAttribute>(assembly)) {
                     var defaultValue = typeAttr.Type.CreateDefaultInstance();
                     RegisterKey(
                         typeAttr.Attribute.SettingsKey,
@@ -215,16 +221,16 @@ namespace VirtualRadar.Configuration
         /// <summary>
         /// Returns the name of the key that was registered against the option type passed across.
         /// </summary>
-        /// <param name="optionType"></param>
+        /// <param name="settingDtoType"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        internal static string GetKeyForOptionType(Type optionType)
+        internal static string GetKeyForSettingDtoType(Type settingDtoType)
         {
-            ArgumentNullException.ThrowIfNull(optionType);
+            ArgumentNullException.ThrowIfNull(settingDtoType);
 
             lock(_SyncLock) {
-                if(!_SettingTypeToKeyMap.TryGetValue(optionType, out var result)) {
-                    throw new InvalidOperationException($"A setting key has not been configured for the option type {optionType.Name}");
+                if(!_SettingDtoTypeToKeyMap.TryGetValue(settingDtoType, out var result)) {
+                    throw new InvalidOperationException($"A setting key has not been configured for the setting DTO type {settingDtoType.Name}");
                 }
                 return result;
             }
@@ -240,7 +246,7 @@ namespace VirtualRadar.Configuration
             var result = new Dictionary<string, List<Type>>();
 
             lock(_SyncLock) {
-                foreach(var kvp in _SettingTypeToKeyMap) {
+                foreach(var kvp in _SettingDtoTypeToKeyMap) {
                     var type = kvp.Key;
                     var topLevelKey = kvp.Value;
 

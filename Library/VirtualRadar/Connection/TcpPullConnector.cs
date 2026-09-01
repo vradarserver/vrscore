@@ -28,7 +28,10 @@ namespace VirtualRadar.Connection
         /// the two connections interferring each other by sharing backing fields etc. on the parent connector.
         /// </summary>
         /// <param name="_Connector"></param>
-        class Connection(TcpPullConnector _Connector) : CancellableState
+        class Connection(
+            #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+            TcpPullConnector _Connector) : CancellableState
+            #pragma warning restore IDE1006 // .editorconfig does not support naming rules for primary ctors
         {
             public Socket           Socket;     // The socket that communication is running over
             public NetworkStream    Stream;     // The network stream that we are reading
@@ -74,15 +77,15 @@ namespace VirtualRadar.Connection
         }
 
         private Connection _Connection;             // The current connection
-        private TcpPullConnectorSettingsDto _Options;
+        private TcpPullConnectorSettingsDto _SettingsDto;
 
         /// <inheritdoc/>
-        public TcpPullConnectorSettingsDto Options => _Options;
+        public TcpPullConnectorSettingsDto SettingsDto => _SettingsDto;
 
-        IConnectorSettingsDto IConnector.SettingsDto => Options;
+        IConnectorSettingsDto IConnector.SettingsDto => SettingsDto;
 
         /// <inheritdoc/>
-        public string Description => $"tcp://{Options.Address}:{Options.Port}";
+        public string Description => $"tcp://{SettingsDto.Address}:{SettingsDto.Port}";
 
         private ConnectionState _ConnectionState;
         /// <inheritdoc/>
@@ -152,10 +155,10 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="options"></param>
-        public TcpPullConnector(TcpPullConnectorSettingsDto options)
+        /// <param name="settingsDto"></param>
+        public TcpPullConnector(TcpPullConnectorSettingsDto settingsDto)
         {
-            _Options = options;
+            _SettingsDto = settingsDto;
         }
 
         /// <inheritdoc/>
@@ -187,13 +190,13 @@ namespace VirtualRadar.Connection
             try {
                 connection = new(this) {
                     Socket = new Socket(
-                        Options.ParsedAddress.AddressFamily,
+                        SettingsDto.ParsedAddress.AddressFamily,
                         SocketType.Stream,
                         ProtocolType.Tcp
                     )
                 };
 
-                var ipEndPoint = new IPEndPoint(Options.ParsedAddress, Options.Port);
+                var ipEndPoint = new IPEndPoint(SettingsDto.ParsedAddress, SettingsDto.Port);
                 await connection.Socket.ConnectAsync(ipEndPoint, cancellationToken);
 
                 if(!cancellationToken.IsCancellationRequested) {

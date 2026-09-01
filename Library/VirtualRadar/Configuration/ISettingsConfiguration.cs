@@ -18,26 +18,28 @@ namespace VirtualRadar.Configuration
     public interface ISettingsConfiguration
     {
         /// <summary>
-        /// Returns the name of the key that was registered against the option type passed across.
+        /// Returns the name of the key that was registered against the setting DTO type
+        /// passed across.
         /// </summary>
-        /// <param name="optionType"></param>
+        /// <param name="settingDtoType"></param>
         /// <returns></returns>
-        string GetKeyForOptionType(Type optionType);
+        string GetKeyForSettingDtoType(Type settingDtoType);
 
         /// <summary>
-        /// Returns a map of keys to the default values (expressed as a Newtonsoft JObject) for each key.
+        /// Returns a map of keys to the default values (expressed as a Newtonsoft
+        /// JObject) for each key.
         /// </summary>
         /// <returns></returns>
         Dictionary<string, Newtonsoft.Json.Linq.JObject> GetDefaultKeys();
 
         /// <summary>
-        /// Returns all of the registered top-level object types indexed by their top-level
-        /// key name.
+        /// Returns all of the registered top-level setting DTO types indexed by their
+        /// top-level key name.
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// More than one configuration object can be registered against a key. The code
-        /// will merge their values together when storing settings against the key.
+        /// More than one configuration setting DTO can be registered against a key. The
+        /// code will merge their values together when storing settings against the key.
         /// </remarks>
         Dictionary<string, List<Type>> GetTopLevelTypesMap();
     }

@@ -17,15 +17,15 @@ namespace VirtualRadar.Server.Middleware
     public class V3MapPluginHtmlMiddleware
     {
         private readonly RequestDelegate _Next;
-        private readonly ISettings<AircraftMapSettingsDto> _AircraftMapSettings;
+        private readonly ISettings<AircraftMapSettingsDto> _AircraftMapSettingsDto;
 
         public V3MapPluginHtmlMiddleware(
             RequestDelegate next,
-            ISettings<AircraftMapSettingsDto> aircraftMapSettings
+            ISettings<AircraftMapSettingsDto> aircraftMapSettingsDto
         )
         {
             _Next = next;
-            _AircraftMapSettings = aircraftMapSettings;
+            _AircraftMapSettingsDto = aircraftMapSettingsDto;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -73,7 +73,7 @@ namespace VirtualRadar.Server.Middleware
             string mapStylesheet = null;
             string mapJavascript = null;
 
-            switch(_AircraftMapSettings.LatestValue.MapProvider) {
+            switch(_AircraftMapSettingsDto.LatestValue.MapProvider) {
                 case MapProvider.GoogleMaps:
                     mapJavascript = @"<script src=""script/jquiplugin/jquery.vrs.map-google.js"" type=""text/javascript""></script>";
                     break;

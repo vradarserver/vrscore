@@ -23,13 +23,13 @@ namespace VirtualRadar.Server.Middleware
     /// </summary>
     public class V3ImageMiddleware(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        RequestDelegate                         _NextMiddleware,
-        IWebHostEnvironment                     _WebHostEnvironment,
-        GetImageModelBuilder                    _RequestBuilder,
-        IGraphics                               _Graphics,
-        IFileSystem                             _FileSystem,
-        ISettings<OperatorAndTypeFlagSettingsDto>  _OperatorFlagSettings,
-        ISettings<InternetClientSettingsDto>       _InternetClientSettings
+        RequestDelegate                            _NextMiddleware,
+        IWebHostEnvironment                        _WebHostEnvironment,
+        GetImageModelBuilder                       _RequestBuilder,
+        IGraphics                                  _Graphics,
+        IFileSystem                                _FileSystem,
+        ISettings<OperatorAndTypeFlagSettingsDto>  _OperatorFlagSettingsDto,
+        ISettings<InternetClientSettingsDto>       _InternetClientSettingsDto
         #pragma warning restore IDE1006
     )
     {
@@ -78,10 +78,10 @@ namespace VirtualRadar.Server.Middleware
 
         private async Task<bool> ServeFlag(HttpContext context, GetImageModel imageRequest, bool isTypeFlag)
         {
-            var settings = _OperatorFlagSettings.LatestValue;
+            var flagSettingsDto = _OperatorFlagSettingsDto.LatestValue;
             var folder = isTypeFlag
-                ? settings.TypeFlagsFolder
-                : settings.OperatorFlagsFolder;
+                ? flagSettingsDto.TypeFlagsFolder
+                : flagSettingsDto.OperatorFlagsFolder;
 
             IImage image = null;
             if(!String.IsNullOrEmpty(folder)) {
@@ -161,7 +161,7 @@ namespace VirtualRadar.Server.Middleware
 
             if(imageRequest.HasTextLines) {
                 var isInternet = context.Items.ContainsKey(HttpContextItemKey.VrsIsInternet);
-                var isAllowed = !isInternet || _InternetClientSettings.LatestValue.CanShowPinText;
+                var isAllowed = !isInternet || _InternetClientSettingsDto.LatestValue.CanShowPinText;
                 if(isAllowed) {
                     var fileName = "/v3/fonts/Roboto-Regular.ttf";
                     var fileProvider = _WebHostEnvironment.WebRootFileProvider;

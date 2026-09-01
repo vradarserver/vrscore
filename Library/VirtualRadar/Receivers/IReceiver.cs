@@ -18,7 +18,7 @@ namespace VirtualRadar.Receivers
     /// </summary>
     public interface IReceiver : IDisposable
     {
-        ReceiverSettingsDto Options { get; }
+        ReceiverSettingsDto SettingsDto { get; }
 
         int Id { get; }
 
@@ -40,7 +40,7 @@ namespace VirtualRadar.Receivers
 
         long CountMessagesReceived { get; }
 
-        bool MatchesOptions(ReceiverSettingsDto other) => Options.Equals(other);
+        bool MatchesOptions(ReceiverSettingsDto other) => SettingsDto.Equals(other);
 
         void Start();
     }

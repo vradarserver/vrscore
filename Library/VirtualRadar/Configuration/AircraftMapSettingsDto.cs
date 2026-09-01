@@ -13,7 +13,7 @@ namespace VirtualRadar.Configuration
     /// <summary>
     /// Configurable settings that control how aircraft are shown on the map.
     /// </summary>
-    [Settings("AircraftMap")]
+    [SettingsDto("AircraftMap")]
     public record AircraftMapSettingsDto(
         string          GoogleMapsApiKey = "",
         DistanceUnit    InitialDistanceUnit = DistanceUnit.NauticalMiles,

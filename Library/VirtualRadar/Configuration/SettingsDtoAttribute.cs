@@ -5,11 +5,11 @@
     /// registers the settings with <see cref="ConfigurationConfig"/> on startup.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
-    public class SettingsAttribute : Attribute
+    public class SettingsDtoAttribute : Attribute
     {
         public string SettingsKey { get; set; }
 
-        public SettingsAttribute(string settingsKey)
+        public SettingsDtoAttribute(string settingsKey)
         {
             SettingsKey = settingsKey;
         }

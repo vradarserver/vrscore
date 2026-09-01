@@ -23,7 +23,7 @@ namespace VirtualRadar.Feed.Vatsim
     /// </summary>
     public class CommonFeedParser(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<VatsimSettingsDto> _VatsimSettings,
+        ISettings<VatsimSettingsDto> _VatsimSettingsDto,
         IStandingDataManager _StandingDataManager,
         IRegistrationPrefixLookup _RegistrationPrefixLookup
         #pragma warning restore IDE1006
@@ -81,7 +81,7 @@ namespace VirtualRadar.Feed.Vatsim
 
         private void BuildStateForPilot(VatsimDataV3Pilot pilot, PilotState pilotState)
         {
-            var vatsimSettings = _VatsimSettings.LatestValue;
+            var vatsimSettingsDto = _VatsimSettingsDto.LatestValue;
 
             var aircraftId = BuildAircraftId(pilot);
             var remarks = new RemarksParser(pilot.FlightPlan?.Remarks);
@@ -101,7 +101,7 @@ namespace VirtualRadar.Feed.Vatsim
                 GroundTrackDegrees =    pilot.HeadingDegrees,
                 IsFakeAircraft =        true,
                 Location =              new(pilot.Latitude, pilot.Longitude),
-                OnGround =              SetOnGround(vatsimSettings, pilot.GroundSpeedKnots),
+                OnGround =              SetOnGround(vatsimSettingsDto, pilot.GroundSpeedKnots),
                 Squawk =                pilot.Squawk,
             };
             var modeSCode = remarks.ModeSCode;
@@ -121,7 +121,7 @@ namespace VirtualRadar.Feed.Vatsim
                 registration = pilotState.RegistrationCorrected;
             } else {
                 pilotState.RegistrationOriginal = registration;
-                registration= FixRegistrationByExaminingPrefix(vatsimSettings, registration);
+                registration= FixRegistrationByExaminingPrefix(vatsimSettingsDto, registration);
                 pilotState.RegistrationCorrected = registration;
             }
             lookupOutcome.Registration = registration;
@@ -157,7 +157,7 @@ namespace VirtualRadar.Feed.Vatsim
                 pilotState.OperatorIcao = lookupOutcome.OperatorIcao;
             }
 
-            LookupAircraftType(vatsimSettings, pilot, pilotState, lookupOutcome);
+            LookupAircraftType(vatsimSettingsDto, pilot, pilotState, lookupOutcome);
             LookupRoute(pilot, pilotState, lookupOutcome);
 
             pilotState.TransponderMessage = transponderMessage;
@@ -199,7 +199,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         private void LookupAircraftType(
-            VatsimSettingsDto vatsimSettings,
+            VatsimSettingsDto vatsimSettingsDto,
             VatsimDataV3Pilot pilot,
             PilotState pilotState,
             LookupByAircraftIdOutcome lookupOutcome
@@ -218,7 +218,7 @@ namespace VirtualRadar.Feed.Vatsim
                 lookupOutcome.WakeTurbulenceCategory =  aircraftType?.WakeTurbulenceCategory ?? WakeTurbulenceCategory.None;
 
                 GuessManufacturerAndModelFromType(
-                    vatsimSettings,
+                    vatsimSettingsDto,
                     aircraftType,
                     lookupOutcome
                 );
@@ -226,12 +226,12 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         private static void GuessManufacturerAndModelFromType(
-            VatsimSettingsDto vatsimSettings,
+            VatsimSettingsDto vatsimSettingsDto,
             AircraftType aircraftType,
             LookupOutcome lookupOutcome
         )
         {
-            if(!vatsimSettings.InferModelFromModelType) {
+            if(!vatsimSettingsDto.InferModelFromModelType) {
                 lookupOutcome.Manufacturer = "";
                 lookupOutcome.Model = "";
             } else {

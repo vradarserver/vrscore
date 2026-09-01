@@ -25,13 +25,13 @@ namespace VirtualRadar.Feed
 
         ~FeedDecoderFactory() => Dispose(false);
 
-        public IFeedDecoder Create(IFeedDecoderSettingsDto options)
+        public IFeedDecoder Create(IFeedDecoderSettingsDto settingsDto)
         {
             lock(_SyncLock) {
-                if(options != null && FeedDecoder == null) {
-                    var decoderType = FeedDecoderConfig.FeedDecoderType(options.GetType());
+                if(settingsDto != null && FeedDecoder == null) {
+                    var decoderType = FeedDecoderConfig.FeedDecoderType(settingsDto.GetType());
                     if(decoderType != null) {
-                        FeedDecoder = (IFeedDecoder)ActivatorUtilities.CreateInstance(_ServiceProvider, decoderType, options);
+                        FeedDecoder = (IFeedDecoder)ActivatorUtilities.CreateInstance(_ServiceProvider, decoderType, settingsDto);
                     }
                 }
             }

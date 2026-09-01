@@ -14,7 +14,7 @@ namespace VirtualRadar.Configuration
     /// Configurable settings for web site clients that aren't specific to the aircraft
     /// map <seealso cref="AircraftMapSettingsDto"/>.
     /// </summary>
-    [Settings("WebClient")]
+    [SettingsDto("WebClient")]
     public record WebClientSettingsDto(
         bool            IsAudioEnabled = true,
         AirportCodeType PreferredAirportCodeType = AirportCodeType.Iata,

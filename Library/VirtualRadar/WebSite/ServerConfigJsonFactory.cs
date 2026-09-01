@@ -21,9 +21,9 @@ namespace VirtualRadar.WebSite
     [Lifetime(Lifetime.Singleton)]
     public class ServerConfigJsonFactory(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<AircraftMapSettingsDto> _AircraftMapSettings,
-        ISettings<InternetClientSettingsDto> _InternetClientSettings,
-        ISettings<WebClientSettingsDto> _WebClientSettings,
+        ISettings<AircraftMapSettingsDto> _AircraftMapSettingsDto,
+        ISettings<InternetClientSettingsDto> _InternetClientSettingsDto,
+        ISettings<WebClientSettingsDto> _WebClientSettingsDto,
         IDownloadedTileServerSettingsManager _TileServerManager,
         IReceiverFactory _ReceiverFactory
         #pragma warning restore IDE1006
@@ -36,43 +36,43 @@ namespace VirtualRadar.WebSite
         /// <returns></returns>
         public ServerConfigJson Build(bool isLocalAddress)
         {
-            var aircraftMapSettings = _AircraftMapSettings.LatestValue;
-            var internetClientSettings = _InternetClientSettings.LatestValue;
-            var webClientSettings = _WebClientSettings.LatestValue;
+            var aircraftMapSettingsDto = _AircraftMapSettingsDto.LatestValue;
+            var internetClientSettingsDto = _InternetClientSettingsDto.LatestValue;
+            var webClientSettingsDto = _WebClientSettingsDto.LatestValue;
 
             var tileServerSettings = _TileServerManager.GetTileServerSettings(
-                aircraftMapSettings.MapProvider,
-                aircraftMapSettings.TileServerName,
+                aircraftMapSettingsDto.MapProvider,
+                aircraftMapSettingsDto.TileServerName,
                 fallbackToDefaultIfMissing: true
             );
 
             var version = InformationalVersion.VirtualRadarVersion;
 
             var result = new ServerConfigJson() {
-                InitialDistanceUnit =                   GetDistanceUnit(aircraftMapSettings.InitialDistanceUnit),
-                InitialHeightUnit =                     GetHeightUnit(aircraftMapSettings.InitialHeightUnit),
-                InitialLatitude =                       aircraftMapSettings.InitialMapLatitude,
-                InitialLongitude =                      aircraftMapSettings.InitialMapLongitude,
-                InitialMapType =                        GetMapType(aircraftMapSettings.InitialMapType),
+                InitialDistanceUnit =                   GetDistanceUnit(aircraftMapSettingsDto.InitialDistanceUnit),
+                InitialHeightUnit =                     GetHeightUnit(aircraftMapSettingsDto.InitialHeightUnit),
+                InitialLatitude =                       aircraftMapSettingsDto.InitialMapLatitude,
+                InitialLongitude =                      aircraftMapSettingsDto.InitialMapLongitude,
+                InitialMapType =                        GetMapType(aircraftMapSettingsDto.InitialMapType),
                 InitialSettings =                       null,       // TODO
-                InitialSpeedUnit =                      GetSpeedUnit(aircraftMapSettings.InitialSpeedUnit),
-                InitialZoom =                           aircraftMapSettings.InitialMapZoom,
-                InternetClientCanRunReports =           internetClientSettings.CanRunReports,
-                InternetClientCanShowPinText =          internetClientSettings.CanShowPinText,
-                InternetClientsCanPlayAudio =           internetClientSettings.CanPlayAudio,
-                InternetClientsCanSubmitRoutes =        internetClientSettings.CanSubmitRoutes,
-                InternetClientsCanSeeAircraftPictures = internetClientSettings.CanShowPictures,
-                InternetClientsCanSeePolarPlots =       internetClientSettings.CanShowPolarPlots,
-                InternetClientTimeoutMinutes =          internetClientSettings.TimeoutMinutes,
-                IsAudioEnabled =                        webClientSettings.IsAudioEnabled,
+                InitialSpeedUnit =                      GetSpeedUnit(aircraftMapSettingsDto.InitialSpeedUnit),
+                InitialZoom =                           aircraftMapSettingsDto.InitialMapZoom,
+                InternetClientCanRunReports =           internetClientSettingsDto.CanRunReports,
+                InternetClientCanShowPinText =          internetClientSettingsDto.CanShowPinText,
+                InternetClientsCanPlayAudio =           internetClientSettingsDto.CanPlayAudio,
+                InternetClientsCanSubmitRoutes =        internetClientSettingsDto.CanSubmitRoutes,
+                InternetClientsCanSeeAircraftPictures = internetClientSettingsDto.CanShowPictures,
+                InternetClientsCanSeePolarPlots =       internetClientSettingsDto.CanShowPolarPlots,
+                InternetClientTimeoutMinutes =          internetClientSettingsDto.TimeoutMinutes,
+                IsAudioEnabled =                        webClientSettingsDto.IsAudioEnabled,
                 IsLocalAddress =                        isLocalAddress,
                 IsMono =                                false,
-                UseMarkerLabels =                       aircraftMapSettings.UseMarkerLabels,
-                UseSvgGraphicsOnDesktop =               webClientSettings.UseSvgGraphicsOnDesktop,
-                UseSvgGraphicsOnMobile =                webClientSettings.UseSvgGraphicsOnMobile,
-                UseSvgGraphicsOnReports =               webClientSettings.UseSvgGraphicsOnReports,
-                MinimumRefreshSeconds =                 aircraftMapSettings.MinimumRefreshSeconds,
-                RefreshSeconds =                        aircraftMapSettings.InitialRefreshSeconds,
+                UseMarkerLabels =                       aircraftMapSettingsDto.UseMarkerLabels,
+                UseSvgGraphicsOnDesktop =               webClientSettingsDto.UseSvgGraphicsOnDesktop,
+                UseSvgGraphicsOnMobile =                webClientSettingsDto.UseSvgGraphicsOnMobile,
+                UseSvgGraphicsOnReports =               webClientSettingsDto.UseSvgGraphicsOnReports,
+                MinimumRefreshSeconds =                 aircraftMapSettingsDto.MinimumRefreshSeconds,
+                RefreshSeconds =                        aircraftMapSettingsDto.InitialRefreshSeconds,
                 TileServerSettings =                    tileServerSettings,
                 VrsVersion =                            $"Core {version}",
             };
@@ -84,12 +84,12 @@ namespace VirtualRadar.WebSite
             );
 
             result.TileServerLayers.AddRange(_TileServerManager
-                .GetAllTileLayerSettings(aircraftMapSettings.MapProvider)
+                .GetAllTileLayerSettings(aircraftMapSettingsDto.MapProvider)
                 .OrderBy(r => r.DisplayOrder)
             );
 
-            if(!isLocalAddress || aircraftMapSettings.UseGoogleMapsAPIKeyWithLocalRequests) {
-                result.GoogleMapsApiKey = aircraftMapSettings.GoogleMapsApiKey;
+            if(!isLocalAddress || aircraftMapSettingsDto.UseGoogleMapsAPIKeyWithLocalRequests) {
+                result.GoogleMapsApiKey = aircraftMapSettingsDto.GoogleMapsApiKey;
                 if(String.IsNullOrWhiteSpace(result.GoogleMapsApiKey)) {
                     result.GoogleMapsApiKey = null;
                 }

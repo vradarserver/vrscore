@@ -21,7 +21,7 @@ namespace VirtualRadar.Configuration
     /// How many minutes of lookup failures are to be endured before the service gives up
     /// and reports the ICAO missing (without caching it as a miss).
     /// </param>
-    [Settings("AircraftOnlineLookupService")]
+    [SettingsDto("AircraftOnlineLookupService")]
     public record AircraftOnlineLookupServiceSettingsDto(
         string LookupUrl = "https://sdm.virtualradarserver.co.uk/Aircraft/GetAircraftLookupSettings?language={language}",
         int ExpireQueueAfterMinutes = 30

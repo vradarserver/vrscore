@@ -18,7 +18,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     {
         private readonly object _SyncLock = new();
         private readonly IHttpClientService _HttpClient;
-        private readonly ISettings<AircraftOnlineLookupServiceSettingsDto> _LookupSettings;
+        private readonly ISettings<AircraftOnlineLookupServiceSettingsDto> _LookupSettingsDto;
         private ServerSettings _ServerSettings;
         private DateTime _ServerSettingsFetchedUtcNow;
 
@@ -52,7 +52,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         )
         {
             _HttpClient = httpClientService;
-            _LookupSettings = lookupSettings;
+            _LookupSettingsDto = lookupSettings;
         }
 
         /// <inheritdoc/>
@@ -131,7 +131,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private async Task FetchSettings(CancellationToken cancellationToken)
         {
             if(ServerSettingsNeedRefetch()) {
-                var lookupSettings = _LookupSettings.LatestValue;
+                var lookupSettings = _LookupSettingsDto.LatestValue;
                 var url = lookupSettings.LookupUrl
                     .Replace("{language}", Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName);
 

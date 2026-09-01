@@ -25,13 +25,13 @@ namespace VirtualRadar.AircraftLists
 
         ~AircraftListFactory() => Dispose(false);
 
-        public IAircraftList Create(IAircraftListSettingsDto options)
+        public IAircraftList Create(IAircraftListSettingsDto settingsDto)
         {
             lock(_SyncLock) {
-                if(options != null && AircraftList == null) {
-                    var decoderType = AircraftListConfig.AircraftListType(options.GetType());
+                if(settingsDto != null && AircraftList == null) {
+                    var decoderType = AircraftListConfig.AircraftListType(settingsDto.GetType());
                     if(decoderType != null) {
-                        AircraftList = (IAircraftList)ActivatorUtilities.CreateInstance(_ServiceProvider, decoderType, options);
+                        AircraftList = (IAircraftList)ActivatorUtilities.CreateInstance(_ServiceProvider, decoderType, settingsDto);
                     }
                 }
             }

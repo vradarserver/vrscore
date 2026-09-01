@@ -12,7 +12,7 @@ using VirtualRadar.Configuration;
 
 namespace VirtualRadar.StandingData
 {
-    [Settings("RegistrationPrefixLookup")]
+    [SettingsDto("RegistrationPrefixLookup")]
     public record RegistrationPrefixLookupSettingsDto(
         string Url = "https://raw.githubusercontent.com/vradarserver/standing-data/main/registration-prefixes/schema-01/reg-prefixes.csv"
     )

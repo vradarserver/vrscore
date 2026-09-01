@@ -90,31 +90,31 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public Receiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto options)
+        public Receiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto settingsDto)
         {
             Receiver result = null;
 
             IReceiveConnector connector = null;
-            if(options?.Connector != null) {
+            if(settingsDto?.Connector != null) {
                 var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
-                connector = connectorFactory.Create(options.Connector);
+                connector = connectorFactory.Create(settingsDto.Connector);
             }
 
             IFeedDecoder feedDecoder = null;
-            if(options?.FeedDecoder != null) {
+            if(settingsDto?.FeedDecoder != null) {
                 var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
-                feedDecoder = decoderFactory.Create(options.FeedDecoder);
+                feedDecoder = decoderFactory.Create(settingsDto.FeedDecoder);
             }
 
             IAircraftList aircraftList = null;
-            if(options?.AircraftList != null) {
+            if(settingsDto?.AircraftList != null) {
                 var aircraftListFactory = serviceProvider.GetRequiredService<AircraftListFactory>();
-                aircraftList = aircraftListFactory.Create(options.AircraftList);
+                aircraftList = aircraftListFactory.Create(settingsDto.AircraftList);
             }
 
             if(connector != null && feedDecoder != null && aircraftList != null) {
                 result = new(
-                    options,
+                    settingsDto,
                     connector,
                     feedDecoder,
                     aircraftList,
@@ -128,7 +128,7 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverSettingsDto options) => Build(serviceProvider, options);
+        IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverSettingsDto settingsDto) => Build(serviceProvider, settingsDto);
 
         /// <inheritdoc/>
         public IReceiver FindByName(string receiverName)
@@ -182,26 +182,26 @@ namespace VirtualRadar.Receivers
         public ICallbackHandle ReceiverShuttingDownCallback(Action<IReceiver> callback) => _ReceiverShuttingDownCallbacks.Add(callback);
 
         /// <inheritdoc/>
-        public (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto options)
+        public (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto settingsDto)
         {
             var added = false;
             Receiver receiver = null;
 
-            if(options?.Enabled ?? false) {
+            if(settingsDto?.Enabled ?? false) {
                 lock(_SyncLock) {
                     if(_Disposed) {
                         throw new InvalidOperationException($"Cannot build more receivers, {nameof(ReceiverFactory)} has been disposed");
                     }
 
-                    receiver = FindById(options.Id) as Receiver;
-                    if(receiver == null || !receiver.Options.Equals(options)) {
+                    receiver = FindById(settingsDto.Id) as Receiver;
+                    if(receiver == null || !receiver.SettingsDto.Equals(settingsDto)) {
                         var newReceivers = ShallowCollectionCopier.Copy(_Receivers);
                         if(receiver != null) {
                             newReceivers.Remove(receiver);
                             ShutDownReceiver(receiver);
                         }
 
-                        receiver = Build(_ServiceProvider, options);
+                        receiver = Build(_ServiceProvider, settingsDto);
                         if(receiver != null) {
                             newReceivers.Add(receiver);
                             added = true;

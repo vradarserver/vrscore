@@ -21,7 +21,7 @@ namespace VirtualRadar.Configuration
     /// If the online lookup finds the details for an ICAO then the cache records the hit and the lookup
     /// service will not look it up again for this many days.
     /// </param>
-    [Settings("AircraftOnlineLookupCache")]
+    [SettingsDto("AircraftOnlineLookupCache")]
     public record AircraftOnlineLookupCacheSettingsDto(
         int MissLifetimeHours = 24,
         int HitLifetimeDays = 28

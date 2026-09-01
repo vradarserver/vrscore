@@ -31,7 +31,7 @@ namespace VirtualRadar.Feed.Vatsim
     /// <param name="ShowInvalidRegistrations">
     /// True if invalid registrations are to be suppressed from display.
     /// </param>
-    [Settings("Vatsim")]
+    [SettingsDto("Vatsim")]
     public record VatsimSettingsDto(
         int RefreshIntervalSeconds = 16,
         string StatusUrl = "https://status.vatsim.net/status.json",

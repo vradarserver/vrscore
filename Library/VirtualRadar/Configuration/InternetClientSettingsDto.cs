@@ -21,7 +21,7 @@ namespace VirtualRadar.Configuration
     /// <param name="TimeoutMinutes"></param>
     /// <param name="CanSubmitRoutes"></param>
     /// <param name="CanShowPolarPlots"></param>
-    [Settings("InternetClients")]
+    [SettingsDto("InternetClients")]
     public record InternetClientSettingsDto(
         bool CanRunReports = false,
         bool CanShowPinText = false,

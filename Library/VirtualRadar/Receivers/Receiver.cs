@@ -26,19 +26,19 @@ namespace VirtualRadar.Receivers
         private IStandingDataManager _StandingDataManager;
 
         /// <inheritdoc/>
-        public ReceiverSettingsDto Options { get; }
+        public ReceiverSettingsDto SettingsDto { get; }
 
         /// <inheritdoc/>
-        public int Id => Options.Id;
+        public int Id => SettingsDto.Id;
 
         /// <inheritdoc/>
-        public string Name => Options.Name;
+        public string Name => SettingsDto.Name;
 
         /// <inheritdoc/>
-        public bool Enabled => Options.Enabled;
+        public bool Enabled => SettingsDto.Enabled;
 
         /// <inheritdoc/>
-        public bool Hidden => Options.Hidden;
+        public bool Hidden => SettingsDto.Hidden;
 
         private CancellationTokenSource _ConnectionCancellationTokenSource = new();
         /// <inheritdoc/>
@@ -64,7 +64,7 @@ namespace VirtualRadar.Receivers
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="settingsDto"></param>
         /// <param name="connector"></param>
         /// <param name="feedDecoder"></param>
         /// <param name="aircraftList"></param>
@@ -72,7 +72,7 @@ namespace VirtualRadar.Receivers
         /// <param name="aircraftLookupService"></param>
         /// <param name="standingDataRepository"></param>
         internal Receiver(
-            ReceiverSettingsDto options,
+            ReceiverSettingsDto settingsDto,
             IReceiveConnector connector,
             IFeedDecoder feedDecoder,
             IAircraftList aircraftList,
@@ -81,7 +81,7 @@ namespace VirtualRadar.Receivers
             IStandingDataManager standingDataManager
         )
         {
-            Options = options;
+            SettingsDto = settingsDto;
             Connector = connector;
             FeedDecoder = feedDecoder;
             AircraftList = aircraftList;

@@ -19,7 +19,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
         #pragma warning disable IDE1006 // VS2022 does not support naming rules for class private ctors
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder,
-        ISettings<AircraftOnlineLookupCacheSettingsDto> _Settings
+        ISettings<AircraftOnlineLookupCacheSettingsDto> _SettingsDto
         #pragma warning restore IDE1006
     ) : IAircraftOnlineLookupCache
     {
@@ -49,10 +49,10 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
 
             if(icaos?.Any() ?? false) {
                 lock(_EFSingleThreadLock) {
-                    var settings = _Settings.LatestValue;
+                    var settingsDto = _SettingsDto.LatestValue;
                     var utcNow = DateTime.UtcNow;
-                    var hitThreshold = utcNow.AddDays(-settings.HitLifetimeDays);
-                    var missThreshold = utcNow.AddHours(-settings.MissLifetimeHours);
+                    var hitThreshold = utcNow.AddDays(-settingsDto.HitLifetimeDays);
+                    var missThreshold = utcNow.AddHours(-settingsDto.MissLifetimeHours);
 
                     using(var context = CreateContext()) {
                         foreach(var icao24 in icaos) {

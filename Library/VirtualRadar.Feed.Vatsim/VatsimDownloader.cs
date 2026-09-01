@@ -18,12 +18,12 @@ namespace VirtualRadar.Feed.Vatsim
     /// <summary>
     /// The default implementation of <see cref="IVatsimDownloader"/>.
     /// </summary>
-    /// <param name="_Settings"></param>
+    /// <param name="_SettingsDto"></param>
     /// <param name="_Log"></param>
     /// <param name="_HttpClient"></param>
     class VatsimDownloader(
         #pragma warning disable IDE1006 // VS2022 doesn't let you set naming rules for class primary ctors
-        ISettings<VatsimSettingsDto> _Settings,
+        ISettings<VatsimSettingsDto> _SettingsDto,
         ILog _Log,
         IHttpClientService _HttpClient,
         CommonFeedParser _CommonFeedParser
@@ -89,7 +89,7 @@ namespace VirtualRadar.Feed.Vatsim
                     _Log.Exception(ex, "Exception encountered downloading from VATSIM");
                 }
             }
-            var interval = _Settings.LatestValue.RefreshIntervalSeconds * 1000;
+            var interval = _SettingsDto.LatestValue.RefreshIntervalSeconds * 1000;
             lock(_SyncLock) {
                 if(_Timer != null) {
                     _Timer.Interval = interval;
@@ -106,8 +106,8 @@ namespace VirtualRadar.Feed.Vatsim
 
         private async Task DownloadStatus()
         {
-            if(_Status == null || _StatusDownloadedUtc.AddHours(_Settings.LatestValue.RefreshStatusHours) <= DateTime.UtcNow) {
-                var jsonText = await _HttpClient.Shared.GetStringAsync(_Settings.LatestValue.StatusUrl);
+            if(_Status == null || _StatusDownloadedUtc.AddHours(_SettingsDto.LatestValue.RefreshStatusHours) <= DateTime.UtcNow) {
+                var jsonText = await _HttpClient.Shared.GetStringAsync(_SettingsDto.LatestValue.StatusUrl);
                 if(!String.IsNullOrEmpty(jsonText)) {
                     var status = JsonConvert.DeserializeObject<Status>(jsonText);
                     if((status.Data?.V3.Count ?? 0) > 0) {

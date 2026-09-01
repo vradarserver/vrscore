@@ -45,11 +45,11 @@ namespace VirtualRadar.Utility.CLIConsole
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
             var connectorFactory = _ServiceProvider.GetRequiredService<ReceiveConnectorFactory>();
-            var connectorOptions = new TcpPullConnectorSettingsDto() {
+            var connectorSettingsDto = new TcpPullConnectorSettingsDto() {
                 Address = ipAddress.ToString(),
                 Port = _Options.Port,
             };
-            var connector = connectorFactory.Create(connectorOptions);
+            var connector = connectorFactory.Create(connectorSettingsDto);
 
             await WriteLine($"Opening {_Options.SaveFileName} for writing");
             var fileStream = new FileStream(_Options.SaveFileName, FileMode.Create, FileAccess.Write, FileShare.Read);

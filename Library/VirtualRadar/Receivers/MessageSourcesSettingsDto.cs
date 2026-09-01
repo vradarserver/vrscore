@@ -15,7 +15,7 @@ namespace VirtualRadar.Receivers
     /// <summary>
     /// Describes the configurable settings for all sources of aircraft messages.
     /// </summary>
-    [Settings("MessageSources")]
+    [SettingsDto("MessageSources")]
     public class MessageSourcesSettingsDto
     {
         private ReceiverSettingsDto[] _Receivers = [];

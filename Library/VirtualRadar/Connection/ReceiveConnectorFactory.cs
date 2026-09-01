@@ -26,13 +26,13 @@ namespace VirtualRadar.Connection
 
         ~ReceiveConnectorFactory() => Dispose(false);
 
-        public IReceiveConnector Create(IReceiveConnectorSettingsDto options)
+        public IReceiveConnector Create(IReceiveConnectorSettingsDto settingsDto)
         {
             lock(_SyncLock) {
-                if(options != null && Connector == null) {
-                    var receiverType = ReceiveConnectorConfig.ReceiveConnectorType(options.GetType());
+                if(settingsDto != null && Connector == null) {
+                    var receiverType = ReceiveConnectorConfig.ReceiveConnectorType(settingsDto.GetType());
                     if(receiverType != null) {
-                        Connector = (IReceiveConnector)ActivatorUtilities.CreateInstance(_ServiceProvider, receiverType, options);
+                        Connector = (IReceiveConnector)ActivatorUtilities.CreateInstance(_ServiceProvider, receiverType, settingsDto);
                     }
                 }
             }

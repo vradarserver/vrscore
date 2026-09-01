@@ -40,11 +40,11 @@ namespace VirtualRadar.Utility.CLIConsole
 
             await WriteLine($"Creating TCP pull connector to {ipAddress}:{_Options.Port}");
             var connectorFactory = _ServiceProvider.GetRequiredService<ReceiveConnectorFactory>();
-            var connectorOptions = new TcpPullConnectorSettingsDto() {
+            var connectorSettingsDto = new TcpPullConnectorSettingsDto() {
                 Address =   ipAddress.ToString(),
                 Port =      _Options.Port
             };
-            var connector = connectorFactory.Create(connectorOptions);
+            var connector = connectorFactory.Create(connectorSettingsDto);
 
             var hexDump = _Options.Show
                 ? new HexDump() { EmitHeader = false, }

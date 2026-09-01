@@ -19,7 +19,7 @@ namespace VirtualRadar.TileServer
     /// </summary>
     class DownloadedTileServerSettingsStorage(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<TileServerSettingsDto> _Settings,
+        ISettings<TileServerSettingsDto> _SettingsDto,
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder,
         ILog _Log
@@ -33,7 +33,7 @@ namespace VirtualRadar.TileServer
         private string Folder
         {
             get {
-                var overrideFolder = _Settings.LatestValue.FolderOverride;
+                var overrideFolder = _SettingsDto.LatestValue.FolderOverride;
                 return String.IsNullOrEmpty(overrideFolder)
                     ? _WorkingFolder.Folder
                     : overrideFolder;

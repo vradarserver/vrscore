@@ -23,7 +23,7 @@ namespace VirtualRadar.StandingData
     /// </remarks>
     class RegistrationPrefixLookup(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<RegistrationPrefixLookupSettingsDto> _Settings,
+        ISettings<RegistrationPrefixLookupSettingsDto> _SettingsDto,
         IWorkingFolder _WorkingFolder,
         IFileSystem _FileSystem,
         IHttpClientService _HttpClient,
@@ -146,7 +146,7 @@ namespace VirtualRadar.StandingData
         private void DownloadAndSaveFile()
         {
             var content = Task.Run(() =>
-                _HttpClient.Shared.GetStringAsync(_Settings.LatestValue.Url)
+                _HttpClient.Shared.GetStringAsync(_SettingsDto.LatestValue.Url)
             ).Result;
             if(!String.IsNullOrEmpty(content)) {
                 _FileSystem.WriteAllText(

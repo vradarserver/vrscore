@@ -104,18 +104,18 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public TObject LatestValue<TObject>() => (TObject)LatestValue(typeof(TObject));
+        public TSettingsDto LatestValue<TSettingsDto>() => (TSettingsDto)LatestValue(typeof(TSettingsDto));
 
         /// <inheritdoc/>
-        public object LatestValue(Type optionType)
+        public object LatestValue(Type settingsDtoType)
         {
-            var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
-            return LatestValue(contentKey, optionType);
+            var contentKey = _SettingsConfiguration.GetKeyForSettingDtoType(settingsDtoType);
+            return LatestValue(contentKey, settingsDtoType);
         }
 
-        private object LatestValue(string contentKey, Type optionType)
+        private object LatestValue(string contentKey, Type settingDtoType)
         {
-            var parsedContentKey = ParsedContentKey(contentKey, optionType);
+            var parsedContentKey = ParsedContentKey(contentKey, settingDtoType);
 
             LoadContent();
 
@@ -125,13 +125,13 @@ namespace VirtualRadar.Configuration
                     _SettingKeyToJObject.TryGetValue(contentKey, out var fileJObject);
                     if(fileJObject == null) {
                         throw new InvalidOperationException(
-                            $"There is no default and no content stored for the \"{contentKey}\" key assigned to options of type {optionType.Name}"
+                            $"There is no default and no content stored for the \"{contentKey}\" key assigned to options of type {settingDtoType.Name}"
                         );
                     }
 
                     var deserialised = JsonConvert.DeserializeObject(
                         fileJObject.ToString(),
-                        optionType,
+                        settingDtoType,
                         JsonConfiguration.JsonDeserialiserSettings
                     );
 
@@ -144,12 +144,12 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public bool IsConfigured<TObject>() => IsConfigured(typeof(TObject));
+        public bool IsConfigured<TSettingDto>() => IsConfigured(typeof(TSettingDto));
 
         /// <inheritdoc/>
-        public bool IsConfigured(Type optionType)
+        public bool IsConfigured(Type settingDtoType)
         {
-            var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
+            var contentKey = _SettingsConfiguration.GetKeyForSettingDtoType(settingDtoType);
             return IsConfigured(contentKey);
         }
 
@@ -217,26 +217,26 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public void ChangeValue(Type optionType, object newValue)
+        public void ChangeValue(Type settingDtoType, object newSettingDto)
         {
-            ArgumentNullException.ThrowIfNull(optionType);
-            ArgumentNullException.ThrowIfNull(newValue);
+            ArgumentNullException.ThrowIfNull(settingDtoType);
+            ArgumentNullException.ThrowIfNull(newSettingDto);
 
-            var contentKey = _SettingsConfiguration.GetKeyForOptionType(optionType);
-            if(!optionType.IsAssignableFrom(newValue.GetType())) {
+            var contentKey = _SettingsConfiguration.GetKeyForSettingDtoType(settingDtoType);
+            if(!settingDtoType.IsAssignableFrom(newSettingDto.GetType())) {
                 throw new InvalidOperationException(
-                      $"Cannot store a value of type {newValue.GetType().Name} against the entry for type "
-                    + $"{optionType.Name} under the key \"{contentKey}\""
+                      $"Cannot store a value of type {newSettingDto.GetType().Name} against the entry for type "
+                    + $"{settingDtoType.Name} under the key \"{contentKey}\""
                 );
             }
 
-            var parsedContentKey = ParsedContentKey(contentKey, optionType);
+            var parsedContentKey = ParsedContentKey(contentKey, settingDtoType);
 
             var runCallbacks = false;
             lock(_SyncLock) {
-                var latestValue = LatestValue(contentKey, optionType);
-                if(!latestValue.Equals(newValue)) {
-                    var newJObject = JObject.FromObject(newValue, JsonConfiguration.JsonSerialiser);
+                var latestValue = LatestValue(contentKey, settingDtoType);
+                if(!latestValue.Equals(newSettingDto)) {
+                    var newJObject = JObject.FromObject(newSettingDto, JsonConfiguration.JsonSerialiser);
 
                     if(_SettingKeyToJObject.TryGetValue(contentKey, out var currentJObject)) {
                         MergeJObjects(currentJObject, newJObject);
@@ -244,22 +244,22 @@ namespace VirtualRadar.Configuration
                     }
 
                     _SettingKeyToJObject[contentKey] = newJObject;
-                    _ParsedContent[parsedContentKey] = newValue;
+                    _ParsedContent[parsedContentKey] = newSettingDto;
 
                     runCallbacks = true;
                 }
             }
 
             if(runCallbacks) {
-                var exception = _ValueChangedCallbacks.InvokeWithoutExceptions(new(contentKey, newValue));
+                var exception = _ValueChangedCallbacks.InvokeWithoutExceptions(new(contentKey, newSettingDto));
                 if(exception != null) {
-                    _Log.Exception(exception, $"Thrown when running callbacks after setting the \"{contentKey}\" value to {newValue}");
+                    _Log.Exception(exception, $"Thrown when running callbacks after setting the \"{contentKey}\" value to {newSettingDto}");
                 }
             }
         }
 
         /// <inheritdoc/>
-        public void ChangeValue<T>(T newValue) => ChangeValue(typeof(T), newValue);
+        public void ChangeValue<TSettingDto>(TSettingDto newSettingDto) => ChangeValue(typeof(TSettingDto), newSettingDto);
 
         /// <inheritdoc/>
         public void SaveChanges()

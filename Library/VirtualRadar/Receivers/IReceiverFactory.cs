@@ -36,9 +36,9 @@ namespace VirtualRadar.Receivers
         /// receiver is disposed. Will return null if the DTO is invalid.
         /// </summary>
         /// <param name="serviceProvider"></param>
-        /// <param name="options"></param>
+        /// <param name="settingsDto"></param>
         /// <returns></returns>
-        IReceiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto options);
+        IReceiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto settingsDto);
 
         /// <summary>
         /// Returns a receiver previously created by <see cref="FindOrBuild"/> with the name passed across.
@@ -91,15 +91,17 @@ namespace VirtualRadar.Receivers
         ICallbackHandle ReceiverShuttingDownCallback(Action<IReceiver> callback);
 
         /// <summary>
-        /// Finds an existing receiver that has the same name (case insensitive) as the options passed across.
-        /// If no such receiver exists then a new receiver is created and returned. If the receiver exists then
-        /// its options are compared. If the options are unchanged then the existing receiver is returned,
-        /// otherwise the existing receiver is disposed and a new receiver returned. In all cases the factory
-        /// manages the lifetime of the receiver, it should not be disposed by the caller.
+        /// Finds an existing receiver that has the same name (case insensitive) as the
+        /// settings passed across. If no such receiver exists then a new receiver is
+        /// created and returned. If the receiver exists then its settings are compared.
+        /// If the settings are unchanged then the existing receiver is returned,
+        /// otherwise the existing receiver is disposed and a new receiver returned. In
+        /// all cases the factory manages the lifetime of the receiver, it should not be
+        /// disposed by the caller.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="settingsDto"></param>
         /// <returns></returns>
-        (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto options);
+        (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto settingsDto);
 
         /// <summary>
         /// Shuts a receiver down.

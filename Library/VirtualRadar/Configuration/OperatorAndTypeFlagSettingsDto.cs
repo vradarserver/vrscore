@@ -17,7 +17,7 @@ namespace VirtualRadar.Configuration
     /// <param name="TypeFlagsFolder">The folder where type flags are stored.</param>
     /// <param name="FlagWidthPixels">The width of all operator and silhouette images in pixels.</param>
     /// <param name="FlagHeightPixels">The height of operator and silhouette images in pixels.</param>
-    [Settings("OperatorAndTypeFlags")]
+    [SettingsDto("OperatorAndTypeFlags")]
     public record OperatorAndTypeFlagSettingsDto(
         string OperatorFlagsFolder = "",
         string TypeFlagsFolder = "",

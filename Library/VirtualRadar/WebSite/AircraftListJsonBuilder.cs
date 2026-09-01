@@ -23,36 +23,36 @@ namespace VirtualRadar.WebSite
     /// </summary>
     public class AircraftListJsonBuilder(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<AircraftMapSettingsDto>          _AircraftMapSettings,
-        ISettings<AircraftPictureSettingsDto>      _AircraftPictureSettings,
-        ISettings<InternetClientSettingsDto>       _InternetClientSettings,
-        ISettings<OperatorAndTypeFlagSettingsDto>  _OperatorAndFlagSettings,
-        ISettings<WebClientSettingsDto>            _WebClientSettings,
-        IReceiverFactory                        _ReceiverFactory,
-        IFileSystem                             _FileSystem,
-        IClock                                  _Clock
+        ISettings<AircraftMapSettingsDto>          _AircraftMapSettingsDto,
+        ISettings<AircraftPictureSettingsDto>      _AircraftPictureSettingsDto,
+        ISettings<InternetClientSettingsDto>       _InternetClientSettingsDto,
+        ISettings<OperatorAndTypeFlagSettingsDto>  _OperatorAndFlagSettingsDto,
+        ISettings<WebClientSettingsDto>            _WebClientSettingsDto,
+        IReceiverFactory                           _ReceiverFactory,
+        IFileSystem                                _FileSystem,
+        IClock                                     _Clock
         #pragma warning restore IDE1006
     ) : IAircraftListJsonBuilder
     {
         // Carries state into all of the build functions, and in particular maintains a consistent
         // set of latest settings throughout the build.
         record BuildState(
-            DateTime                    UtcNow,
-            AircraftListJsonBuilderArgs Args,
-            IReceiver                   Receiver,
-            AircraftMapSettingsDto         AircraftMapSettings,
-            AircraftPictureSettingsDto     AircraftPictureSettings,
-            InternetClientSettingsDto      InternetClientSettings,
-            OperatorAndTypeFlagSettingsDto OperatorAndTypeFlagSettings,
-            WebClientSettingsDto           WebClientSettings,
-            AircraftListJson            Json
+            DateTime                        UtcNow,
+            AircraftListJsonBuilderArgs     Args,
+            IReceiver                       Receiver,
+            AircraftMapSettingsDto          AircraftMapSettingsDto,
+            AircraftPictureSettingsDto      AircraftPictureSettingsDto,
+            InternetClientSettingsDto       InternetClientSettingsDto,
+            OperatorAndTypeFlagSettingsDto  OperatorAndTypeFlagSettingsDto,
+            WebClientSettingsDto            WebClientSettingsDto,
+            AircraftListJson                Json
         )
         {
             private DateTime? _ShortTrailStart;
             public DateTime ShortTrailStart
             {
                 get {
-                    _ShortTrailStart ??= UtcNow.AddSeconds(-AircraftMapSettings.ShortTrailLengthSeconds);
+                    _ShortTrailStart ??= UtcNow.AddSeconds(-AircraftMapSettingsDto.ShortTrailLengthSeconds);
                     return _ShortTrailStart.Value;
                 }
             }
@@ -75,19 +75,19 @@ namespace VirtualRadar.WebSite
                 _Clock.UtcNow,
                 args,
                 receiver,
-                _AircraftMapSettings.LatestValue,
-                _AircraftPictureSettings.LatestValue,
-                _InternetClientSettings.LatestValue,
-                _OperatorAndFlagSettings.LatestValue,
-                _WebClientSettings.LatestValue,
+                _AircraftMapSettingsDto.LatestValue,
+                _AircraftPictureSettingsDto.LatestValue,
+                _InternetClientSettingsDto.LatestValue,
+                _OperatorAndFlagSettingsDto.LatestValue,
+                _WebClientSettingsDto.LatestValue,
                 new()
             );
 
-            state.Json.ShortTrailLengthSeconds =    state.AircraftMapSettings.ShortTrailLengthSeconds;
-            state.Json.Source =                     1; // <-- for backwards compatability, we don't have the concept of fake and/or flight sim aircraft lists in VRS Core
-            state.Json.SourceFeedId =               args.ReceiverId;
-            state.Json.LastDataVersion =            receiver?.AircraftList.Stamp.ToString();
-            state.Json.ServerTime =                 _Clock.UtcNow.ToUnixMilliseconds();
+            state.Json.ShortTrailLengthSeconds = state.AircraftMapSettingsDto.ShortTrailLengthSeconds;
+            state.Json.Source =                  1; // <-- for backwards compatability, we don't have the concept of fake and/or flight sim aircraft lists in VRS Core
+            state.Json.SourceFeedId =            args.ReceiverId;
+            state.Json.LastDataVersion =         receiver?.AircraftList.Stamp.ToString();
+            state.Json.ServerTime =              _Clock.UtcNow.ToUnixMilliseconds();
 
             AddAircraft(state);
             AddFeeds(state);
@@ -204,12 +204,12 @@ namespace VirtualRadar.WebSite
 
         private void AddFlags(BuildState state)
         {
-            var settings = state.OperatorAndTypeFlagSettings;
-            state.Json.FlagWidth = settings.FlagWidthPixels;
-            state.Json.FlagHeight = settings.FlagHeightPixels;
+            var settingsDto = state.OperatorAndTypeFlagSettingsDto;
+            state.Json.FlagWidth = settingsDto.FlagWidthPixels;
+            state.Json.FlagHeight = settingsDto.FlagHeightPixels;
 
-            state.Json.ShowFlags =       IsDirectoryConfiguredAndExists(settings.OperatorFlagsFolder);
-            state.Json.ShowSilhouettes = IsDirectoryConfiguredAndExists(settings.TypeFlagsFolder);
+            state.Json.ShowFlags =       IsDirectoryConfiguredAndExists(settingsDto.OperatorFlagsFolder);
+            state.Json.ShowSilhouettes = IsDirectoryConfiguredAndExists(settingsDto.TypeFlagsFolder);
         }
 
         private void CalculateGreatCircleMaths(BuildState state, AircraftJson aircraftJson, Aircraft aircraft)
@@ -226,11 +226,11 @@ namespace VirtualRadar.WebSite
         private void AddPictures(BuildState state)
         {
             var internetClientSettings = state.Args.IsInternetClient
-                ? state.InternetClientSettings
+                ? state.InternetClientSettingsDto
                 : null;
             if(internetClientSettings?.CanShowPictures ?? true) {
                 state.Json.ShowPictures = IsDirectoryConfiguredAndExists(
-                    state.AircraftPictureSettings.LocalPicturesFolder
+                    state.AircraftPictureSettingsDto.LocalPicturesFolder
                 );
             }
         }
@@ -252,7 +252,7 @@ namespace VirtualRadar.WebSite
                 return airport == null
                     ? ""
                     : airport.Describe(
-                        state.WebClientSettings.PreferredAirportCodeType,
+                        state.WebClientSettingsDto.PreferredAirportCodeType,
                         showCode: true,
                         showTown: true,
                         showCountry: true

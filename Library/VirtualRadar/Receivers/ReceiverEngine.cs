@@ -19,7 +19,7 @@ namespace VirtualRadar.Receivers
     [Lifetime(Lifetime.Singleton)]
     public class ReceiverEngine(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        ISettings<MessageSourcesSettingsDto> _MessageSourceSettings,
+        ISettings<MessageSourcesSettingsDto> _MessageSourceSettingsDto,
         IReceiverFactory _ReceiverFactory,
         ILog _Log
         #pragma warning restore IDE1006
@@ -30,7 +30,7 @@ namespace VirtualRadar.Receivers
         /// </summary>
         public void Start()
         {
-            foreach(var receiverOptions in _MessageSourceSettings.LatestValue.Receivers) {
+            foreach(var receiverOptions in _MessageSourceSettingsDto.LatestValue.Receivers) {
                 try {
                     (_, var receiver) = _ReceiverFactory.FindOrBuild(receiverOptions);
                     receiver.Start();

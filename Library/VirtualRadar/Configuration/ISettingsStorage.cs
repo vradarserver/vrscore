@@ -33,63 +33,66 @@
         ICallbackHandle AddSavedChangesCallback(Action callback);
 
         /// <summary>
-        /// Returns the current value of the type passed across, assuming that the type uniquely identifies a
-        /// registered top-level key.
+        /// Returns the current value of the type passed across, assuming that the type
+        /// uniquely identifies a registered top-level key.
         /// </summary>
-        /// <param name="optionType">
-        /// The type of option to load. This must have been previously registered with <see
-        /// cref="ConfigurationConfig"/>.
+        /// <param name="settingsDtoType">
+        /// The type of settings DTO to load. This must have been previously registered
+        /// with <see cref="ConfigurationConfig"/>.
         /// </param>
         /// <returns></returns>
-        object LatestValue(Type optionType);
+        object LatestValue(Type settingsDtoType);
 
         /// <summary>
-        /// Returns the current value of the type passed across, assuming that the type uniquely identifies a
-        /// registered top-level key.
+        /// Returns the current value of the type passed across, assuming that the type
+        /// uniquely identifies a registered top-level key.
         /// </summary>
-        /// <typeparam name="TObject">
-        /// The type of option to load. This must have been previously registered with <see
-        /// cref="ConfigurationConfig"/>.
+        /// <typeparam name="TSettingsDto">
+        /// The type of settings DTO to load. This must have been previously registered
+        /// with <see cref="ConfigurationConfig"/>.
         /// </typeparam>
         /// <returns></returns>
-        TObject LatestValue<TObject>();
+        TSettingsDto LatestValue<TSettingsDto>();
 
         /// <summary>
         /// True if there are settings in the configuration for the type passed across, false
         /// if defaults will be used if this type is passed to <see cref="LatestValue(Type)"/>.
         /// </summary>
-        /// <param name="optionType"></param>
+        /// <param name="settingsDto"></param>
         /// <returns></returns>
-        bool IsConfigured(Type optionType);
+        bool IsConfigured(Type settingsDto);
 
         /// <summary>
         /// True if there are settings in the configuration for the type passed across, false
         /// if defaults will be used if this type is passed to <see cref="LatestValue{TObject}()"/>.
         /// </summary>
-        /// <typeparam name="TObject"></typeparam>
+        /// <typeparam name="TSettingsDto"></typeparam>
         /// <returns></returns>
-        bool IsConfigured<TObject>();
+        bool IsConfigured<TSettingsDto>();
 
         /// <summary>
-        /// Assigns a new value to the options associated with the option type passed across, assuming that
-        /// the option type uniquely identifies a top-level key. This does not update persistent storage.
+        /// Assigns a new value to the DTO associated with the type passed across,
+        /// assuming that the settings DTO type uniquely identifies a top-level key. This
+        /// does not update persistent storage.
         /// </summary>
-        /// <param name="optionType">
-        /// The type of option to overwrite. This must have been previously registered with <see
-        /// cref="ConfigurationConfig"/>.
+        /// <param name="settingsDtoType">
+        /// The type of DTO to overwrite. This must have been previously registered with
+        /// <see cref="ConfigurationConfig"/>.
         /// </param>
-        /// <param name="newValue">
-        /// The new value for the option. It must be derivable from <paramref name="optionType"/>.
+        /// <param name="newSettingDto">
+        /// The new value for the DTO. It must be derivable from <paramref
+        /// name="settingsDtoType"/>.
         /// </param>
-        void ChangeValue(Type optionType, object newValue);
+        void ChangeValue(Type settingsDtoType, object newSettingDto);
 
         /// <summary>
-        /// Assigns a new value to the options associated with the option type passed across, assuming that
-        /// the option type uniquely identifies a top-level key. This does not update persistent storage.
+        /// Assigns a new value to the settings DTO associated with the DTO type passed
+        /// across, assuming that the type uniquely identifies a top-level key. This does
+        /// not update persistent storage.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="newValue"></param>
-        void ChangeValue<T>(T newValue);
+        /// <typeparam name="TSettingsDto"></typeparam>
+        /// <param name="newSettingDto"></param>
+        void ChangeValue<TSettingsDto>(TSettingsDto newSettingDto);
 
         /// <summary>
         /// Saves changes to the settings back to persistent storage.
