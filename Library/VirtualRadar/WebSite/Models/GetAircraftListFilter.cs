@@ -35,7 +35,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// Gets or sets the string value of the filter.
         /// </summary>
-        public string Value { get; set; }
+        public string? Value { get; set; }
 
         /// <summary>
         /// Gets or sets the bool value of the filter.

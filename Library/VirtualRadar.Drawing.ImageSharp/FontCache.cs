@@ -24,7 +24,7 @@ namespace VirtualRadar.Drawing.ImageSharp
 
         public static FontStyle MarkerTextFontStyle { get; } = FontStyle.Bold;
 
-        public static string MarkerTextFontFamilyName { get; } = ResolveFontFamily(MarkerTextFontStyle,
+        public static string? MarkerTextFontFamilyName { get; } = ResolveFontFamily(MarkerTextFontStyle,
             "Microsoft Sans Serif",
             "MS Reference Sans Serif",
             "Verdana",
@@ -49,13 +49,13 @@ namespace VirtualRadar.Drawing.ImageSharp
         )
         {
             text ??= "";
-            StringBuilder buffer = null;
+            StringBuilder? buffer = null;
             var bufferContent = text;
 
             var pointSize = maxPointSize;
             bool trySmaller;
             Font font;
-            TextOptions textOptions = null;
+            TextOptions? textOptions = null;
 
             do {
                 font = CreateFont(familyName, style, pointSize, useCache);
@@ -86,11 +86,11 @@ namespace VirtualRadar.Drawing.ImageSharp
             );
         }
 
-        public static string ResolveFontFamily(FontStyle targetStyle, params string[] targetFontFamilies)
+        public static string? ResolveFontFamily(FontStyle targetStyle, params string[] targetFontFamilies)
         {
             var installedFamilies = SystemFonts.Families.ToArray();
 
-            string result = null;
+            string? result = null;
             foreach(var targetFontFamily in targetFontFamilies.Where(r => !String.IsNullOrWhiteSpace(r))) {
                 foreach(var fontFamily in installedFamilies) {
                     if(String.Equals(fontFamily.Name, targetFontFamily, StringComparison.InvariantCultureIgnoreCase)) {

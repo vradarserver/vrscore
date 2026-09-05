@@ -16,9 +16,9 @@ namespace VirtualRadar.Feed.Vatsim
     [SettingsProvider(_ProviderName)]
     public record VatsimConnectorSettingsDto(
         GeofenceCentreOn CentreOn,
-        Location CentreOnLocation,
+        Location? CentreOnLocation,
         int CentreOnPilotCid,
-        string CentreOnAirport,
+        string? CentreOnAirport,
         DistanceUnit GeofenceDistanceUnit,
         double GeofenceWidth,
         double GeofenceHeight

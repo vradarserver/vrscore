@@ -22,104 +22,104 @@ namespace VirtualRadar.WebSite
         /// Gets or sets an airport code that the aircraft has to be flying from, to or via in order to pass
         /// the filter.
         /// </summary>
-        public FilterString Airport { get; set; }
+        public FilterString? Airport { get; set; }
 
         /// <summary>
         /// Gets or sets the range of altitudes that an aircraft can be flying at in order to pass the filter.
         /// </summary>
-        public FilterRange<int> Altitude { get; set; }
+        public FilterRange<int>? Altitude { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to aircraft's callsign before it can pass the filter.
         /// </summary>
-        public FilterString Callsign { get; set; }
+        public FilterString? Callsign { get; set; }
 
         /// <summary>
         /// Gets or sets the range of distances in kilometres that the aircraft can be at before it can pass
         /// the filter.
         /// </summary>
-        public FilterRange<double> Distance { get; set; }
+        public FilterRange<double>? Distance { get; set; }
 
         /// <summary>
         /// Gets or sets the engine type that the aircraft must have before it can pass the filter.
         /// </summary>
-        public FilterEnum<EngineType> EngineType { get; set; }
+        public FilterEnum<EngineType>? EngineType { get; set; }
 
         /// <summary>
         /// Gets or sets the ICAO24 code that the aircraft must have before it can pass the filter.
         /// </summary>
-        public FilterString Icao24 { get; set; }
+        public FilterString? Icao24 { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to an aircraft's ICAO24 country before it can pass the
         /// filter.
         /// </summary>
-        public FilterString Icao24Country { get; set; }
+        public FilterString? Icao24Country { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that the aircraft must be flagged as Interested in the BaseStation
         /// database before it can pass the filter.
         /// </summary>
-        public FilterBool IsInteresting { get; set; }
+        public FilterBool? IsInteresting { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that the aircraft must be operated by the military before it can
         /// pass the filter.
         /// </summary>
-        public FilterBool IsMilitary { get; set; }
+        public FilterBool? IsMilitary { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that the aircraft must (or must not) be transmitting a position
         /// before it can pass the filter.
         /// </summary>
-        public FilterBool MustTransmitPosition { get; set; }
+        public FilterBool? MustTransmitPosition { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to an aircraft's operator to pass the filter.
         /// </summary>
-        public FilterString Operator { get; set; }
+        public FilterString? Operator { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to an aircraft's operator code to pass the filter.
         /// </summary>
-        public FilterString OperatorIcao { get; set; }
+        public FilterString? OperatorIcao { get; set; }
 
         /// <summary>
         /// Gets or sets the geofence that the aircraft must be within before it can pass the filter.
         /// </summary>
-        public LocationRectangle PositionWithin { get; set; }
+        public LocationRectangle? PositionWithin { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to an aircraft's registration before it can pass the
         /// filter.
         /// </summary>
-        public FilterString Registration { get; set; }
+        public FilterString? Registration { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft species that is allowed to pass the filter.
         /// </summary>
-        public FilterEnum<Species> Species { get; set; }
+        public FilterEnum<Species>? Species { get; set; }
 
         /// <summary>
         /// Gets or sets the range of squawk values that allow an aircraft to pass the filter.
         /// </summary>
-        public FilterRange<int> Squawk { get; set; }
+        public FilterRange<int>? Squawk { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to an aircraft's type before it can pass the filter.
         /// </summary>
-        public FilterString Type { get; set; }
+        public FilterString? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the text that will be compared to an aircraft's user tag before it can pass the
         /// filter.
         /// </summary>
-        public FilterString UserTag { get; set; }
+        public FilterString? UserTag { get; set; }
 
         /// <summary>
         /// Gets or sets the wake turbulence category that the aircraft must have before it can pass the
         /// filter.
         /// </summary>
-        public FilterEnum<WakeTurbulenceCategory> WakeTurbulenceCategory { get; set; }
+        public FilterEnum<WakeTurbulenceCategory>? WakeTurbulenceCategory { get; set; }
     }
 }

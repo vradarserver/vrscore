@@ -29,7 +29,7 @@ namespace VirtualRadar.TileServer
         private bool _Started;
         private bool _Stopped;
         private readonly CallbackNoParamList _DownloadedCallbackList = new();
-        private Timer _RefetchTimer;
+        private Timer? _RefetchTimer;
 
         /// <summary>
         /// The collection of tile server settings last downloaded / loaded. Take a copy of the reference
@@ -135,7 +135,7 @@ namespace VirtualRadar.TileServer
         /// </summary>
         /// <param name="mapProvider"></param>
         /// <returns></returns>
-        public DownloadedTileServerSettings GetDefaultTileServerSettings(MapProvider mapProvider)
+        public DownloadedTileServerSettings? GetDefaultTileServerSettings(MapProvider mapProvider)
         {
             var settings = _DownloadedSettings;
             return settings.FirstOrDefault(setting =>
@@ -152,7 +152,7 @@ namespace VirtualRadar.TileServer
         /// <param name="name"></param>
         /// <param name="fallbackToDefaultIfMissing"></param>
         /// <returns></returns>
-        public DownloadedTileServerSettings GetTileServerSettings(
+        public DownloadedTileServerSettings? GetTileServerSettings(
             MapProvider mapProvider,
             string name,
             bool fallbackToDefaultIfMissing
@@ -179,7 +179,7 @@ namespace VirtualRadar.TileServer
         /// <param name="includeTileServers"></param>
         /// <param name="includeTileLayers"></param>
         /// <returns></returns>
-        public DownloadedTileServerSettings GetTileServerOrLayerSettings(
+        public DownloadedTileServerSettings? GetTileServerOrLayerSettings(
             MapProvider mapProvider,
             string name,
             bool includeTileServers,
@@ -237,7 +237,7 @@ namespace VirtualRadar.TileServer
         private void DoDownloadTileServerSettings(int timeoutSeconds)
         {
             lock(_SyncLock) {
-                IReadOnlyList<DownloadedTileServerSettings> settings = null;
+                IReadOnlyList<DownloadedTileServerSettings>? settings = null;
 
                 try {
                     settings = _Downloader.Download(timeoutSeconds);
@@ -392,7 +392,7 @@ namespace VirtualRadar.TileServer
             }
         }
 
-        private void RefetchSettings(object _)
+        private void RefetchSettings(object? _)
         {
             if(!_Stopped) {
                 try {

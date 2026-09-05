@@ -17,36 +17,36 @@ namespace VirtualRadar.Utility.Terminal
     {
         class AircraftTableRow
         {
-            public string Icao24 { get; set; }
+            public string Icao24 { get; set; } = "";
 
-            public string Msgs { get; set; }
+            public string Msgs { get; set; } = "";
 
-            public string Callsign { get; set; }
+            public string Callsign { get; set; } = "";
 
-            public string Squawk { get; set; }
+            public string Squawk { get; set; } = "";
 
-            public string Latitude { get; set; }
+            public string Latitude { get; set; } = "";
 
-            public string Longitude { get; set; }
+            public string Longitude { get; set; } = "";
 
-            public string Registration { get; set; }
+            public string Registration { get; set; } = "";
 
-            public string ModelIcao { get; set; }
+            public string ModelIcao { get; set; } = "";
 
-            public string LookupAge { get; set; }
+            public string LookupAge { get; set; } = "";
         }
 
-        private volatile Table<AircraftTableRow> _AircraftTable;
+        private volatile Table<AircraftTableRow>? _AircraftTable;
         private Point _CountTrackedPoint;
-        private Timer _Timer;
+        private Timer? _Timer;
 
-        public IAircraftList AircraftList { get; set; }
+        public IAircraftList? AircraftList { get; set; }
 
         public long CountPacketsSeen { get; set; }
 
-        public string ConnectionState { get; set; }
+        public string? ConnectionState { get; set; }
 
-        public TimestampedException LastConnectorException { get; set; }
+        public TimestampedException? LastConnectorException { get; set; }
 
         protected override void Initialise()
         {
@@ -89,19 +89,19 @@ namespace VirtualRadar.Utility.Terminal
 
         protected override void DoRedraw()
         {
-            if(!_CancellationToken.IsCancellationRequested) {
+            if(!(_CancellationToken?.IsCancellationRequested ?? true)) {
                 var set = AircraftList
                     ?.ToArray(out _, applyDisplayTimeout: true)
                     .OrderBy(r => r.Icao24.Value)
                     .Select(r => new AircraftTableRow() {
-                        Icao24 =        r.Icao24.Value.ToString(),
+                        Icao24 =        r.Icao24?.ToString() ?? "",
                         Msgs =          r.CountMessagesReceived.Value.ToString("N0"),
-                        Callsign =      r.Callsign ?? "",
+                        Callsign =      r.Callsign?.ToString() ?? "",
                         Squawk =        Format.Squawk.Base10AsBase8(r.Squawk),
                         Latitude =      Format.Latitude.IsoRounded(r.Location.Value?.Latitude),
                         Longitude =     Format.Longitude.IsoRounded(r.Location.Value?.Longitude),
-                        Registration =  r.Registration ?? "",
-                        ModelIcao =     r.ModelIcao ?? "",
+                        Registration =  r.Registration?.ToString() ?? "",
+                        ModelIcao =     r.ModelIcao?.ToString() ?? "",
                         LookupAge =     r.LookupAgeUtc.Value == default
                                         ? ""
                                         : Format.Duration.AgoAway(DateTime.UtcNow, r.LookupAgeUtc.Value, CultureInfo.CurrentCulture, shortUnits: true),
@@ -113,7 +113,7 @@ namespace VirtualRadar.Utility.Terminal
                 Write($"{set.Length:N0} from {CountPacketsSeen:N0} packets, connection is {ConnectionState?.ToLower()}, last exception: {LastConnectorException?.Exception.Message.TruncateAt(40) ?? "none"}");
                 ClearToEndOfLine();
 
-                _AircraftTable.DrawBody(set, Console.WindowHeight - 5);
+                _AircraftTable?.DrawBody(set, Console.WindowHeight - 5);
 
                 Position = new(0, Console.WindowHeight - 1);
                 Write($"Press Q to quit");

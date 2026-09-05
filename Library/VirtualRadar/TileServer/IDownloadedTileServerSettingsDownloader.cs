@@ -21,13 +21,13 @@ namespace VirtualRadar.TileServer
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IReadOnlyList<DownloadedTileServerSettings>> DownloadAsync(CancellationToken cancellationToken);
+        Task<IReadOnlyList<DownloadedTileServerSettings>?> DownloadAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Downloads and returns the latest complete set of tile server settings
         /// </summary>
         /// <param name="timeoutSeconds"></param>
         /// <returns></returns>
-        IReadOnlyList<DownloadedTileServerSettings> Download(int timeoutSeconds = 30);
+        IReadOnlyList<DownloadedTileServerSettings>? Download(int timeoutSeconds = 30);
     }
 }

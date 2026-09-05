@@ -21,11 +21,11 @@ namespace VirtualRadar.AircraftLists
     {
         private readonly object _SyncLock = new();
 
-        public IAircraftList AircraftList { get; private set; }
+        public IAircraftList? AircraftList { get; private set; }
 
         ~AircraftListFactory() => Dispose(false);
 
-        public IAircraftList Create(IAircraftListSettingsDto settingsDto)
+        public IAircraftList? Create(IAircraftListSettingsDto? settingsDto)
         {
             lock(_SyncLock) {
                 if(settingsDto != null && AircraftList == null) {

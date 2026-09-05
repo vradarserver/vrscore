@@ -42,17 +42,17 @@ namespace VirtualRadar
         /// <summary>
         /// Gets a short name for the supplier of aircraft data being used by the provider.
         /// </summary>
-        string DataSupplier { get; }
+        string? DataSupplier { get; }
 
         /// <summary>
         /// Gets a longer string crediting the supplier of aircraft data being used by the provider.
         /// </summary>
-        string SupplierCredits { get; }
+        string? SupplierCredits { get; }
 
         /// <summary>
         /// Gets the URL of the data supplier's web site.
         /// </summary>
-        string SupplierWebSiteUrl { get; }
+        string? SupplierWebSiteUrl { get; }
 
         /// <summary>
         /// The provider can use this to initialise the supplier details, get itself set up etc.

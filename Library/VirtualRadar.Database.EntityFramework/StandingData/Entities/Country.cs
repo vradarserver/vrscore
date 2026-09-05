@@ -18,6 +18,6 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
         public long CountryId { get; set; }
 
         [MaxLength(80)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
     }
 }

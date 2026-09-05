@@ -28,7 +28,7 @@ namespace VirtualRadar.AircraftLists
         private readonly ILog _Log;
         private readonly IClock _Clock;
         private readonly IPostOffice _PostOffice;
-        private System.Timers.Timer _HousekeepingTimer;
+        private System.Timers.Timer? _HousekeepingTimer;
 
         /// <inheritdoc/>
         public long Stamp => _Stamp;
@@ -80,33 +80,33 @@ namespace VirtualRadar.AircraftLists
         /// <inheritdoc/>
         public ApplyMessageOutcome ApplyMessage(TransponderMessage message)
         {
+            ArgumentNullException.ThrowIfNull(message);
+
             var isNew = false;
-            ChangeSet changeSet = null;
+            ChangeSet? changeSet = null;
 
-            if(message != null) {
-                lock(_SyncLock) {
-                    isNew = !_AircraftById.TryGetValue(message.AircraftId, out var aircraft);
-                    if(isNew) {
-                        aircraft = new(message.AircraftId, _Clock, _PostOffice);
-                        _AircraftById[message.AircraftId] = aircraft;
+            lock(_SyncLock) {
+                isNew = !_AircraftById.TryGetValue(message.AircraftId, out var aircraft);
+                if(aircraft == null) {
+                    aircraft = new(message.AircraftId, _Clock, _PostOffice);
+                    _AircraftById[message.AircraftId] = aircraft;
+                }
+
+                var originalIcao24 = aircraft.Icao24.Value;
+
+                changeSet = aircraft.CopyFromMessage(message);
+                _Stamp = Math.Max(_Stamp, aircraft.Stamp);
+
+                // Note that if the feed assigns the same ICAO24 to multiple aircraft then things
+                // are going to get weird. But whatever. In real life it'll only be flight sim feeds
+                // that might have multiple aircraft with the same ICAO24.
+                var aircraftIcao24 = aircraft.Icao24.Value;
+                if(originalIcao24 != aircraftIcao24) {
+                    if((originalIcao24?.IsValid ?? false) && originalIcao24 > 0) {
+                        _AircraftByIcao24.Remove(originalIcao24.Value);
                     }
-
-                    var originalIcao24 = aircraft.Icao24.Value;
-
-                    changeSet = aircraft.CopyFromMessage(message);
-                    _Stamp = Math.Max(_Stamp, aircraft.Stamp);
-
-                    // Note that if the feed assigns the same ICAO24 to multiple aircraft then things
-                    // are going to get weird. But whatever. In real life it'll only be flight sim feeds
-                    // that might have multiple aircraft with the same ICAO24.
-                    var aircraftIcao24 = aircraft.Icao24.Value;
-                    if(originalIcao24 != aircraftIcao24) {
-                        if((originalIcao24?.IsValid ?? false) && originalIcao24 > 0) {
-                            _AircraftByIcao24.Remove(originalIcao24.Value);
-                        }
-                        if((aircraftIcao24?.IsValid ?? false) && aircraftIcao24 > 0) {
-                            _AircraftByIcao24[aircraftIcao24.Value] = aircraft;
-                        }
+                    if((aircraftIcao24?.IsValid ?? false) && aircraftIcao24 > 0) {
+                        _AircraftByIcao24[aircraftIcao24.Value] = aircraft;
                     }
                 }
             }
@@ -205,7 +205,7 @@ namespace VirtualRadar.AircraftLists
         }
 
         /// <inheritdoc/>
-        public Aircraft FindAircraft(int aircraftId)
+        public Aircraft? FindAircraft(int aircraftId)
         {
             lock(_SyncLock) {
                 _AircraftById.TryGetValue(aircraftId, out var result);
@@ -232,7 +232,7 @@ namespace VirtualRadar.AircraftLists
             }
         }
 
-        private void HousekeepingTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void HousekeepingTimer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             try {
                 RemoveOldAircraft();

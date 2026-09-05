@@ -19,14 +19,14 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Id { get; set; }
 
         [DataMember(Name = "short")]
-        public string Short { get; set; }
+        public string? Short { get; set; }
 
         [DataMember(Name = "long")]
-        public string Long { get; set; }
+        public string? Long { get; set; }
 
-        public static VatsimDataV3Facility CopyFrom(VatsimDataV3Facility copyFrom)
+        public static VatsimDataV3Facility? CopyFrom(VatsimDataV3Facility? copyFrom)
         {
-            VatsimDataV3Facility result = null;
+            VatsimDataV3Facility? result = null;
 
             if(copyFrom != null) {
                 result = new() {

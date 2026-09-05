@@ -19,7 +19,7 @@ namespace VirtualRadar.Feed.Recording
     [ReceiveConnector(typeof(RecordingPlaybackConnectorSettingsDto))]
     public class RecordingPlaybackConnector : IReceiveConnector
     {
-        internal PlaybackConnectorState State;
+        internal PlaybackConnectorState? State;
 
         /// <inheritdoc/>
         public RecordingPlaybackConnectorSettingsDto SettingsDto { get; }
@@ -44,7 +44,7 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public event EventHandler ConnectionStateChanged;
+        public event EventHandler? ConnectionStateChanged;
 
         /// <summary>
         /// Raises <see cref="ConnectionStateChanged"/>.
@@ -55,9 +55,9 @@ namespace VirtualRadar.Feed.Recording
             ConnectionStateChanged?.Invoke(this, args);
         }
 
-        private TimestampedException _LastException;
+        private TimestampedException? _LastException;
         /// <inheritdoc/>
-        public TimestampedException LastException
+        public TimestampedException? LastException
         {
             get => _LastException;
             private set {
@@ -69,7 +69,7 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public event EventHandler LastExceptionChanged;
+        public event EventHandler? LastExceptionChanged;
 
         /// <summary>
         /// Raises <see cref="LastExceptionChanged"/>.
@@ -81,7 +81,7 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public event EventHandler<ReadOnlyMemory<byte>> PacketReceived;
+        public event EventHandler<ReadOnlyMemory<byte>>? PacketReceived;
 
         /// <summary>
         /// Raised <see cref="PacketReceived"/>.
@@ -118,14 +118,19 @@ namespace VirtualRadar.Feed.Recording
                 throw new ConnectionAlreadyOpenException($"You cannot open a connection that is in the {ConnectionState} state");
             }
 
-            PlaybackConnectorState state = null;
+            PlaybackConnectorState? state = null;
             try {
                 ConnectionState = ConnectionState.Opening;
 
                 state = new(this) {
                     PlaybackSync = new(SettingsDto.PlaybackSpeed),
                     Reader = new(),
-                    FileStream = new FileStream(SettingsDto.RecordingFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite),
+                    FileStream = new FileStream(
+                        SettingsDto.RecordingFileName ?? throw new InvalidOperationException($"{nameof(SettingsDto.RecordingFileName)} has not been supplied"),
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.ReadWrite
+                    ),
                 };
                 state.SetupCancellation(cancellationToken);
 
@@ -163,8 +168,19 @@ namespace VirtualRadar.Feed.Recording
 
         private async Task RunPacketPump(PlaybackConnectorState state)
         {
+            ArgumentNullException.ThrowIfNull(state);
+            if(state.LinkedCancelToken == null) {
+                throw new InvalidOperationException($"The state's {nameof(state.LinkedCancelToken)} is missing");
+            }
+            if(state.Reader == null) {
+                throw new InvalidOperationException($"The state's {nameof(state.Reader)} is missing");
+            }
+            if(state.PlaybackSync == null) {
+                throw new InvalidOperationException($"The state's {nameof(state.PlaybackSync)} is missing");
+            }
+
             try {
-                Parcel parcel = null;
+                Parcel? parcel = null;
                 while((parcel = await state.Reader.GetNextAsync(state.LinkedCancelToken.Token)) != null) {
                     if(state.LinkedCancelToken.Token.IsCancellationRequested) {
                         break;

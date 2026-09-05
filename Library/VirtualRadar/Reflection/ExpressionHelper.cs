@@ -23,7 +23,7 @@ namespace VirtualRadar.Reflection
         /// </summary>
         /// <param name="propertyExpression"></param>
         /// <returns></returns>
-        public static PropertyInfo PropertyInfo(Expression propertyExpression)
+        public static PropertyInfo? PropertyInfo(Expression propertyExpression)
         {
             var lambdaExpression = (LambdaExpression)propertyExpression;
 
@@ -39,13 +39,13 @@ namespace VirtualRadar.Reflection
         /// </summary>
         /// <param name="propertyExpression"></param>
         /// <returns></returns>
-        public static string PropertyName(Expression propertyExpression) => PropertyInfo(propertyExpression)?.Name;
+        public static string? PropertyName(Expression propertyExpression) => PropertyInfo(propertyExpression)?.Name;
 
         /// <summary>
         /// Returns the type of the target of a property expression.
         /// </summary>
         /// <param name="propertyExpression"></param>
         /// <returns></returns>
-        public static Type PropertyType(Expression propertyExpression) => PropertyInfo(propertyExpression)?.PropertyType;
+        public static Type? PropertyType(Expression propertyExpression) => PropertyInfo(propertyExpression)?.PropertyType;
     }
 }

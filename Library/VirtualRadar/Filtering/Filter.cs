@@ -27,7 +27,7 @@ namespace VirtualRadar.Filtering
 
         /// <inheritdoc/>
         // (but note that filters do not make suitable keys)
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result) {

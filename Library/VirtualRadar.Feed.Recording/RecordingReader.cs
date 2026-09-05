@@ -18,17 +18,19 @@ namespace VirtualRadar.Feed.Recording
     /// <inheritdoc/>
     class RecordingReader : IRecordingReader
     {
-        private PipeReader  _PipeReader;
+        private PipeReader? _PipeReader;
 
         /// <inheritdoc/>
         public bool IsCompleted { get; private set; }
 
         /// <inheritdoc/>
-        public Header Header { get; private set; }
+        public Header? Header { get; private set; }
 
         /// <inheritdoc/>
         public Task InitialiseStreamAsync(Stream stream, bool leaveOpen)
         {
+            ArgumentNullException.ThrowIfNull(stream);
+
             IsCompleted = false;
             Header = null;
             _PipeReader = PipeReader.Create(
@@ -58,9 +60,9 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public async Task<Parcel> GetNextAsync(CancellationToken cancellationToken)
+        public async Task<Parcel?> GetNextAsync(CancellationToken cancellationToken)
         {
-            Parcel result = null;
+            Parcel? result = null;
 
             while(result == null && !IsCompleted && _PipeReader != null && !cancellationToken.IsCancellationRequested) {
                 var readResult = await _PipeReader.ReadAsync(cancellationToken);
@@ -87,7 +89,7 @@ namespace VirtualRadar.Feed.Recording
             return result;
         }
 
-        private static bool TryReadHeader(ref ReadOnlySequence<byte> buffer, out Header header)
+        private static bool TryReadHeader(ref ReadOnlySequence<byte> buffer, out Header? header)
         {
             header = null;
 
@@ -114,7 +116,7 @@ namespace VirtualRadar.Feed.Recording
             return header != null;
         }
 
-        private static bool TryReadParcel(ref ReadOnlySequence<byte> buffer, out Parcel parcel)
+        private static bool TryReadParcel(ref ReadOnlySequence<byte> buffer, out Parcel? parcel)
         {
             parcel = null;
 

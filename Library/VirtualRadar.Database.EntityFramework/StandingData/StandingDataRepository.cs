@@ -15,17 +15,19 @@ using VirtualRadar.StandingData;
 namespace VirtualRadar.Database.EntityFramework.StandingData
 {
     class StandingDataRepository(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bug
         IFileSystem _FileSystem,
         IWorkingFolder _WorkingFolder
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bug
     ) : IStandingDataRepository
     {
         private readonly object _EFSingleThreadLock = new();
-        private Entities.CodeBlock[] _CodeBlockCache;
+        private Entities.CodeBlock[]? _CodeBlockCache;
 
         /// <inheritdoc/>
-        public AircraftType AircraftType_GetByCode(string code)
+        public AircraftType? AircraftType_GetByCode(string? code)
         {
-            AircraftType result = null;
+            AircraftType? result = null;
 
             if(!String.IsNullOrEmpty(code)) {
                 lock(_EFSingleThreadLock) {
@@ -47,9 +49,9 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<Airline> Airlines_GetByCode(string code)
+        public IReadOnlyList<Airline> Airlines_GetByCode(string? code)
         {
-            Airline[] result = null;
+            Airline[]? result = null;
 
             if(!String.IsNullOrWhiteSpace(code) && code.Length >= 2 && code.Length <= 3) {
                 lock(_EFSingleThreadLock) {
@@ -78,9 +80,9 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         }
 
         /// <inheritdoc/>
-        public Airport Airport_GetByCode(string code)
+        public Airport? Airport_GetByCode(string? code)
         {
-            Airport result = null;
+            Airport? result = null;
 
             if(!String.IsNullOrEmpty(code) && code.Length >= 3 && code.Length <= 4) {
                 lock(_EFSingleThreadLock) {
@@ -110,11 +112,11 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         }
 
         /// <inheritdoc/>
-        public CodeBlock CodeBlock_GetForIcao24(Icao24 icao24)
+        public CodeBlock? CodeBlock_GetForIcao24(Icao24? icao24)
         {
-            CodeBlock result = null;
+            CodeBlock? result = null;
 
-            if(icao24.IsValid) {
+            if(icao24?.IsValid ?? false) {
                 var codeBlocks = GetCodeBlocks();
                 foreach(var codeBlock in codeBlocks) {
                     if((codeBlock.SignificantBitMask & icao24) == codeBlock.BitMask) {
@@ -154,9 +156,9 @@ namespace VirtualRadar.Database.EntityFramework.StandingData
         }
 
         /// <inheritdoc/>
-        public Route Route_GetForCallsign(string callsign)
+        public Route? Route_GetForCallsign(string? callsign)
         {
-            Route result = null;
+            Route? result = null;
 
             if(!String.IsNullOrWhiteSpace(callsign)) {
                 lock(_EFSingleThreadLock) {

@@ -91,7 +91,7 @@ namespace VirtualRadar
         public override string ToString() => _Value.ToString("X6");
 
         /// <inheritdoc/>
-        public override bool Equals([NotNullWhen(true)] object obj) => obj is Icao24 other && other._Value == _Value;
+        public override bool Equals([NotNullWhen(true)] object? obj) => obj is Icao24 other && other._Value == _Value;
 
         /// <inheritdoc/>
         public override int GetHashCode() => _Value.GetHashCode();
@@ -128,7 +128,7 @@ namespace VirtualRadar
         /// <param name="ignoreNonHexDigits"></param>
         /// <param name="truncateTooManyDigits"></param>
         /// <returns></returns>
-        public static bool TryParse(string hexText, out Icao24 value, bool ignoreNonHexDigits = false, bool truncateTooManyDigits = false)
+        public static bool TryParse(string? hexText, out Icao24 value, bool ignoreNonHexDigits = false, bool truncateTooManyDigits = false)
         {
             value = FromHexText(hexText, ignoreNonHexDigits, truncateTooManyDigits);
             return value.IsValid;
@@ -142,7 +142,7 @@ namespace VirtualRadar
         /// <param name="truncateTooManyDigits"></param>
         /// <returns></returns>
         private static Icao24 FromHexText(
-            string hexText,
+            string? hexText,
             bool ignoreNonHexDigits,
             bool truncateTooManyDigits
         )

@@ -43,7 +43,7 @@ namespace VirtualRadar.Utility.Terminal
                 try {
                     if(receiver == null) {
                         _AircraftLookupService.LookupCompleted += (_,batchOutcome) => {
-                            aircraftList.ApplyLookup(batchOutcome);
+                            aircraftList?.ApplyLookup(batchOutcome);
                         };
                     }
 
@@ -53,6 +53,9 @@ namespace VirtualRadar.Utility.Terminal
                     var windowEventLoopTask = aircraftListWindow.EventLoop(cancelSource);
 
                     var receiverOrConnector = receiver?.Connector ?? connector;
+                    if(receiverOrConnector == null) {
+                        throw new InvalidOperationException("Could not start a connector");
+                    }
 
                     receiverOrConnector.ConnectionStateChanged += (_,_) => aircraftListWindow.ConnectionState = receiverOrConnector.ConnectionState.ToString();
 
@@ -61,15 +64,17 @@ namespace VirtualRadar.Utility.Terminal
                     receiverOrConnector.PacketReceived += (_, packet) => {
                         ++aircraftListWindow.CountPacketsSeen;
                         if(receiver == null) {
-                            feedDecoder.ParseFeedPacket(packet);
+                            feedDecoder?.ParseFeedPacket(packet);
                         }
                     };
 
-                    if(receiver == null) {
+                    if(receiver == null && feedDecoder != null) {
                         feedDecoder.MessageReceived += (_, message) => {
-                            var applyOutcome = aircraftList.ApplyMessage(message);
-                            if(applyOutcome.AddedAircraft && message.Icao24 != null) {
-                                _AircraftLookupService.Lookup(message.Icao24.Value);
+                            if(aircraftList != null) {
+                                var applyOutcome = aircraftList.ApplyMessage(message);
+                                if(applyOutcome.AddedAircraft && message.Icao24 != null) {
+                                    _AircraftLookupService.Lookup(message.Icao24.Value);
+                                }
                             }
                         };
                     }
@@ -84,7 +89,7 @@ namespace VirtualRadar.Utility.Terminal
             }
         }
 
-        private IFeedDecoder CreateFeedDecoder(IServiceProvider serviceProvider)
+        private IFeedDecoder? CreateFeedDecoder(IServiceProvider serviceProvider)
         {
             var decoderSettingsDto = new BaseStationFeedDecoderSettingsDto();
             var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
@@ -93,9 +98,9 @@ namespace VirtualRadar.Utility.Terminal
             return decoder;
         }
 
-        private IReceiver OpenReceiver(IServiceProvider serviceProvider)
+        private IReceiver? OpenReceiver(IServiceProvider serviceProvider)
         {
-            IReceiver result = null;
+            IReceiver? result = null;
 
             if(_Options.ReceiverName != null) {
                 Console.WriteLine($"Loading receiver {_Options.ReceiverName}");
@@ -144,7 +149,8 @@ namespace VirtualRadar.Utility.Terminal
                 Port =      _Options.Port,
             };
             var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
-            var connector = connectorFactory.Create(connectorSettingsDto);
+            var connector = connectorFactory.Create(connectorSettingsDto)
+                ?? throw new InvalidOperationException($"Could not start network connector to {connectorSettingsDto}");
 
             return connector;
         }
@@ -158,7 +164,8 @@ namespace VirtualRadar.Utility.Terminal
                 PlaybackSpeed =     _Options.PlaybackSpeed,
             };
             var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
-            var connector = connectorFactory.Create(connectorSettingsDto);
+            var connector = connectorFactory.Create(connectorSettingsDto)
+                ?? throw new InvalidOperationException($"Could not start playback connector to {connectorSettingsDto}");
 
             return connector;
         }

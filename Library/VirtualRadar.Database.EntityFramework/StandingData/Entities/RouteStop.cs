@@ -23,6 +23,6 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
 
         public long AirportId { get; set; }
 
-        public Airport Airport { get; set; }
+        public required Airport Airport { get; set; }
     }
 }

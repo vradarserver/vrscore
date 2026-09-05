@@ -27,11 +27,6 @@ namespace VirtualRadar.WebSite
         public int SelectedAircraftId { get; set; } = -1;
 
         /// <summary>
-        /// Gets or sets the aircraft list that provides details of the aircraft being tracked.
-        /// </summary>
-        public IAircraftList AircraftList { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating that this is being used to build a list of flight simulator
         /// aircraft.
         /// </summary>
@@ -53,12 +48,12 @@ namespace VirtualRadar.WebSite
         /// </summary>
         public double? BrowserLongitude { get; set; }
 
-        private Location _BrowserLocation;
+        private Location? _BrowserLocation;
         /// <summary>
         /// Gets <see cref="BrowserLatitude"/> and <see cref="BrowserLongitude"/> expressed as a <see
         /// cref="Location"/>.
         /// </summary>
-        public Location BrowserLocation
+        public Location? BrowserLocation
         {
             get {
                 if(_BrowserLocation == null && BrowserLatitude != null && BrowserLongitude != null) {
@@ -108,7 +103,7 @@ namespace VirtualRadar.WebSite
         /// <summary>
         /// Gets or sets the filters used to suppress aircraft from the list.
         /// </summary>
-        public AircraftListJsonBuilderFilter Filter { get; set; }
+        public AircraftListJsonBuilderFilter? Filter { get; set; }
 
         /// <summary>
         /// Gets a list of <see cref="AircraftComparerColumn"/> columns to sort by and a bool to indicate

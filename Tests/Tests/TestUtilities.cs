@@ -38,8 +38,8 @@ namespace Test.Framework
         public static void TestProperty(
             object obj,
             string propertyName,
-            object startValue,
-            object newValue,
+            object? startValue,
+            object? newValue,
             bool testForEquals
         )
         {
@@ -107,11 +107,12 @@ namespace Test.Framework
             object startValue,
             object newValue,
             bool testForEquals
-        )
+        ) where T: class
         {
             TestProperty(
                 obj,
-                ExpressionHelper.PropertyName(propertyExpression),
+                ExpressionHelper.PropertyName(propertyExpression)
+                    ?? throw new InvalidOperationException("Property expression does not resolve to a property"),
                 startValue,
                 newValue,
                 testForEquals
@@ -145,12 +146,19 @@ namespace Test.Framework
         /// <param name="newValue"></param>
         public static void TestProperty<T>(
             T obj,
-            Expression<Func<T, object>> propertyExpression,
-            object startValue,
-            object newValue
-        )
+            Expression<Func<T, object?>> propertyExpression,
+            object? startValue,
+            object? newValue
+        ) where T: class
         {
-            TestProperty(obj, ExpressionHelper.PropertyName(propertyExpression), startValue, newValue, false);
+            TestProperty(
+                obj,
+                ExpressionHelper.PropertyName(propertyExpression)
+                    ?? throw new InvalidOperationException("Property expression does not resolve to a property"),
+                startValue,
+                newValue,
+                false
+            );
         }
 
         /// <summary>
@@ -174,8 +182,16 @@ namespace Test.Framework
         /// <param name="propertyExpression"></param>
         /// <param name="startValue"></param>
         public static void TestProperty<T>(T obj, Expression<Func<T, object>> propertyExpression, bool startValue)
+            where T: class
         {
-            TestProperty(obj, ExpressionHelper.PropertyName(propertyExpression), startValue, !startValue, true);
+            TestProperty(
+                obj,
+                ExpressionHelper.PropertyName(propertyExpression)
+                    ?? throw new InvalidOperationException("Property expression does not resolve to a property"),
+                startValue,
+                !startValue,
+                true
+            );
         }
 
         /// <summary>
@@ -195,7 +211,7 @@ namespace Test.Framework
             object obj,
             PropertyInfo property,
             bool useValue1,
-            Func<Type, bool, object> generateValue = null
+            Func<Type, bool, object>? generateValue = null
         )
         {
             var type = property.PropertyType;
@@ -241,17 +257,19 @@ namespace Test.Framework
         public static void TestSimpleEquals(
             Type type,
             bool expectedEquals,
-            Func<Type, bool, object> generateValue = null
+            Func<Type, bool, object>? generateValue = null
         )
         {
             foreach(var property in type.GetProperties().Where(r => r.CanRead && r.CanWrite)) {
                 var instance1 = Activator.CreateInstance(type);
                 var instance2 = Activator.CreateInstance(type);
 
-                AssignPropertyValue(instance1, property, true, generateValue);
-                AssignPropertyValue(instance2, property, expectedEquals, generateValue);
+                if(instance1 != null && instance2 != null) {
+                    AssignPropertyValue(instance1, property, true, generateValue);
+                    AssignPropertyValue(instance2, property, expectedEquals, generateValue);
 
-                Assert.AreEqual(expectedEquals, instance1.Equals(instance2), $"Property that failed: {property.Name}");
+                    Assert.AreEqual(expectedEquals, instance1.Equals(instance2), $"Property that failed: {property.Name}");
+                }
             }
         }
 
@@ -269,17 +287,19 @@ namespace Test.Framework
         /// This only checks that two objects that would pass equality for <see cref="TestSimpleEquals"/> have
         /// the same hash code.
         /// </remarks>
-        public static void TestSimpleGetHashCode(Type type, Func<Type, bool, object> generateValue = null)
+        public static void TestSimpleGetHashCode(Type type, Func<Type, bool, object>? generateValue = null)
         {
             var instance1 = Activator.CreateInstance(type);
             var instance2 = Activator.CreateInstance(type);
 
-            foreach(var property in type.GetProperties().Where(r => r.CanRead && r.CanWrite)) {
-                AssignPropertyValue(instance1, property, true, generateValue);
-                AssignPropertyValue(instance2, property, true, generateValue);
-            }
+            if(instance1 != null && instance2 != null) {
+                foreach(var property in type.GetProperties().Where(r => r.CanRead && r.CanWrite)) {
+                    AssignPropertyValue(instance1, property, true, generateValue);
+                    AssignPropertyValue(instance2, property, true, generateValue);
+                }
 
-            Assert.AreEqual(instance1.GetHashCode(), instance2.GetHashCode());
+                Assert.AreEqual(instance1.GetHashCode(), instance2.GetHashCode());
+            }
         }
     }
 }

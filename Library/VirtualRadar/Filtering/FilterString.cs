@@ -18,7 +18,7 @@ namespace VirtualRadar.Filtering
         /// <summary>
         /// Gets or sets the text that the value will be filtered against.
         /// </summary>
-        public string Value { get; set; }
+        public string? Value { get; set; }
 
         /// <summary>
         /// Creates a new object.
@@ -52,7 +52,7 @@ namespace VirtualRadar.Filtering
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool Passes(string value)
+        public bool Passes(string? value)
         {
             var result = true;
 
@@ -85,7 +85,7 @@ namespace VirtualRadar.Filtering
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public bool Passes(IEnumerable<string> value)
+        public bool Passes(IEnumerable<string?>? value)
         {
             var result = true;
 
@@ -114,7 +114,7 @@ namespace VirtualRadar.Filtering
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = base.Equals(obj);
             if(result) {
@@ -132,7 +132,7 @@ namespace VirtualRadar.Filtering
         public override int GetHashCode()
         {
             unchecked {
-                return (base.GetHashCode() << 16) | Value.GetHashCode();
+                return (base.GetHashCode() << 16) | (Value?.GetHashCode() ?? 0);
             }
         }
 

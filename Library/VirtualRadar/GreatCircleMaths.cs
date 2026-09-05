@@ -61,7 +61,7 @@ namespace VirtualRadar
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <returns></returns>
-        public static double? Distance(Location start, Location end)
+        public static double? Distance(Location? start, Location? end)
         {
             return Distance(
                 start?.Latitude, start?.Longitude,
@@ -141,8 +141,8 @@ namespace VirtualRadar
         /// <param name="ignoreCurrentTrack"></param>
         /// <returns></returns>
         public static double? Bearing(
-            Location start,
-            Location end,
+            Location? start,
+            Location? end,
             double? currentTrack,
             bool reverseBearing,
             bool ignoreCurrentTrack
@@ -218,7 +218,7 @@ namespace VirtualRadar
         /// <param name="bearing"></param>
         /// <param name="kilometres"></param>
         /// <returns></returns>
-        public static Location Destination(Location start, double? bearing, double? kilometres)
+        public static Location? Destination(Location? start, double? bearing, double? kilometres)
         {
             Destination(
                 start?.Latitude,

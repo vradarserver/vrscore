@@ -36,19 +36,19 @@ namespace VirtualRadar.Connection
         /// <inheritdoc/>
         public string SettingsProvider => _ProviderName;
 
-        private IPAddress _ParsedAddress;
+        private IPAddress? _ParsedAddress;
         private bool _CannotParseAddress;
         /// <summary>
         /// <see cref="Address"/> parsed into a System.Net.IPAddress. If the address is invalid then
         /// this will be null.
         /// </summary>
         [JsonIgnore]
-        public IPAddress ParsedAddress
+        public IPAddress? ParsedAddress
         {
             get {
                 if(_ParsedAddress == null && !_CannotParseAddress) {
-                    var parsed = IPAddress.TryParse(Address, out var parsedAddress);
-                    if(!parsed) {
+                    IPAddress.TryParse(Address, out var parsedAddress);
+                    if(parsedAddress == null) {
                         _CannotParseAddress = true;
                     } else {
                         _ParsedAddress = parsedAddress;

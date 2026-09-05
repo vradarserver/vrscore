@@ -16,19 +16,19 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
     public class StatusData
     {
         [DataMember(Name = "v3")]
-        public List<string> V3 { get; set; }
+        public List<string>? V3 { get; set; }
 
         [DataMember(Name = "transceivers")]
-        public List<string> Transceivers { get; set; }
+        public List<string>? Transceivers { get; set; }
 
         [DataMember(Name = "servers")]
-        public List<string> Servers { get; set; }
+        public List<string>? Servers { get; set; }
 
         [DataMember(Name = "servers_sweatbox")]
-        public List<string> SweatboxServers { get; set; }
+        public List<string>? SweatboxServers { get; set; }
 
         [DataMember(Name = "servers_all")]
-        public List<string> AllServers { get; set; }
+        public List<string>? AllServers { get; set; }
 
         public override string ToString()
         {

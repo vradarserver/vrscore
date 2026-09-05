@@ -14,6 +14,6 @@ namespace VirtualRadar.AircraftHistory
     {
         AircraftHistoryField Field { get; }
 
-        object NewValueAsObject { get; }
+        object? NewValueAsObject { get; }
     }
 }

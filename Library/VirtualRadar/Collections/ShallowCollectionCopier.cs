@@ -31,6 +31,7 @@ namespace VirtualRadar.Collections
         /// <param name="dictionary"></param>
         /// <returns></returns>
         public static Dictionary<TKey, TValue> Copy<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+            where TKey : notnull
         {
             var result = new Dictionary<TKey, TValue>(dictionary.Comparer);
             foreach(var kvp in dictionary) {

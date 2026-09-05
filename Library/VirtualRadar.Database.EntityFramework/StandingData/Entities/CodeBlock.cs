@@ -16,7 +16,7 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
 
         public long CountryId { get; set; }
 
-        public Country Country { get; set; }
+        public Country? Country { get; set; }
 
         public int BitMask { get; set; }
 

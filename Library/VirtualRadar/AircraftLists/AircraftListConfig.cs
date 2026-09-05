@@ -31,7 +31,7 @@ namespace VirtualRadar.AircraftLists
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
-        public static void RegisterAssembly(Assembly assembly = null)
+        public static void RegisterAssembly(Assembly? assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
             try {
@@ -75,7 +75,7 @@ namespace VirtualRadar.AircraftLists
         /// </summary>
         /// <param name="settingsDtoType"></param>
         /// <returns></returns>
-        public static Type AircraftListType(Type settingsDtoType)
+        public static Type? AircraftListType(Type settingsDtoType)
         {
             var map = _SettingsDtoToAircraftListTypeMap;
             map.TryGetValue(settingsDtoType, out var result);

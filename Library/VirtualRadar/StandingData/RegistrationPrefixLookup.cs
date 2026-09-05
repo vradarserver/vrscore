@@ -42,7 +42,7 @@ namespace VirtualRadar.StandingData
 
         // A map of the first letter of a registration to a bucket of details for prefixes
         // that start with that letter. The letter is always upper-case, as are the prefixes.
-        private volatile Dictionary<char, RegistrationPrefixDetail[]> _RegistrationFirstLetterToDetailsMap;
+        private volatile Dictionary<char, RegistrationPrefixDetail[]>? _RegistrationFirstLetterToDetailsMap;
 
         // Times at UTC of the last download attempt (whether successful or not) and the last
         // successful download attempt.
@@ -54,7 +54,7 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="fullRegistration"></param>
         /// <returns></returns>
-        public RegistrationPrefixDetail FindDetailForFullRegistration(string fullRegistration)
+        public RegistrationPrefixDetail? FindDetailForFullRegistration(string fullRegistration)
         {
             Initialise();
             StartDownloadIfOutOfDate();
@@ -97,7 +97,7 @@ namespace VirtualRadar.StandingData
 
         private IList<RegistrationPrefixDetail> FindPrefixDetail(string normalisedRegistration, Func<RegistrationPrefixDetail, bool> predicate)
         {
-            IList<RegistrationPrefixDetail> result = null;
+            IList<RegistrationPrefixDetail>? result = null;
 
             var buckets = _RegistrationFirstLetterToDetailsMap;
             if(buckets != null && normalisedRegistration.Length > 0) {
@@ -131,7 +131,7 @@ namespace VirtualRadar.StandingData
             }
         }
 
-        private void DownloadOnBackgroundThread(object unusedState)
+        private void DownloadOnBackgroundThread(object? unusedState)
         {
             try {
                 DownloadAndSaveFile();
@@ -169,7 +169,7 @@ namespace VirtualRadar.StandingData
         {
             var fullPath = LocalCopyFileName();
             if(_FileSystem.FileExists(fullPath)) {
-                string[] contentLines = null;
+                string[]? contentLines = null;
                 lock(_SyncLock) {
                     contentLines = _FileSystem.ReadAllLines(fullPath);
                 }
@@ -180,7 +180,7 @@ namespace VirtualRadar.StandingData
         private void ParseContentLines(IEnumerable<string> contentLines)
         {
             var regPrefixes = new List<RegistrationPrefixDetail>();
-            IDictionary<string, int> headers = null;
+            IDictionary<string, int>? headers = null;
             foreach(var line in contentLines) {
                 var chunks = _CsvParser.ParseLineToChunks(line);
                 if(chunks.Count >= 6) {

@@ -16,13 +16,13 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
     public class Status
     {
         [DataMember(Name = "data")]
-        public StatusData Data { get; set; }
+        public StatusData? Data { get; set; }
 
         [DataMember(Name = "user")]
-        public List<string> User { get; set; }
+        public List<string>? User { get; set; }
 
         [DataMember(Name = "metar")]
-        public List<string> Metar { get; set; }
+        public List<string>? Metar { get; set; }
 
         public override string ToString()
         {

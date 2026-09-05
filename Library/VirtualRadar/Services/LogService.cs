@@ -49,7 +49,7 @@ namespace VirtualRadar.Services
         }
 
         /// <inheritdoc/>
-        public void Exception(Exception ex, string message = null)
+        public void Exception(Exception ex, string? message = null)
         {
             // We hide any failures to write to the log because we can't log them, and they could
             // mask the underlying error that's causing the failure in the first place

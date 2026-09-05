@@ -48,10 +48,7 @@ namespace VirtualRadar.Filtering
             var result = true;
             
             if(Condition == FilterCondition.Equals) {
-                result = value != null;
-                if(result) {
-                    result = value.Value.CompareTo(Value) == 0;
-                }
+                result = value != null && value.Value.CompareTo(Value) == 0;
                 if(ReverseCondition) {
                     result = !result;
                 }
@@ -61,7 +58,7 @@ namespace VirtualRadar.Filtering
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = base.Equals(obj);
             if(result) {

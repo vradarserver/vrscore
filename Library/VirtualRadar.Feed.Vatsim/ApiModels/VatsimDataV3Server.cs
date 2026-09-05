@@ -16,16 +16,16 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
     public class VatsimDataV3Server
     {
         [DataMember(Name = "ident")]
-        public string Ident { get; set; }
+        public string? Ident { get; set; }
 
         [DataMember(Name = "hostname_or_ip")]
-        public string HostnameOrIPAddress { get; set; }
+        public string? HostnameOrIPAddress { get; set; }
 
         [DataMember(Name = "location")]
-        public string Location { get; set; }
+        public string? Location { get; set; }
 
         [DataMember(Name = "name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DataMember(Name = "clients_connection_allowed")]
         public int ClientsConnectionAllowed { get; set; }
@@ -36,9 +36,9 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         [DataMember(Name = "is_sweatbox")]
         public bool IsSweatbox { get; set; }
 
-        public static VatsimDataV3Server CopyFrom(VatsimDataV3Server copyFrom)
+        public static VatsimDataV3Server? CopyFrom(VatsimDataV3Server? copyFrom)
         {
-            VatsimDataV3Server result = null;
+            VatsimDataV3Server? result = null;
 
             if(copyFrom != null) {
                 result = new() {

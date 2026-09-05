@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace VirtualRadar.Server
 {
     static class OptionsParser
@@ -18,7 +20,7 @@ namespace VirtualRadar.Server
             for(var i = 0;i < args.Length;++i) {
                 var arg = args[i];
                 var nextArg = i + 1 < args.Length ? args[i + 1] : null;
-                var normalisedArg = (arg ?? "").ToLower();
+                var normalisedArg = arg.ToLower();
 
                 switch(normalisedArg) {
                     case "-?":
@@ -58,7 +60,7 @@ namespace VirtualRadar.Server
             return result;
         }
 
-        private static string UseNextArg(string arg, string nextArg, ref int i)
+        private static string UseNextArg(string arg, string? nextArg, ref int i)
         {
             if(String.IsNullOrEmpty(nextArg)) {
                 Usage($"Missing {arg} argument");
@@ -77,7 +79,7 @@ namespace VirtualRadar.Server
             return command;
         }
 
-        private static T ParseEnum<T>(string arg)
+        private static T ParseEnum<T>(string? arg)
         {
             if(String.IsNullOrEmpty(arg)) {
                 Usage($"Missing {typeof(T).Name} value");
@@ -91,7 +93,7 @@ namespace VirtualRadar.Server
             }
         }
 
-        private static decimal ParseDecimal(string arg)
+        private static decimal ParseDecimal(string? arg)
         {
             if(!decimal.TryParse(arg, out var result)) {
                 Usage($"{arg} is not a floating point number");
@@ -99,7 +101,7 @@ namespace VirtualRadar.Server
             return result;
         }
 
-        private static int ParseInteger(string arg)
+        private static int ParseInteger(string? arg)
         {
             if(!int.TryParse(arg, out var result)) {
                 Usage($"{arg} is not an integer");
@@ -108,7 +110,7 @@ namespace VirtualRadar.Server
             return result;
         }
 
-        private static long ParseLong(string arg)
+        private static long ParseLong(string? arg)
         {
             if(!long.TryParse(arg, out var result)) {
                 Usage($"{arg} is not a long");
@@ -117,7 +119,8 @@ namespace VirtualRadar.Server
             return result;
         }
 
-        public static void Usage(string message = null)
+        [DoesNotReturn]
+        public static void Usage(string? message = null)
         {
             var defaults = new Options();
 

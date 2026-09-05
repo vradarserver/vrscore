@@ -19,9 +19,9 @@ namespace VirtualRadar.Feed.BaseStation
     [FeedDecoder(typeof(BaseStationFeedDecoderSettingsDto))]
     public class BaseStationFeedDecoder : IFeedDecoder
     {
-        private AsciiLineChunker _StreamChunker = new();
-        private IStreamChunkerState _StreamChunkerState;
-        private BaseStationMessageConverter _MessageConverter;
+        private readonly AsciiLineChunker _StreamChunker = new();
+        private IStreamChunkerState? _StreamChunkerState;
+        private readonly BaseStationMessageConverter _MessageConverter;
 
         /// <inheritdoc/>
         public BaseStationFeedDecoderSettingsDto SettingsDto { get; }
@@ -33,7 +33,7 @@ namespace VirtualRadar.Feed.BaseStation
         public bool FeedContainsLookups => false;
 
         /// <inheritdoc/>
-        public event EventHandler<TransponderMessage> MessageReceived;
+        public event EventHandler<TransponderMessage>? MessageReceived;
 
         /// <summary>
         /// Raises <see cref="MessageReceived"/>.
@@ -46,7 +46,7 @@ namespace VirtualRadar.Feed.BaseStation
 
         /// <inheritdoc/>
         #pragma warning disable CS0067 // event never used, BaseStation feeds do not contain lookup information
-        public event EventHandler<LookupByAircraftIdOutcome> LookupReceived;
+        public event EventHandler<LookupByAircraftIdOutcome>? LookupReceived;
         #pragma warning restore CS0067
 
         /// <summary>

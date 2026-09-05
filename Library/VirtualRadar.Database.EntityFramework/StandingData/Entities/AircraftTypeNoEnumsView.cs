@@ -16,7 +16,7 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
     {
         public long AircraftTypeId { get; set; }
 
-        public string Icao { get; set; }
+        public required string Icao { get; set; }
 
         public int WakeTurbulenceId { get; set; }
 
@@ -26,19 +26,19 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
 
         public int EnginePlacementId { get; set; }
 
-        public string Engines { get; set; }
+        public string? Engines { get; set; }
 
         public long ModelId { get; set; }
 
-        public string Model { get; set; }
+        public string? Model { get; set; }
 
         public long ManufacturerId { get; set; }
 
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
-        public static AircraftType ToAircraftType(IEnumerable<AircraftTypeNoEnumsView> allSameIcao)
+        public static AircraftType? ToAircraftType(IEnumerable<AircraftTypeNoEnumsView> allSameIcao)
         {
-            AircraftType result = null;
+            AircraftType? result = null;
 
             foreach(var entity in allSameIcao) {
                 result ??= new() {

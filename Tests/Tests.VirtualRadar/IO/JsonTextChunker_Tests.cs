@@ -15,7 +15,7 @@ namespace Tests.VirtualRadar.IO
     [TestClass]
     public class JsonTextChunker_Tests
     {
-        private JsonTextChunker _Chunker;
+        private JsonTextChunker _Chunker = null!;
 
         [TestInitialize]
         public void TestInitialise()
@@ -23,13 +23,13 @@ namespace Tests.VirtualRadar.IO
             _Chunker = new();
         }
 
-        private (IStreamChunkerState State, IList<string> Chunks) ParseText(string text, IStreamChunkerState state = null)
+        private (IStreamChunkerState State, IList<string> Chunks) ParseText(string text, IStreamChunkerState? state = null)
         {
             var chunker = _Chunker;
             var encoding = Encoding.UTF8;
 
             List<string> chunks = [];
-            void chunkRead(object sender, ReadOnlyMemory<byte> chunkBytes)
+            void chunkRead(object? sender, ReadOnlyMemory<byte> chunkBytes)
             {
                 chunks.Add(encoding.GetString(chunkBytes.Span));
             }

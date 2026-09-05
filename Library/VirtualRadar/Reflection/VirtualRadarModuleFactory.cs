@@ -54,7 +54,7 @@ namespace VirtualRadar.Reflection
         {
             _ModuleFolder = Path.GetDirectoryName(
                 Assembly.GetExecutingAssembly().Location
-            );
+            ) ?? throw new InvalidOperationException("Cannot determine the folder that the executing assembly is running from");
             _PluginsFolder = Path.Combine(_ModuleFolder, "Plugins");
         }
 
@@ -99,7 +99,7 @@ namespace VirtualRadar.Reflection
                             if(processedFiles.Add(fullyPathedFileName)) {
                                 var rejectionReason = "";
                                 try {
-                                    VirtualRadarModuleManifest manifest;
+                                    VirtualRadarModuleManifest? manifest;
                                     if(currentAssemblies.TryGetValue(fullyPathedFileName, out var loadedAssembly)) {
                                         manifest = VirtualRadarModuleManifest.CreateForPreLoadedModule(loadedAssembly);
                                     } else if(isApplicationModule) {
@@ -122,7 +122,7 @@ namespace VirtualRadar.Reflection
                                             }
                                         }
                                     }
-                                    if(rejectionReason == "") {
+                                    if(rejectionReason == "" && loadedAssembly != null && manifest != null) {
                                         var instanceModule = CreateModuleInstance(loadedAssembly, ref rejectionReason);
                                         if(instanceModule != null) {
                                             loadedModules.Add(new(fullyPathedFileName, manifest, instanceModule));
@@ -161,12 +161,13 @@ namespace VirtualRadar.Reflection
             }
         }
 
-        private static VirtualRadarModuleManifest LoadManifest(string dllFileName, ref string rejectionReason)
+        private static VirtualRadarModuleManifest? LoadManifest(string dllFileName, ref string rejectionReason)
         {
-            VirtualRadarModuleManifest result = null;
+            VirtualRadarModuleManifest? result = null;
 
             var manifestFileName = Path.Combine(
-                Path.GetDirectoryName(dllFileName),
+                Path.GetDirectoryName(dllFileName)
+                    ?? throw new InvalidOperationException($"Cannot determine the folder that \"{dllFileName}\" is in"),
                 $"{Path.GetFileNameWithoutExtension(dllFileName)}.manifest.json"
             );
             if(!File.Exists(manifestFileName)) {
@@ -184,9 +185,9 @@ namespace VirtualRadar.Reflection
             return result;
         }
 
-        private static IVirtualRadarModule CreateModuleInstance(Assembly loadedAssembly, ref string rejectionReason)
+        private static IVirtualRadarModule? CreateModuleInstance(Assembly loadedAssembly, ref string rejectionReason)
         {
-            IVirtualRadarModule result = null;
+            IVirtualRadarModule? result = null;
 
             var instanceModuleTypes = loadedAssembly
                 .GetTypes()

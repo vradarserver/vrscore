@@ -29,7 +29,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the current name of the feed.
         /// </summary>
         [DataMember(Name="name", IsRequired=true)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that a polar plot exists for the feed.
@@ -42,9 +42,9 @@ namespace VirtualRadar.WebSite.Models
         /// </summary>
         /// <param name="receiver"></param>
         /// <returns></returns>
-        public static FeedJson FromReceiver(IReceiver receiver)
+        public static FeedJson? FromReceiver(IReceiver? receiver)
         {
-            FeedJson result = null;
+            FeedJson? result = null;
 
             if(receiver != null) {
                 result = new() {

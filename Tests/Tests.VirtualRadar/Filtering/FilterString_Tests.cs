@@ -53,8 +53,8 @@ namespace Test.VirtualRadar.Filtering
         {
             foreach(FilterCondition condition in Enum.GetValues(typeof(FilterCondition))) {
                 foreach(var reverseCondition in new bool[] { false, true }) {
-                    foreach(var value in new string[] { null, "", "abc", "ABC", }) {
-                        foreach(var testValue in new string[] { null, "", "abc", "ABC", "a", "A", "b", "B", "c", "C", "d", "D"}) {
+                    foreach(var value in new string?[] { null, "", "abc", "ABC", }) {
+                        foreach(var testValue in new string?[] { null, "", "abc", "ABC", "a", "A", "b", "B", "c", "C", "d", "D"}) {
                             var filter = new FilterString() {
                                 Condition = condition,
                                 ReverseCondition = reverseCondition,
@@ -97,8 +97,8 @@ namespace Test.VirtualRadar.Filtering
         {
             foreach(FilterCondition condition in Enum.GetValues(typeof(FilterCondition))) {
                 foreach(var reverseCondition in new bool[] { false, true }) {
-                    foreach(var value in new string[] { null, "", "abc", "ABC", }) {
-                        foreach(var testValue in new string[][] {
+                    foreach(var value in new string?[] { null, "", "abc", "ABC", }) {
+                        foreach(var testValue in new string?[]?[] {
                             null,
                             [ null ],
                             [ "" ],

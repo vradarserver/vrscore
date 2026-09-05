@@ -32,13 +32,13 @@ namespace VirtualRadar.Feed
         /// <summary>
         /// Raised for every transponder message extracted from the feed.
         /// </summary>
-        event EventHandler<TransponderMessage> MessageReceived;
+        event EventHandler<TransponderMessage>? MessageReceived;
 
         /// <summary>
         /// Raised when <see cref="FeedContainsLookups"/> is true and information about an aircraft
         /// has been decoded from the feed.
         /// </summary>
-        event EventHandler<LookupByAircraftIdOutcome> LookupReceived;
+        event EventHandler<LookupByAircraftIdOutcome>? LookupReceived;
 
         /// <summary>
         /// Presents a packet to the decoder for parsing. The packet might be incomplete.

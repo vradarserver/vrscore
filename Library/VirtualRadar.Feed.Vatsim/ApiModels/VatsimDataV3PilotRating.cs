@@ -19,14 +19,14 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Id { get; set; }
 
         [DataMember(Name = "short_name")]
-        public string ShortName { get; set; }
+        public string? ShortName { get; set; }
 
         [DataMember(Name = "long_name")]
-        public string LongName { get; set; }
+        public string? LongName { get; set; }
 
-        public static VatsimDataV3PilotRating CopyFrom(VatsimDataV3PilotRating copyFrom)
+        public static VatsimDataV3PilotRating? CopyFrom(VatsimDataV3PilotRating? copyFrom)
         {
-            VatsimDataV3PilotRating result = null;
+            VatsimDataV3PilotRating? result = null;
 
             if(copyFrom != null) {
                 result = new() {

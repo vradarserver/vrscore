@@ -50,7 +50,7 @@ namespace VirtualRadar.TileServer
         /// <param name="name"></param>
         /// <param name="fallbackToDefaultIfMissing"></param>
         /// <returns></returns>
-        DownloadedTileServerSettings GetTileServerSettings(
+        DownloadedTileServerSettings? GetTileServerSettings(
             MapProvider mapProvider,
             string name,
             bool fallbackToDefaultIfMissing
@@ -64,7 +64,7 @@ namespace VirtualRadar.TileServer
         /// <param name="includeTileServers"></param>
         /// <param name="includeTileLayers"></param>
         /// <returns></returns>
-        DownloadedTileServerSettings GetTileServerOrLayerSettings(
+        DownloadedTileServerSettings? GetTileServerOrLayerSettings(
             MapProvider mapProvider,
             string name,
             bool includeTileServers,
@@ -76,7 +76,7 @@ namespace VirtualRadar.TileServer
         /// </summary>
         /// <param name="mapProvider"></param>
         /// <returns></returns>
-        DownloadedTileServerSettings GetDefaultTileServerSettings(MapProvider mapProvider);
+        DownloadedTileServerSettings? GetDefaultTileServerSettings(MapProvider mapProvider);
 
         /// <summary>
         /// Returns all of the tile server settings for the map provider passed across.

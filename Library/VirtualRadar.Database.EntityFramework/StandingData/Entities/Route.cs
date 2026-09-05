@@ -17,32 +17,32 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
         [Key]
         public long RouteId { get; set; }
 
-        public string Callsign { get; set; }
+        public required string Callsign { get; set; }
 
         public long OperatorId { get; set; }
 
-        public Operator Operator { get; set; }
+        public required Operator Operator { get; set; }
 
-        public string FlightNumber { get; set; }
+        public required string FlightNumber { get; set; }
 
         public long FromAirportId { get; set; }
 
-        public Airport FromAirport { get; set; }
+        public required Airport FromAirport { get; set; }
 
         public long ToAirportId { get; set; }
 
-        public Airport ToAirport { get; set; }
+        public required Airport ToAirport { get; set; }
 
-        public List<RouteStop> RouteStops { get; } = new();
+        public List<RouteStop> RouteStops { get; } = [];
 
         public VirtualRadar.StandingData.Route ToRoute()
         {
             var result = new VirtualRadar.StandingData.Route() {
-                From =      FromAirport?.ToAirport(),
-                To =        ToAirport?.ToAirport(),
+                From =      FromAirport.ToAirport(),
+                To =        ToAirport.ToAirport(),
             };
             result.Stopovers.AddRange(
-                RouteStops.Select(stop => stop.Airport?.ToAirport())
+                RouteStops.Select(stop => stop.Airport.ToAirport())
             );
             return result;
         }

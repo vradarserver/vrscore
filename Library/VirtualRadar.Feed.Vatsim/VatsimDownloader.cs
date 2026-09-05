@@ -30,10 +30,10 @@ namespace VirtualRadar.Feed.Vatsim
         #pragma warning restore IDE1006
     ) : IVatsimDownloader
     {
-        private CallbackWithParamList<VatsimDataV3> _DataDownloadedCallbacks = new();
+        private readonly CallbackWithParamList<VatsimDataV3> _DataDownloadedCallbacks = new();
         private object _SyncLock = new();       // <-- CallbackLists are already threadsafe, this is not used to gate access to those
-        private System.Timers.Timer _Timer;     // <-- null if the timer has never been started or if it has been disposed
-        private Status _Status;                 // <-- VATSIM status data, holds list of round-robin URLs to fetch from
+        private System.Timers.Timer? _Timer;    // <-- null if the timer has never been started or if it has been disposed
+        private Status? _Status;                // <-- VATSIM status data, holds list of round-robin URLs to fetch from
         private DateTime _StatusDownloadedUtc;  // <-- time of last download of status, used to control when it'll be fetched again
 
         ~VatsimDownloader() => Dispose(false);
@@ -80,7 +80,7 @@ namespace VirtualRadar.Feed.Vatsim
             }
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
             if(_DataDownloadedCallbacks.Count > 0) {
                 try {
@@ -110,7 +110,7 @@ namespace VirtualRadar.Feed.Vatsim
                 var jsonText = await _HttpClient.Shared.GetStringAsync(_SettingsDto.LatestValue.StatusUrl);
                 if(!String.IsNullOrEmpty(jsonText)) {
                     var status = JsonConvert.DeserializeObject<Status>(jsonText);
-                    if((status.Data?.V3.Count ?? 0) > 0) {
+                    if((status?.Data?.V3?.Count ?? 0) > 0) {
                         lock(_SyncLock) {
                             _Status = status;
                             _StatusDownloadedUtc = DateTime.UtcNow;
@@ -124,16 +124,18 @@ namespace VirtualRadar.Feed.Vatsim
         {
             var status = _Status;
             if(status != null) {
-                var url = RoundRobin.ChooseAtRandom(status.Data.V3);
+                var url = RoundRobin.ChooseAtRandom(status.Data?.V3);
                 if(!String.IsNullOrEmpty(url)) {
                     var jsonText = await _HttpClient.Shared.GetStringAsync(url);
                     if(!String.IsNullOrEmpty(jsonText)) {
                         var dataV3 = JsonConvert.DeserializeObject<VatsimDataV3>(jsonText);
-                        _CommonFeedParser.StartNewGeneration();
-                        var exception = _DataDownloadedCallbacks.InvokeWithoutExceptions(dataV3);
-                        _CommonFeedParser.CleanupPreviousGenerations();
-                        if(exception != null) {
-                            throw exception;
+                        if(dataV3 != null) {
+                            _CommonFeedParser.StartNewGeneration();
+                            var exception = _DataDownloadedCallbacks.InvokeWithoutExceptions(dataV3);
+                            _CommonFeedParser.CleanupPreviousGenerations();
+                            if(exception != null) {
+                                throw exception;
+                            }
                         }
                     }
                 }

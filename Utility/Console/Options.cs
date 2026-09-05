@@ -20,7 +20,7 @@ namespace VirtualRadar.Utility.CLIConsole
 
         public bool Show { get; set; }
 
-        public string SaveFileName { get; set; }
+        public string? SaveFileName { get; set; }
 
         public ListEntity ListEntity { get; set; }
 
@@ -30,9 +30,9 @@ namespace VirtualRadar.Utility.CLIConsole
 
         public StandingDataEntity StandingDataEntity { get; set; }
 
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string LoadFileName { get; set; }
+        public string? LoadFileName { get; set; }
 
         public bool ParseMessage { get; set; }
 
@@ -42,6 +42,6 @@ namespace VirtualRadar.Utility.CLIConsole
 
         public bool Update { get; set; }
 
-        public string Code { get; set; }
+        public string? Code { get; set; }
     }
 }

@@ -20,13 +20,13 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         /// icaos, which is a hyphen-separated string of ICAOs. This replies with a JSON file containing all of the aircraft
         /// that could be found. We need to infer the missing ICAOs ourselves.
         /// </summary>
-        public string LookupByIcaoUrl { get; set; }
+        public string? LookupByIcaoUrl { get; set; }
 
-        public string DataSupplier { get; set; }
+        public string? DataSupplier { get; set; }
 
-        public string SupplierCredits { get; set; }
+        public string? SupplierCredits { get; set; }
 
-        public string SupplierUrl { get; set; }
+        public string? SupplierUrl { get; set; }
 
         public int MinSeconds { get; set; }
 

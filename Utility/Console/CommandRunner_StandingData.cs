@@ -15,12 +15,14 @@ using WindowProcessor;
 namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_StandingData(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         Options                             _Options,
         HeaderService                       _Header,
         IStandingDataUpdater                _StandingDataUpdater,
         IWorkingFolder                      _WorkingFolder,
         IStandingDataRepository             _StandingDataRepository,
         IStandingDataOverridesRepository    _StandingDataOverridesRepository
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
     ) : CommandRunner
     {
         public async override Task<bool> Run()
@@ -65,9 +67,9 @@ namespace VirtualRadar.Utility.CLIConsole
                     );
                     break;
                 case StandingDataEntity.Airport:
-                    await DumpAirports([ _StandingDataRepository
+                    await DumpAirport(_StandingDataRepository
                         .Airport_GetByCode(_Options.Code)
-                    ]);
+                    );
                     break;
                 case StandingDataEntity.CodeBlock:
                     if(!Icao24.TryParse(_Options.Code, out var icao24)) {
@@ -91,7 +93,7 @@ namespace VirtualRadar.Utility.CLIConsole
             }
         }
 
-        private async Task DumpAircraftType(AircraftType aircraftType)
+        private async Task DumpAircraftType(AircraftType? aircraftType)
         {
             if(aircraftType == null) {
                 await WriteLine("None");
@@ -123,6 +125,15 @@ namespace VirtualRadar.Utility.CLIConsole
             await table.Dump(airlines);
         }
 
+        private async Task DumpAirport(Airport? airport)
+        {
+            if(airport == null) {
+                await WriteLine("None");
+            } else {
+                await DumpAirports([ airport ]);
+            }
+        }
+
         private async Task DumpAirports(IEnumerable<Airport> airports)
         {
             var table = new ConsoleTable<Airport>([
@@ -137,7 +148,7 @@ namespace VirtualRadar.Utility.CLIConsole
             await table.Dump(airports);
         }
 
-        private async Task DumpCodeBlockAndOverride(CodeBlock codeBlock, CodeBlock overrideCodeBlock)
+        private async Task DumpCodeBlockAndOverride(CodeBlock? codeBlock, CodeBlock? overrideCodeBlock)
         {
             var table = new ConsoleTable<CodeBlock>([
                 (new("Country", 30),                    row => row.Country),
@@ -158,14 +169,14 @@ namespace VirtualRadar.Utility.CLIConsole
             }
         }
 
-        private async Task DumpRoute(Route route)
+        private async Task DumpRoute(Route? route)
         {
             if(route == null) {
                 await WriteLine("None");
             } else {
                 await DumpAirports(new Airport[] { route.From }
                     .Concat(route.Stopovers)
-                    .Concat(new Airport[] { route.To })
+                    .Concat([ route.To ])
                 );
             }
         }

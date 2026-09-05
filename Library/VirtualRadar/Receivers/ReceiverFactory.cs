@@ -77,7 +77,7 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public ReceiverSettingsDto FindSettingsDtoFor(string receiverName)
+        public ReceiverSettingsDto? FindSettingsDtoFor(string receiverName)
         {
             var messageSources = _Settings.LatestValue<MessageSourcesSettingsDto>();
             return messageSources
@@ -90,48 +90,50 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public Receiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto settingsDto)
+        public Receiver? Build(IServiceProvider serviceProvider, ReceiverSettingsDto? settingsDto)
         {
-            Receiver result = null;
+            Receiver? result = null;
 
-            IReceiveConnector connector = null;
-            if(settingsDto?.Connector != null) {
-                var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
-                connector = connectorFactory.Create(settingsDto.Connector);
-            }
+            if(settingsDto != null) {
+                IReceiveConnector? connector = null;
+                if(settingsDto.Connector != null) {
+                    var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
+                    connector = connectorFactory.Create(settingsDto.Connector);
+                }
 
-            IFeedDecoder feedDecoder = null;
-            if(settingsDto?.FeedDecoder != null) {
-                var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
-                feedDecoder = decoderFactory.Create(settingsDto.FeedDecoder);
-            }
+                IFeedDecoder? feedDecoder = null;
+                if(settingsDto.FeedDecoder != null) {
+                    var decoderFactory = serviceProvider.GetRequiredService<FeedDecoderFactory>();
+                    feedDecoder = decoderFactory.Create(settingsDto.FeedDecoder);
+                }
 
-            IAircraftList aircraftList = null;
-            if(settingsDto?.AircraftList != null) {
-                var aircraftListFactory = serviceProvider.GetRequiredService<AircraftListFactory>();
-                aircraftList = aircraftListFactory.Create(settingsDto.AircraftList);
-            }
+                IAircraftList? aircraftList = null;
+                if(settingsDto.AircraftList != null) {
+                    var aircraftListFactory = serviceProvider.GetRequiredService<AircraftListFactory>();
+                    aircraftList = aircraftListFactory.Create(settingsDto.AircraftList);
+                }
 
-            if(connector != null && feedDecoder != null && aircraftList != null) {
-                result = new(
-                    settingsDto,
-                    connector,
-                    feedDecoder,
-                    aircraftList,
-                    serviceProvider.GetRequiredService<ILog>(),
-                    serviceProvider.GetRequiredService<IAircraftOnlineLookupService>(),
-                    serviceProvider.GetRequiredService<IStandingDataManager>()
-                );
+                if(connector != null && feedDecoder != null && aircraftList != null) {
+                    result = new(
+                        settingsDto,
+                        connector,
+                        feedDecoder,
+                        aircraftList,
+                        serviceProvider.GetRequiredService<ILog>(),
+                        serviceProvider.GetRequiredService<IAircraftOnlineLookupService>(),
+                        serviceProvider.GetRequiredService<IStandingDataManager>()
+                    );
+                }
             }
 
             return result;
         }
 
         /// <inheritdoc/>
-        IReceiver IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverSettingsDto settingsDto) => Build(serviceProvider, settingsDto);
+        IReceiver? IReceiverFactory.Build(IServiceProvider serviceProvider, ReceiverSettingsDto? settingsDto) => Build(serviceProvider, settingsDto);
 
         /// <inheritdoc/>
-        public IReceiver FindByName(string receiverName)
+        public IReceiver? FindByName(string receiverName)
         {
             var receivers = _Receivers;
             return receivers.FirstOrDefault(receiver => String.Equals(
@@ -142,14 +144,14 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public IReceiver FindById(int id)
+        public IReceiver? FindById(int id)
         {
             var receivers = _Receivers;
             return receivers.FirstOrDefault(receiver => receiver.Id == id);
         }
 
         /// <inheritdoc/>
-        public IReceiver FindById(int id, bool ignoreInvisibleReceivers, bool fallbackToDefaultReceiver)
+        public IReceiver? FindById(int id, bool ignoreInvisibleReceivers, bool fallbackToDefaultReceiver)
         {
             var result = FindById(id);
 
@@ -164,7 +166,7 @@ namespace VirtualRadar.Receivers
         }
 
         /// <inheritdoc/>
-        public IReceiver FindDefaultSource()
+        public IReceiver? FindDefaultSource()
         {
             var messageSources = _Settings.LatestValue<MessageSourcesSettingsDto>();
             var receivers = _Receivers;
@@ -182,10 +184,10 @@ namespace VirtualRadar.Receivers
         public ICallbackHandle ReceiverShuttingDownCallback(Action<IReceiver> callback) => _ReceiverShuttingDownCallbacks.Add(callback);
 
         /// <inheritdoc/>
-        public (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto settingsDto)
+        public (bool Added, IReceiver? Receiver) FindOrBuild(ReceiverSettingsDto settingsDto)
         {
             var added = false;
-            Receiver receiver = null;
+            Receiver? receiver = null;
 
             if(settingsDto?.Enabled ?? false) {
                 lock(_SyncLock) {

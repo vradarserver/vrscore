@@ -16,7 +16,7 @@ namespace VirtualRadar.IO
     public class JsonTextChunker : StreamChunker
     {
         /// <inheritdoc/>
-        protected override int _MaximumChunkSize => 1024 * 1024;
+        protected override int MaximumChunkSize => 1024 * 1024;
 
         /// <inheritdoc/>
         protected override (int StartOffset, int EndOffset) FindStartAndEndOffset(Span<byte> buffer, int newBlockStartOffset)

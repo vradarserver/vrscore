@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using VirtualRadar.Configuration;
 using VirtualRadar.Extensions;
 using VirtualRadar.Feed.Vatsim.ApiModels;
@@ -81,6 +82,9 @@ namespace VirtualRadar.Feed.Vatsim
 
         private void BuildStateForPilot(VatsimDataV3Pilot pilot, PilotState pilotState)
         {
+            ArgumentNullException.ThrowIfNull(pilot);
+            ArgumentNullException.ThrowIfNull(pilotState);
+
             var vatsimSettingsDto = _VatsimSettingsDto.LatestValue;
 
             var aircraftId = BuildAircraftId(pilot);
@@ -131,7 +135,7 @@ namespace VirtualRadar.Feed.Vatsim
                 operatorIcao = pilotState.OperatorIcao;
             }
 
-            IEnumerable<Airline> airlinesForOperatorIcao = null;
+            IEnumerable<Airline>? airlinesForOperatorIcao = null;
             if(pilotState.Callsign != pilot.Callsign) {
                 transponderMessage.Callsign = pilot.Callsign;
                 if(remarks.Registration.AsciiAlphanumeric() != pilot.Callsign) {        // <-- they never seem to have dashes in their registrations to begin with, but just in case...
@@ -171,7 +175,8 @@ namespace VirtualRadar.Feed.Vatsim
                 && groundSpeedKnots <= vatsimSettings.SlowAircraftThresholdSpeedKnots;
         }
 
-        private string FixRegistrationByExaminingPrefix(VatsimSettingsDto vatsimSettings, string registration)
+        [return: NotNullIfNotNull(nameof(registration))]
+        private string? FixRegistrationByExaminingPrefix(VatsimSettingsDto vatsimSettings, string? registration)
         {
             var result = registration?.ToUpperInvariant().Trim();
             var hasHyphen = result?.Contains('-') ?? false;
@@ -186,11 +191,13 @@ namespace VirtualRadar.Feed.Vatsim
                     var bestPrefix = prefixes
                         .OrderBy(prefixInfo => prefixInfo.Prefix)
                         .FirstOrDefault();
-                    var match = bestPrefix.DecodeNoHyphenRegex.Match(result);
-                    if(match.Success) {
-                        result = bestPrefix.FormatCode(
-                            match.Groups["code"].Value
-                        );
+                    if(bestPrefix != null) {
+                        var match = bestPrefix.DecodeNoHyphenRegex.Match(result);
+                        if(match?.Success ?? false) {
+                            result = bestPrefix.FormatCode(
+                                match.Groups["code"].Value
+                            );
+                        }
                     }
                 }
             }
@@ -205,6 +212,11 @@ namespace VirtualRadar.Feed.Vatsim
             LookupByAircraftIdOutcome lookupOutcome
         )
         {
+            ArgumentNullException.ThrowIfNull(vatsimSettingsDto);
+            ArgumentNullException.ThrowIfNull(pilot);
+            ArgumentNullException.ThrowIfNull(pilotState);
+            ArgumentNullException.ThrowIfNull(lookupOutcome);
+
             var modelIcao = pilot.FlightPlan?.AircraftShort;
             if(modelIcao != pilotState.ModelIcao) {
                 pilotState.ModelIcao = modelIcao;
@@ -227,10 +239,13 @@ namespace VirtualRadar.Feed.Vatsim
 
         private static void GuessManufacturerAndModelFromType(
             VatsimSettingsDto vatsimSettingsDto,
-            AircraftType aircraftType,
+            AircraftType? aircraftType,
             LookupOutcome lookupOutcome
         )
         {
+            ArgumentNullException.ThrowIfNull(vatsimSettingsDto);
+            ArgumentNullException.ThrowIfNull(lookupOutcome);
+
             if(!vatsimSettingsDto.InferModelFromModelType) {
                 lookupOutcome.Manufacturer = "";
                 lookupOutcome.Model = "";
@@ -260,6 +275,10 @@ namespace VirtualRadar.Feed.Vatsim
             LookupByAircraftIdOutcome lookupOutcome
         )
         {
+            ArgumentNullException.ThrowIfNull(pilot);
+            ArgumentNullException.ThrowIfNull(pilotState);
+            ArgumentNullException.ThrowIfNull(lookupOutcome);
+
             if(pilot.FlightPlan != null) {
                 var fromCode = pilot.FlightPlan.Departure;
                 var toCode = pilot.FlightPlan.Arrival;

@@ -29,23 +29,23 @@ namespace VirtualRadar.Message
         /// </summary>
         public DateTime SourceAgeUtc { get; set; }
 
-        public string Registration { get; set; }
+        public string? Registration { get; set; }
 
-        public string ConstructionNumber { get; set; }
+        public string? ConstructionNumber { get; set; }
 
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         public EnginePlacement? EnginePlacement { get; set; }
 
         public EngineType? EngineType { get; set; }
 
-        public string ModelIcao { get; set; }
+        public string? ModelIcao { get; set; }
 
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
-        public string Model { get; set; }
+        public string? Model { get; set; }
 
-        public string Icao24Country { get; set; }
+        public string? Icao24Country { get; set; }
 
         public bool? IsCharterFlight { get; set; }
 
@@ -53,23 +53,23 @@ namespace VirtualRadar.Message
 
         public bool? IsPositioningFlight { get; set; }
 
-        public string NumberOfEngines { get; set; }
+        public string? NumberOfEngines { get; set; }
 
-        public string OperatorIcao { get; set; }
+        public string? OperatorIcao { get; set; }
 
-        public string Operator { get; set; }
+        public string? Operator { get; set; }
 
-        public LookupImageFile AircraftPicture { get; set; }
+        public LookupImageFile? AircraftPicture { get; set; }
 
-        public Route Route { get; set; }
+        public Route? Route { get; set; }
 
-        public string Serial { get; set; }
+        public string? Serial { get; set; }
 
         public Species? Species { get; set; }
 
-        public string UserNotes { get; set; }
+        public string? UserNotes { get; set; }
 
-        public string UserTag { get; set; }
+        public string? UserTag { get; set; }
 
         public WakeTurbulenceCategory? WakeTurbulenceCategory { get; set; }
 

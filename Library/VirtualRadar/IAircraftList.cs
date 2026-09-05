@@ -86,6 +86,6 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="aircraftId"></param>
         /// <returns></returns>
-        Aircraft FindAircraft(int aircraftId);
+        Aircraft? FindAircraft(int aircraftId);
     }
 }

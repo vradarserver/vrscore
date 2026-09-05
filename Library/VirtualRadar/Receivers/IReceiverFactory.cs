@@ -26,7 +26,7 @@ namespace VirtualRadar.Receivers
         /// </summary>
         /// <param name="receiverName"></param>
         /// <returns></returns>
-        ReceiverSettingsDto FindSettingsDtoFor(string receiverName);
+        ReceiverSettingsDto? FindSettingsDtoFor(string receiverName);
 
         /// <summary>
         /// Creates a new receiver using the settings DTO passed across. The receiver's
@@ -38,21 +38,21 @@ namespace VirtualRadar.Receivers
         /// <param name="serviceProvider"></param>
         /// <param name="settingsDto"></param>
         /// <returns></returns>
-        IReceiver Build(IServiceProvider serviceProvider, ReceiverSettingsDto settingsDto);
+        IReceiver? Build(IServiceProvider serviceProvider, ReceiverSettingsDto? settingsDto);
 
         /// <summary>
         /// Returns a receiver previously created by <see cref="FindOrBuild"/> with the name passed across.
         /// </summary>
         /// <param name="receiverName"></param>
         /// <returns></returns>
-        IReceiver FindByName(string receiverName);
+        IReceiver? FindByName(string receiverName);
 
         /// <summary>
         /// Returns a receiver previously created by <see cref="FindOrBuild"/> with the ID passed across.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        IReceiver FindById(int id);
+        IReceiver? FindById(int id);
 
         /// <summary>
         /// As per <see cref="FindById(int)"/> except this version can fall back to the default receiver if
@@ -62,7 +62,7 @@ namespace VirtualRadar.Receivers
         /// <param name="ignoreInvisibleFeeds"></param>
         /// <param name="fallbackToDefaultFeed"></param>
         /// <returns></returns>
-        IReceiver FindById(int id, bool ignoreInvisibleReceivers, bool fallbackToDefaultReceiver);
+        IReceiver? FindById(int id, bool ignoreInvisibleReceivers, bool fallbackToDefaultReceiver);
 
         /// <summary>
         /// Returns a pre-built receiver that matches the configured default source. If there is no default
@@ -70,7 +70,7 @@ namespace VirtualRadar.Receivers
         /// then null is returned.
         /// </summary>
         /// <returns></returns>
-        IReceiver FindDefaultSource();
+        IReceiver? FindDefaultSource();
 
         /// <summary>
         /// Registers a callback that is called whenever a receiver is added. The caller should keep the handle
@@ -92,16 +92,23 @@ namespace VirtualRadar.Receivers
 
         /// <summary>
         /// Finds an existing receiver that has the same name (case insensitive) as the
-        /// settings passed across. If no such receiver exists then a new receiver is
-        /// created and returned. If the receiver exists then its settings are compared.
-        /// If the settings are unchanged then the existing receiver is returned,
-        /// otherwise the existing receiver is disposed and a new receiver returned. In
-        /// all cases the factory manages the lifetime of the receiver, it should not be
-        /// disposed by the caller.
+        /// settings passed across. <b>The factory manages the lifetime of the receiver,
+        /// it should not be disposed by the caller.</b>
         /// </summary>
         /// <param name="settingsDto"></param>
-        /// <returns></returns>
-        (bool Added, IReceiver Receiver) FindOrBuild(ReceiverSettingsDto settingsDto);
+        /// <returns>
+        /// <para>
+        /// Always returns a tuple. The receiver item can be null if the settings DTO
+        /// indicates the receiver has been disabled, otherwise it returns the extant
+        /// receiver that matches the DTO, or creates a new receiver and returns that if
+        /// there isn't already one.
+        /// </para>
+        /// <para>
+        /// In all cases the factory manages the lifetime of the receiver, it should not
+        /// be disposed by the caller.
+        /// </para>
+        /// </returns>
+        (bool Added, IReceiver? Receiver) FindOrBuild(ReceiverSettingsDto settingsDto);
 
         /// <summary>
         /// Shuts a receiver down.

@@ -73,11 +73,13 @@ namespace VirtualRadar.Filtering
             var result = true;
             if(IsValid) {
                 result = value != null;
-                if(result && LowerValue != null) {
-                    result = value.Value.CompareTo(LowerValue.Value) >= 0;
-                }
-                if(result && UpperValue != null) {
-                    result = value.Value.CompareTo(UpperValue.Value) <= 0;
+                if(value != null) {
+                    if(LowerValue != null) {
+                        result = value.Value.CompareTo(LowerValue.Value) >= 0;
+                    }
+                    if(result && UpperValue != null) {
+                        result = value.Value.CompareTo(UpperValue.Value) <= 0;
+                    }
                 }
 
                 if(ReverseCondition) {
@@ -89,7 +91,7 @@ namespace VirtualRadar.Filtering
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = base.Equals(obj);
             if(result) {

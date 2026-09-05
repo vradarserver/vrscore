@@ -18,12 +18,12 @@ namespace VirtualRadar.StandingData
         /// <summary>
         /// Gets or sets the airport that the route starts from.
         /// </summary>
-        public Airport From { get; set; }
+        public required Airport From { get; set; }
 
         /// <summary>
         /// Gets or sets the airport that the route ends on.
         /// </summary>
-        public Airport To { get; set; }
+        public required Airport To { get; set; }
 
         /// <summary>
         /// Gets or sets all of the airports between the <see cref="From"/> and <see cref="To"/> airports, if any.

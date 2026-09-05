@@ -41,7 +41,8 @@ namespace Tests
         /// <returns></returns>
         public static Mock CreateMock(Type mockType)
         {
-            var result = (Mock)Activator.CreateInstance(mockType);
+            var result = (Activator.CreateInstance(mockType) as Mock)
+                ?? throw new InvalidOperationException($"{nameof(Type)} is not a {nameof(Mock)}");
             result.DefaultValue = DefaultValue.Mock;
 
             return result;

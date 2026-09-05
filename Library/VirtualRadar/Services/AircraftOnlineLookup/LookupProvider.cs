@@ -19,7 +19,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private readonly object _SyncLock = new();
         private readonly IHttpClientService _HttpClient;
         private readonly ISettings<AircraftOnlineLookupServiceSettingsDto> _LookupSettingsDto;
-        private ServerSettings _ServerSettings;
+        private ServerSettings? _ServerSettings;
         private DateTime _ServerSettingsFetchedUtcNow;
 
         /// <inheritdoc/>
@@ -32,13 +32,13 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         public int MaxSecondsAfterFailedRequest => _ServerSettings?.MaxSeconds ?? 30;
 
         /// <inheritdoc/>
-        public string DataSupplier => _ServerSettings?.DataSupplier;
+        public string? DataSupplier => _ServerSettings?.DataSupplier;
 
         /// <inheritdoc/>
-        public string SupplierCredits => _ServerSettings?.SupplierCredits;
+        public string? SupplierCredits => _ServerSettings?.SupplierCredits;
 
         /// <inheritdoc/>
-        public string SupplierWebSiteUrl => _ServerSettings?.SupplierUrl;
+        public string? SupplierWebSiteUrl => _ServerSettings?.SupplierUrl;
 
         /// <summary>
         /// Creates a new object.
@@ -92,29 +92,32 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
                     var jsonText = await response.Content.ReadAsStringAsync(cancellationToken);
                     if(!String.IsNullOrEmpty(jsonText) && !cancellationToken.IsCancellationRequested) {
                         var sourceAge = DateTime.UtcNow;
-                        var seenIcaos = new HashSet<Icao24>();
-
                         var allAircraft = JsonConvert.DeserializeObject<StandingDataSiteAircraft[]>(jsonText);
-                        foreach(var sdmAircraft in allAircraft) {
-                            if(seenIcaos.Add(sdmAircraft.Icao24)) {
-                                result.Found.Add(new(sdmAircraft.Icao24, success: true) {
-                                    Country =           sdmAircraft.Country,
-                                    Manufacturer =      sdmAircraft.Manufacturer,
-                                    Model =             sdmAircraft.Model,
-                                    ModelIcao =         sdmAircraft.ModelIcao,
-                                    Operator =          sdmAircraft.Operator,
-                                    OperatorIcao =      sdmAircraft.OperatorIcao,
-                                    Registration =      sdmAircraft.Registration,
-                                    Serial =            sdmAircraft.Serial,
-                                    SourceAgeUtc =      sourceAge,
-                                    YearBuilt =   sdmAircraft.YearBuilt,
-                                });
-                            }
-                        }
 
-                        foreach(var icao in icaos) {
-                            if(seenIcaos.Add(icao)) {
-                                result.Missing.Add(new(icao, success: false));
+                        if(allAircraft != null) {
+                            var seenIcaos = new HashSet<Icao24>();
+
+                            foreach(var sdmAircraft in allAircraft) {
+                                if(seenIcaos.Add(sdmAircraft.Icao24)) {
+                                    result.Found.Add(new(sdmAircraft.Icao24, success: true) {
+                                        Country =       sdmAircraft.Country,
+                                        Manufacturer =  sdmAircraft.Manufacturer,
+                                        Model =         sdmAircraft.Model,
+                                        ModelIcao =     sdmAircraft.ModelIcao,
+                                        Operator =      sdmAircraft.Operator,
+                                        OperatorIcao =  sdmAircraft.OperatorIcao,
+                                        Registration =  sdmAircraft.Registration,
+                                        Serial =        sdmAircraft.Serial,
+                                        SourceAgeUtc =  sourceAge,
+                                        YearBuilt =     sdmAircraft.YearBuilt,
+                                    });
+                                }
+                            }
+
+                            foreach(var icao in icaos) {
+                                if(seenIcaos.Add(icao)) {
+                                    result.Missing.Add(new(icao, success: false));
+                                }
                             }
                         }
                     }

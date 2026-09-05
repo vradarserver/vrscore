@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -24,7 +25,9 @@ namespace VirtualRadar.Drawing.ImageSharp
     /// </summary>
     class ImageWrapper : IImage
     {
-        private Image<Rgba32> _Native;
+        private Image<Rgba32>? _Native;
+
+        private Image<Rgba32> Safe_Native => _Native ?? throw new ObjectDisposedException(nameof(ImageWrapper));
 
         /// <inheritdoc/>
         public Size Size => _Native?.Size.ToVrs() ?? Size.Empty;
@@ -98,7 +101,7 @@ namespace VirtualRadar.Drawing.ImageSharp
         /// Creates a deep clone of this image. The clone is never a cached original.
         /// </summary>
         /// <returns></returns>
-        public ImageWrapper Clone()
+        public ImageWrapper? Clone()
         {
             var newNative = _Native?.Clone();
             return newNative == null
@@ -114,7 +117,7 @@ namespace VirtualRadar.Drawing.ImageSharp
         /// <exception cref="NotImplementedException"></exception>
         public byte[] ToBytes(ImageFormat imageFormat)
         {
-            byte[] result = null;
+            byte[]? result = null;
 
             if(_Native != null) {
                 using(var stream = new MemoryStream()) {
@@ -152,7 +155,7 @@ namespace VirtualRadar.Drawing.ImageSharp
             var result = new ImageWrapper(Width, height, isCachedOriginal: false);
             var startOfAltitudeLine = Height / 2;
 
-            result._Native.Mutate(context => context
+            result.Safe_Native.Mutate(context => context
                 // Draw the altitude line
                 .DrawLine(
                     Color.Black,
@@ -176,7 +179,7 @@ namespace VirtualRadar.Drawing.ImageSharp
                 )
 
                 // Draw this image on top of all the lines
-                .DrawImage(_Native, 1F)
+                .DrawImage(Safe_Native, 1F)
             );
 
             return result;
@@ -219,18 +222,18 @@ namespace VirtualRadar.Drawing.ImageSharp
         {
             var resizeWidth = width;
             var resizeHeight = height;
-            var widthPercent = (double)width / (double)_Native.Width;
-            var heightPercent = (double)height / (double)_Native.Height;
-            if(widthPercent > heightPercent)        resizeWidth = Math.Min(width, (int)(((double)_Native.Width * heightPercent) + 0.5));
-            else if(heightPercent > widthPercent)   resizeHeight = Math.Min(height, (int)(((double)_Native.Height * widthPercent) + 0.5));
+            var widthPercent = (double)width / (double)Safe_Native.Width;
+            var heightPercent = (double)height / (double)Safe_Native.Height;
+            if(widthPercent > heightPercent)        resizeWidth = Math.Min(width, (int)(((double)Safe_Native.Width * heightPercent) + 0.5));
+            else if(heightPercent > widthPercent)   resizeHeight = Math.Min(height, (int)(((double)Safe_Native.Height * widthPercent) + 0.5));
 
             var left = (width - resizeWidth) / 2;
             var top = (height - resizeHeight) / 2;
 
             var result = new ImageWrapper(Width, height, isCachedOriginal: false);
 
-            using(var resizedClone = _Native.Clone(context => context.Resize(resizeWidth, resizeHeight, new NearestNeighborResampler()))) {
-                result._Native.Mutate(context => context
+            using(var resizedClone = Safe_Native.Clone(context => context.Resize(resizeWidth, resizeHeight, new NearestNeighborResampler()))) {
+                result.Safe_Native.Mutate(context => context
                     .Fill(zoomBackground.ToImageSharp())
                     .DrawImage(resizedClone, new Point(left, top), 1F)
                 );
@@ -269,7 +272,7 @@ namespace VirtualRadar.Drawing.ImageSharp
                     throw new NotImplementedException();
             }
 
-            var clone = _Native.Clone(context => context.Resize(options));
+            var clone = Safe_Native.Clone(context => context.Resize(options));
             return new ImageWrapper(clone, isCachedOriginal: false);
         }
 
@@ -282,8 +285,8 @@ namespace VirtualRadar.Drawing.ImageSharp
         /// <returns></returns>
         public ImageWrapper ChangeDimension(bool changeWidth, int newValue, bool centre)
         {
-            var width = changeWidth ? newValue : _Native.Width;
-            var height = changeWidth ? _Native.Height : newValue;
+            var width = changeWidth ? newValue : Safe_Native.Width;
+            var height = changeWidth ? Safe_Native.Height : newValue;
             var x = 0;
             var y = 0;
 
@@ -296,15 +299,15 @@ namespace VirtualRadar.Drawing.ImageSharp
                 }
 
                 if(changeWidth) {
-                    x = centredValue(_Native.Width);
+                    x = centredValue(Safe_Native.Width);
                 } else {
-                    y = centredValue(_Native.Height);
+                    y = centredValue(Safe_Native.Height);
                 }
             }
 
             var result = new ImageWrapper(width, height, isCachedOriginal: false);
-            result._Native.Mutate(context => context.DrawImage(
-                _Native,
+            result.Safe_Native.Mutate(context => context.DrawImage(
+                Safe_Native,
                 new Point(x, y),
                 1F
             ));
@@ -319,61 +322,68 @@ namespace VirtualRadar.Drawing.ImageSharp
         /// <returns></returns>
         public ImageWrapper RotateImage(float degrees)
         {
-            var clone = _Native.Clone(context => context.Rotate(degrees));
+            var clone = Safe_Native.Clone(context => context.Rotate(degrees));
             return new(clone, isCachedOriginal: false);
         }
 
         public ImageWrapper AddTextLines(IEnumerable<string> textLines, bool centreText, bool isHighDpi)
         {
-            var clone = _Native.Clone(context => {
-                var lines =          textLines.Where(tl => tl != null).ToList();
-                var lineHeight =     isHighDpi ? 24f : 12f;
-                var topOffset =      5f;
-                var startPointSize = isHighDpi ? 20f : 10f;
-                var outlinePen =     isHighDpi ? PenCache.MarkerTextOutlinePenHiDpi : PenCache.MarkerTextOutlinePen;
-                var left =           centreText
-                                        ? ((float)Width / 2f)
-                                        : outlinePen.StrokeWidth / 2f;
-                var top =            (Height - topOffset) - (lines.Count * lineHeight);
-                var width =          Math.Max(0F, Width - outlinePen.StrokeWidth);
-                var fillOffset =     outlinePen.StrokeWidth / 2f;
+            Image<Rgba32> clone;
 
-                var lineTop = top;
-                foreach(var line in lines) {
-                    var fontAndText = FontCache.GetFontForText(
-                        FontCache.MarkerTextFontFamilyName,
-                        FontCache.MarkerTextFontStyle,
-                        startPointSize,
-                        6f,
-                        width,
-                        lineHeight * 2f,
-                        line,
-                        useCache: true
-                    );
+            var markerTextFontFamilyName = FontCache.MarkerTextFontFamilyName;
+            if(markerTextFontFamilyName == null) {
+                clone = Safe_Native.Clone();
+            } else {
+                clone = Safe_Native.Clone(context => {
+                    var lines =          textLines.Where(tl => tl != null).ToList();
+                    var lineHeight =     isHighDpi ? 24f : 12f;
+                    var topOffset =      5f;
+                    var startPointSize = isHighDpi ? 20f : 10f;
+                    var outlinePen =     isHighDpi ? PenCache.MarkerTextOutlinePenHiDpi : PenCache.MarkerTextOutlinePen;
+                    var left =           centreText
+                                            ? ((float)Width / 2f)
+                                            : outlinePen.StrokeWidth / 2f;
+                    var top =            (Height - topOffset) - (lines.Count * lineHeight);
+                    var width =          Math.Max(0F, Width - outlinePen.StrokeWidth);
+                    var fillOffset =     outlinePen.StrokeWidth / 2f;
 
-                    var textOptions = new RichTextOptions(fontAndText.Font) {
-                        Origin = new PointF(left + fillOffset, lineTop + fillOffset),
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                    };
+                    var lineTop = top;
+                    foreach(var line in lines) {
+                        var fontAndText = FontCache.GetFontForText(
+                            markerTextFontFamilyName,
+                            FontCache.MarkerTextFontStyle,
+                            startPointSize,
+                            6f,
+                            width,
+                            lineHeight * 2f,
+                            line,
+                            useCache: true
+                        );
 
-                    context.DrawText(
-                        textOptions,
-                        fontAndText.Text,
-                        BrushCache.MarkerTextOutlineBrush,
-                        outlinePen
-                    );
+                        var textOptions = new RichTextOptions(fontAndText.Font) {
+                            Origin = new PointF(left + fillOffset, lineTop + fillOffset),
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                        };
 
-                    textOptions.Origin = new PointF(left, lineTop);
+                        context.DrawText(
+                            textOptions,
+                            fontAndText.Text,
+                            BrushCache.MarkerTextOutlineBrush,
+                            outlinePen
+                        );
 
-                    context.DrawText(
-                        textOptions,
-                        fontAndText.Text,
-                        BrushCache.MarkerTextFillBrush
-                    );
+                        textOptions.Origin = new PointF(left, lineTop);
 
-                    lineTop += lineHeight;
-                }
-            });
+                        context.DrawText(
+                            textOptions,
+                            fontAndText.Text,
+                            BrushCache.MarkerTextFillBrush
+                        );
+
+                        lineTop += lineHeight;
+                    }
+                });
+            }
 
             var result = new ImageWrapper(clone, isCachedOriginal: false);
             return result;

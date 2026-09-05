@@ -39,7 +39,7 @@ namespace VirtualRadar.WebSite
         record BuildState(
             DateTime                        UtcNow,
             AircraftListJsonBuilderArgs     Args,
-            IReceiver                       Receiver,
+            IReceiver?                      Receiver,
             AircraftMapSettingsDto          AircraftMapSettingsDto,
             AircraftPictureSettingsDto      AircraftPictureSettingsDto,
             InternetClientSettingsDto       InternetClientSettingsDto,
@@ -71,6 +71,7 @@ namespace VirtualRadar.WebSite
                 fallbackToDefaultSource
             );
 
+            var lastDataVersion = receiver?.AircraftList.Stamp.ToString() ?? "0";
             var state = new BuildState(
                 _Clock.UtcNow,
                 args,
@@ -80,13 +81,12 @@ namespace VirtualRadar.WebSite
                 _InternetClientSettingsDto.LatestValue,
                 _OperatorAndFlagSettingsDto.LatestValue,
                 _WebClientSettingsDto.LatestValue,
-                new()
+                new(lastDataVersion)
             );
 
             state.Json.ShortTrailLengthSeconds = state.AircraftMapSettingsDto.ShortTrailLengthSeconds;
             state.Json.Source =                  1; // <-- for backwards compatability, we don't have the concept of fake and/or flight sim aircraft lists in VRS Core
             state.Json.SourceFeedId =            args.ReceiverId;
-            state.Json.LastDataVersion =         receiver?.AircraftList.Stamp.ToString();
             state.Json.ServerTime =              _Clock.UtcNow.ToUnixMilliseconds();
 
             AddAircraft(state);
@@ -296,12 +296,12 @@ namespace VirtualRadar.WebSite
                 aircraftJson.FullCoordinates = [];
             }
 
-            Location previousLocation = null;
+            Location? previousLocation = null;
             float? previousHeading = null;
             int? previousAltitude = null;
             float? previousSpeed = null;
 
-            Location location = null;
+            Location? location = null;
             float? heading = null;
             int? altitude = null;
             float? speed = null;
@@ -321,7 +321,7 @@ namespace VirtualRadar.WebSite
                             )
                             && changeSet.Stamp > fromStamp;
 
-                if(canUse) {
+                if(canUse && location != null && heading != null) {
                     aircraftJson.FullCoordinates.Add(location.Latitude);
                     aircraftJson.FullCoordinates.Add(location.Longitude);
                     aircraftJson.FullCoordinates.Add(heading.Value);
@@ -379,7 +379,7 @@ namespace VirtualRadar.WebSite
                 aircraftJson.ShortCoordinates = [];
             }
 
-            Location location = null;
+            Location? location = null;
             int? altitude = null;
             float? speed = null;
 
@@ -394,7 +394,7 @@ namespace VirtualRadar.WebSite
                            && changeSet.Stamp > browserLastStamp
                            && changeSet.Utc >= state.ShortTrailStart;
 
-                if(canUse) {
+                if(canUse && location != null) {
                     aircraftJson.ShortCoordinates.Add(location.Latitude);
                     aircraftJson.ShortCoordinates.Add(location.Longitude);
                     aircraftJson.ShortCoordinates.Add(changeSet.Utc.ToUnixMilliseconds());

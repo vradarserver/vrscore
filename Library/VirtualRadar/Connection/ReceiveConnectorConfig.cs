@@ -30,7 +30,7 @@ namespace VirtualRadar.Connection
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
-        public static void RegisterAssembly(Assembly assembly = null)
+        public static void RegisterAssembly(Assembly? assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
             try {
@@ -74,7 +74,7 @@ namespace VirtualRadar.Connection
         /// </summary>
         /// <param name="settingsDtoType"></param>
         /// <returns></returns>
-        public static Type ReceiveConnectorType(Type settingsDtoType)
+        public static Type? ReceiveConnectorType(Type settingsDtoType)
         {
             var map = _SettingsDtoToConnectorTypeMap;
             map.TryGetValue(settingsDtoType, out var result);

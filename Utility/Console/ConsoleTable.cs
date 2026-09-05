@@ -17,9 +17,9 @@ namespace VirtualRadar.Utility.CLIConsole
     {
         public Column[] Columns { get; }
 
-        public Func<T, string>[] CellExtractors { get; }
+        public Func<T, string?>[] CellExtractors { get; }
 
-        public ConsoleTable(IEnumerable<(Column, Func<T, string>)> columns)
+        public ConsoleTable(IEnumerable<(Column, Func<T, string?>)> columns)
         {
             Columns = columns.Select(r => r.Item1).ToArray();
             CellExtractors = columns.Select(r => r.Item2).ToArray();
@@ -67,7 +67,7 @@ namespace VirtualRadar.Utility.CLIConsole
             }
         }
 
-        private async Task DumpCell(Column column, string content, bool lastCell)
+        private async Task DumpCell(Column column, string? content, bool lastCell)
         {
             content = (content ?? "").TruncateAt(column.Width);
             var shortfall = column.Width - content.Length;

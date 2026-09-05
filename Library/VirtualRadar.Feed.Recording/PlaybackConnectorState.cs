@@ -14,15 +14,19 @@ using VirtualRadar.Extensions;
 
 namespace VirtualRadar.Feed.Recording
 {
-    class PlaybackConnectorState(RecordingPlaybackConnector _Parent) : CancellableState
+    class PlaybackConnectorState(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
+        RecordingPlaybackConnector _Parent
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
+    ) : CancellableState
     {
-        public FileStream FileStream;
+        public FileStream? FileStream;
 
-        public RecordingReader Reader;
+        public RecordingReader? Reader;
 
-        public PlaybackTimeSync PlaybackSync;
+        public PlaybackTimeSync? PlaybackSync;
 
-        public Task PumpTask;
+        public Task? PumpTask;
 
         protected override void TearDownState()
         {

@@ -46,16 +46,14 @@ namespace VirtualRadar
         public double LinearLongitude => Convert.Longitude.ToLinear(Longitude);
 
         /// <inheritdoc/>
-        public static bool operator ==(Location lhs, Location rhs)
+        public static bool operator ==(Location? lhs, Location? rhs)
         {
-            var lhsNull = lhs is null;
-            var rhsNull = rhs is null;
-            return (lhsNull && rhsNull)
-                || (!lhsNull && !rhsNull && lhs.Equals(rhs));
+            return (lhs is null && rhs is null)
+                || (lhs is not null && rhs is not null && lhs.Equals(rhs));
         }
 
         /// <inheritdoc/>
-        public static bool operator!=(Location lhs, Location rhs) => !(lhs == rhs);
+        public static bool operator!=(Location? lhs, Location? rhs) => !(lhs == rhs);
 
         /// <summary>
         /// Creates a new value.
@@ -75,7 +73,7 @@ namespace VirtualRadar
         /// <param name="latitude"></param>
         /// <param name="longitude"></param>
         /// <returns></returns>
-        public static Location FromNullable(double? latitude, double? longitude)
+        public static Location? FromNullable(double? latitude, double? longitude)
         {
             return latitude == null || longitude == null
                 ? null
@@ -86,7 +84,7 @@ namespace VirtualRadar
         public override string ToString() => $"{Latitude:0.000000} / {Longitude:0.000000}";
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is Location other) {
@@ -108,7 +106,7 @@ namespace VirtualRadar
         /// <param name="longitude"></param>
         /// <param name="zeroZeroIsNull"></param>
         /// <returns></returns>
-        public static Location FromLatLng(double? latitude, double? longitude, bool zeroZeroIsNull = false)
+        public static Location? FromLatLng(double? latitude, double? longitude, bool zeroZeroIsNull = false)
         {
             return (latitude == null || longitude == null || (latitude == 0.0 && longitude == 0.0 && zeroZeroIsNull))
                 ? null

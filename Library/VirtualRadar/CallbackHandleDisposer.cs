@@ -113,11 +113,11 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="handle"></param>
         /// <returns></returns>
-        public bool Remove(ICallbackHandle handle)
+        public bool Remove(ICallbackHandle? handle)
         {
-            var result = handle != null;
+            var result = false;
 
-            if(result) {
+            if(handle != null) {
                 lock(_SyncLock) {
                     result = _CallbackHandles.Remove(handle);
                     if(result) {

@@ -47,7 +47,7 @@ namespace VirtualRadar.Convert
                     AirPressureUnit.InchesMercury
                 );
                 if(airPressureInHg > 0 && airPressureInHg != StandardPressureInchesMercury) {
-                    result = (int)(0.5F + (pressureAltitudeFeet - 1000 * (StandardPressureInchesMercury - airPressureInHg)));
+                    result = (int)(0.5F + (result.Value - 1000 * (StandardPressureInchesMercury - airPressureInHg)));
                 }
             }
 
@@ -79,12 +79,12 @@ namespace VirtualRadar.Convert
                 );
 
                 if(airPressureInHg > 0 && airPressureInHg != StandardPressureInchesMercury) {
-                    result = (int)(0.5F + (geometricAltitudeFeet + 1000 * (StandardPressureInchesMercury - airPressureInHg)));
+                    result = (int)(0.5F + (result.Value + 1000 * (StandardPressureInchesMercury - airPressureInHg)));
                 }
             }
 
-            if(roundTo25FeetIncrements) {
-                result = (int)(((float)result / 25F) + 0.5F) * 25;
+            if(roundTo25FeetIncrements && result != null) {
+                result = (int)(((float)result.Value / 25F) + 0.5F) * 25;
             }
 
             return result;

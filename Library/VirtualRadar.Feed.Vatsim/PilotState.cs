@@ -27,52 +27,52 @@ namespace VirtualRadar.Feed.Vatsim
         /// <summary>
         /// The transponder message built from the pilot information.
         /// </summary>
-        public TransponderMessage TransponderMessage { get; set; }
+        public TransponderMessage? TransponderMessage { get; set; }
 
         /// <summary>
         /// The lookup outcome built from the VATSIM download.
         /// </summary>
-        public LookupByAircraftIdOutcome LookupOutcome { get; set; }
+        public LookupByAircraftIdOutcome? LookupOutcome { get; set; }
 
         /// <summary>
         /// The registration as sent by VATSIM.
         /// </summary>
-        public string RegistrationOriginal { get; set; }
+        public string? RegistrationOriginal { get; set; }
 
         /// <summary>
         /// The corrected registration as built from <see cref="RegistrationOriginal"/> and registration
         /// prefix data.
         /// </summary>
-        public string RegistrationCorrected { get; set; }
+        public string? RegistrationCorrected { get; set; }
 
         /// <summary>
         /// The current callsign for the aircraft.
         /// </summary>
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         /// <summary>
         /// The current operator code for the aircraft.
         /// </summary>
-        public string OperatorIcao { get; set; }
+        public string? OperatorIcao { get; set; }
 
         /// <summary>
         /// The current model ICAO code for the aircraft.
         /// </summary>
-        public string ModelIcao { get; set; }
+        public string? ModelIcao { get; set; }
 
         /// <summary>
         /// The route derived from the pilot's flight plan.
         /// </summary>
-        public Route Route { get; set; }
+        public Route? Route { get; set; }
 
         /// <summary>
         /// The origin airport used to derive <see cref="Route"/>.
         /// </summary>
-        public string RouteFromAirportCode { get; set; }
+        public string? RouteFromAirportCode { get; set; }
 
         /// <summary>
         /// The destination airport used to derive <see cref="Route"/>.
         /// </summary>
-        public string RouteToAirportCode { get; set; }
+        public string? RouteToAirportCode { get; set; }
     }
 }

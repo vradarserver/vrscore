@@ -19,20 +19,20 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Cid { get; set; }
 
         [DataMember(Name = "name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DataMember(Name = "callsign")]
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         [DataMember(Name = "flight_plan")]
-        public VatsimDataV3FlightPlan FlightPlan { get; set; }
+        public VatsimDataV3FlightPlan? FlightPlan { get; set; }
 
         [DataMember(Name = "last_updated")]
         public DateTimeOffset LastUpdated { get; set; }
 
-        public static VatsimDataV3Prefile CopyFrom(VatsimDataV3Prefile copyFrom)
+        public static VatsimDataV3Prefile? CopyFrom(VatsimDataV3Prefile? copyFrom)
         {
-            VatsimDataV3Prefile result = null;
+            VatsimDataV3Prefile? result = null;
 
             if(copyFrom != null) {
                 result = new() {

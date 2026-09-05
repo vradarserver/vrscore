@@ -22,7 +22,7 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        AircraftType AircraftType_GetByCode(string code);
+        AircraftType? AircraftType_GetByCode(string? code);
 
         /// <summary>
         /// Retrieves the airlines matching the ICAO or IATA code passed across. Returns an empty collection
@@ -30,7 +30,7 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        IReadOnlyList<Airline> Airlines_GetByCode(string code);
+        IReadOnlyList<Airline> Airlines_GetByCode(string? code);
 
         /// <summary>
         /// Retrieves the airport matching the ICAO or IATA code passed across. Returns null if no such
@@ -38,7 +38,7 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        Airport Airport_GetByCode(string code);
+        Airport? Airport_GetByCode(string? code);
 
         /// <summary>
         /// Retrieves the code block matching the ICAO24 passed across. Returns the code block for unknown
@@ -46,14 +46,14 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="icao24"></param>
         /// <returns></returns>
-        CodeBlock CodeBlock_GetForIcao24(Icao24 icao24);
+        CodeBlock? CodeBlock_GetForIcao24(Icao24? icao24);
 
         /// <summary>
         /// Retrieves the route stored against the callsign or null if no such route exists.
         /// </summary>
         /// <param name="callsign"></param>
         /// <returns></returns>
-        Route Route_GetForCallsign(string callsign);
+        Route? Route_GetForCallsign(string? callsign);
 
         /// <summary>
         /// Returns a description of the route status.

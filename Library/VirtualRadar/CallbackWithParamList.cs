@@ -122,15 +122,18 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="args"></param>
         /// <param name="aggregateExceptionMessage"></param>
-        /// <returns></returns>
-        public AggregateException InvokeWithoutExceptions(TArgs args, string aggregateExceptionMessage = "Exceptions were encountered while invoking callbacks")
+        /// <returns>
+        /// Null if no exceptions were thrown, otherwise an <see
+        /// cref="AggregateException"/> that wraps all of the exceptions that were thrown.
+        /// </returns>
+        public AggregateException? InvokeWithoutExceptions(TArgs args, string aggregateExceptionMessage = "Exceptions were encountered while invoking callbacks")
         {
             CallbackWithParamHandle<TArgs>[] callbacks;
             lock(_SyncLock) {
                 callbacks = [.. _CallbackHandles];
             }
 
-            List<Exception> exceptions = null;
+            List<Exception>? exceptions = null;
             foreach(var callback in callbacks) {
                 try {
                     callback.Invoke(args);

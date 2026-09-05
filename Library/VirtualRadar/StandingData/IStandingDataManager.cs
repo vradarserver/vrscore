@@ -27,34 +27,34 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="callSign"></param>
         /// <returns></returns>
-        Route FindRoute(string callsign);
+        Route? FindRoute(string? callsign);
 
         /// <summary>
         /// Returns the ICAO8643 type information for the aircraft type passed across.
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        AircraftType FindAircraftType(string type);
+        AircraftType? FindAircraftType(string? type);
 
         /// <summary>
         /// Returns the airlines that have the IATA or ICAO code passed across.
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        IReadOnlyList<Airline> FindAirlinesForCode(string code);
+        IReadOnlyList<Airline> FindAirlinesForCode(string? code);
 
         /// <summary>
         /// Returns the code block for the ICAO24 aircraft identifier passed across.
         /// </summary>
         /// <param name="icao24"></param>
         /// <returns></returns>
-        CodeBlock FindCodeBlock(Icao24 icao24);
+        CodeBlock? FindCodeBlock(Icao24? icao24);
 
         /// <summary>
         /// Returns the airport that has the ICAO or IATA code passed across.
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        Airport FindAirportForCode(string code);
+        Airport? FindAirportForCode(string? code);
     }
 }

@@ -15,7 +15,7 @@ namespace VirtualRadar.AircraftHistory
 {
     public class ChangeSet
     {
-        private List<IChangedValue> _ChangedValues = [];
+        private readonly List<IChangedValue> _ChangedValues = [];
         public IReadOnlyList<IChangedValue> ChangedValues => _ChangedValues;
 
         public long Stamp { get; }
@@ -55,7 +55,7 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
 
         public bool? SignalLevelSent => GetField<bool?>(AircraftHistoryField.SignalLevelSent)?.NewValue;
 
-        public string Callsign => GetField<string>(AircraftHistoryField.Callsign)?.NewValue;
+        public string? Callsign => GetField<string>(AircraftHistoryField.Callsign)?.NewValue;
 
         public bool? CallsignIsSuspect => GetField<bool?>(AircraftHistoryField.CallsignIsSuspect)?.NewValue;
 
@@ -75,7 +75,7 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
 
         public SpeedType? GroundSpeedType => GetField<SpeedType?>(AircraftHistoryField.GroundSpeedType)?.NewValue;
 
-        public Location Location => GetField<Location>(AircraftHistoryField.Location)?.NewValue;
+        public Location? Location => GetField<Location>(AircraftHistoryField.Location)?.NewValue;
 
         public bool? IsTisb => GetField<bool?>(AircraftHistoryField.IsTisb)?.NewValue;
 
@@ -97,15 +97,15 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
 
         public TransponderType? TransponderType => GetField<TransponderType?>(AircraftHistoryField.TransponderType)?.NewValue;
 
-        public string Registration => GetField<string>(AircraftHistoryField.Registration)?.NewValue;
+        public string? Registration => GetField<string>(AircraftHistoryField.Registration)?.NewValue;
 
-        public string Country => GetField<string>(AircraftHistoryField.Country)?.NewValue;
+        public string? Country => GetField<string>(AircraftHistoryField.Country)?.NewValue;
 
         public EnginePlacement? EnginePlacement => GetField<EnginePlacement?>(AircraftHistoryField.EnginePlacement)?.NewValue;
 
         public EngineType? EngineType => GetField<EngineType?>(AircraftHistoryField.EngineType)?.NewValue;
 
-        public string Icao24Country => GetField<string>(AircraftHistoryField.Icao24Country)?.NewValue;
+        public string? Icao24Country => GetField<string>(AircraftHistoryField.Icao24Country)?.NewValue;
 
         public bool? IsCharterFlight => GetField<bool?>(AircraftHistoryField.IsCharterFlight)?.NewValue;
 
@@ -113,35 +113,35 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
 
         public bool? IsPositioningFlight => GetField<bool?>(AircraftHistoryField.IsPositioningFlight)?.NewValue;
 
-        public string ModelIcao => GetField<string>(AircraftHistoryField.ModelIcao)?.NewValue;
+        public string? ModelIcao => GetField<string>(AircraftHistoryField.ModelIcao)?.NewValue;
 
-        public string Manufacturer => GetField<string>(AircraftHistoryField.Manufacturer)?.NewValue;
+        public string? Manufacturer => GetField<string>(AircraftHistoryField.Manufacturer)?.NewValue;
 
-        public string Model => GetField<string>(AircraftHistoryField.Model)?.NewValue;
+        public string? Model => GetField<string>(AircraftHistoryField.Model)?.NewValue;
 
-        public string NumberOfEngines => GetField<string>(AircraftHistoryField.NumberOfEngines)?.NewValue;
+        public string? NumberOfEngines => GetField<string>(AircraftHistoryField.NumberOfEngines)?.NewValue;
 
-        public string OperatorIcao => GetField<string>(AircraftHistoryField.OperatorIcao)?.NewValue;
+        public string? OperatorIcao => GetField<string>(AircraftHistoryField.OperatorIcao)?.NewValue;
 
-        public string Operator => GetField<string>(AircraftHistoryField.Operator)?.NewValue;
+        public string? Operator => GetField<string>(AircraftHistoryField.Operator)?.NewValue;
 
-        public LookupImageFile AircraftPicture => GetField<LookupImageFile>(AircraftHistoryField.AircraftPicture)?.NewValue;
+        public LookupImageFile? AircraftPicture => GetField<LookupImageFile>(AircraftHistoryField.AircraftPicture)?.NewValue;
 
-        public string Serial => GetField<string>(AircraftHistoryField.Serial)?.NewValue;
+        public string? Serial => GetField<string>(AircraftHistoryField.Serial)?.NewValue;
 
         public Species? Species => GetField<Species?>(AircraftHistoryField.Species)?.NewValue;
 
-        public string ConstructionNumber => GetField<string>(AircraftHistoryField.ConstructionNumber)?.NewValue;
+        public string? ConstructionNumber => GetField<string>(AircraftHistoryField.ConstructionNumber)?.NewValue;
 
-        public string UserNotes => GetField<string>(AircraftHistoryField.UserNotes)?.NewValue;
+        public string? UserNotes => GetField<string>(AircraftHistoryField.UserNotes)?.NewValue;
 
-        public string UserTag => GetField<string>(AircraftHistoryField.UserTag)?.NewValue;
+        public string? UserTag => GetField<string>(AircraftHistoryField.UserTag)?.NewValue;
 
         public WakeTurbulenceCategory? WakeTurbulenceCategory => GetField<WakeTurbulenceCategory?>(AircraftHistoryField.WakeTurbulenceCategory)?.NewValue;
 
         public int? YearBuilt => GetField<int?>(AircraftHistoryField.YearBuilt)?.NewValue;
 
-        public Route Route => GetField<Route>(AircraftHistoryField.Route)?.NewValue;
+        public Route? Route => GetField<Route>(AircraftHistoryField.Route)?.NewValue;
 
         /** END OF GetField()-BASED PROPERTIES **/
 
@@ -155,7 +155,7 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
             return isDifferent;
         }
 
-        public bool SetIfNotDefault<T>(AircraftHistoryField historyField, StampedValue<T> stampedValue, T candidateValue)
+        public bool SetIfNotDefault<T>(AircraftHistoryField historyField, StampedValue<T> stampedValue, T? candidateValue)
         {
             AssertUnlocked();
             var isDifferent = stampedValue.SetIfNotDefault(candidateValue, Stamp);
@@ -165,7 +165,7 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
             return isDifferent;
         }
 
-        public bool SetIfNotDefault<T, TRaw>(AircraftHistoryField historyField, StampedValue<T> stampedValue, TRaw candidateValue, Func<TRaw, T> toValue)
+        public bool SetIfNotDefault<T, TRaw>(AircraftHistoryField historyField, StampedValue<T> stampedValue, TRaw? candidateValue, Func<TRaw, T> toValue)
         {
             AssertUnlocked();
             var isDifferent = stampedValue.SetIfNotDefault(candidateValue, Stamp, toValue);
@@ -196,9 +196,9 @@ foreach(var line in File.ReadAllLines(@"<PATH TO SOURCE ROOT>\VRSCore\Library\Vi
             }
         }
 
-        private ChangedValue<T> GetField<T>(AircraftHistoryField field)
+        private ChangedValue<T>? GetField<T>(AircraftHistoryField field)
         {
-            ChangedValue<T> result = null;
+            ChangedValue<T>? result = null;
 
             for(var idx = 0;idx < _ChangedValues.Count;++idx) {
                 if(_ChangedValues[idx].Field == field) {

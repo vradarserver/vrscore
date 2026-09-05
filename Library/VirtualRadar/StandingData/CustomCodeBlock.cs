@@ -16,6 +16,6 @@ namespace VirtualRadar.StandingData
 
         public bool IsMilitary { get; set; }
 
-        public string Country { get; set; }
+        public required string Country { get; set; } = "";
     }
 }

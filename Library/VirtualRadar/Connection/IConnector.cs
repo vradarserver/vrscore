@@ -33,17 +33,17 @@ namespace VirtualRadar.Connection
         /// <summary>
         /// Raised on a random thread when <see cref="ConnectionState"/> changes.
         /// </summary>
-        event EventHandler ConnectionStateChanged;
+        event EventHandler? ConnectionStateChanged;
 
         /// <summary>
-        /// The last exception thrown by the connector.
+        /// The last exception thrown by the connector, or null if none has been recorded yet.
         /// </summary>
-        TimestampedException LastException { get; }
+        TimestampedException? LastException { get; }
 
         /// <summary>
         /// Raised when <see cref="LastException"/> changes.
         /// </summary>
-        event EventHandler LastExceptionChanged;
+        event EventHandler? LastExceptionChanged;
 
         /// <summary>
         /// Establishes the connection.

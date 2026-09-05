@@ -34,7 +34,7 @@ namespace VirtualRadar
         /// nor is it in the list of <paramref name="oldAddresses"/> then it is considered a
         /// custom address entered by the user and it is left unchanged.</param>
         /// <returns>The address actually registered against the name.</returns>
-        string RegisterAddress(string name, string address, IList<string> oldAddresses = null);
+        string RegisterAddress(string name, string address, IList<string>? oldAddresses = null);
 
         /// <summary>
         /// Returns the address associated with the case insensitive name. The program reserves
@@ -42,6 +42,6 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        string LookupAddress(string name);
+        string? LookupAddress(string name);
     }
 }

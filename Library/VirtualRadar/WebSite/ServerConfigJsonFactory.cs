@@ -44,7 +44,7 @@ namespace VirtualRadar.WebSite
                 aircraftMapSettingsDto.MapProvider,
                 aircraftMapSettingsDto.TileServerName,
                 fallbackToDefaultIfMissing: true
-            );
+            )!; // <-- The fallback to default means this is never null
 
             var version = InformationalVersion.VirtualRadarVersion;
 
@@ -80,7 +80,7 @@ namespace VirtualRadar.WebSite
             result.Receivers.AddRange(_ReceiverFactory
                 .Receivers
                 .Select(r => ServerReceiverJson.ToModel(r))
-                .Where(r => r != null)
+                .OfType<ServerReceiverJson>()
             );
 
             result.TileServerLayers.AddRange(_TileServerManager
@@ -111,7 +111,7 @@ namespace VirtualRadar.WebSite
                 case AircraftMapType.Terrain:       return "t";
                 case AircraftMapType.Satellite:     return "s";
                 case AircraftMapType.HighContrast:  return "o";
-                default:                            return null;
+                default:                            goto case AircraftMapType.Hybrid;
             }
         }
 

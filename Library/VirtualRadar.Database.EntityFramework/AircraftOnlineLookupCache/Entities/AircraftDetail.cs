@@ -20,33 +20,33 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
         public long AircraftDetailID { get; set; }
 
         [MaxLength(6), Required]
-        public string Icao { get; set; }
+        public string Icao { get; set; } = "";
 
         public bool IsMissing { get; set; }
 
         [MaxLength(20)]
-        public string Registration { get; set; }
+        public string? Registration { get; set; }
 
         [MaxLength(200)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         [MaxLength(200)]
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
         [MaxLength(200)]
-        public string Model { get; set; }
+        public string? Model { get; set; }
 
         [MaxLength(10)]
-        public string ModelIcao { get; set; }
+        public string? ModelIcao { get; set; }
 
         [MaxLength(200)]
-        public string Operator { get; set; }
+        public string? Operator { get; set; }
 
         [MaxLength(3)]
-        public string OperatorIcao { get; set; }
+        public string? OperatorIcao { get; set; }
 
         [MaxLength(80)]
-        public string Serial { get; set; }
+        public string? Serial { get; set; }
 
         public int? YearBuilt { get; set; }
 
@@ -82,14 +82,14 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache.Entiti
                 SourceAgeUtc =  DateTime.SpecifyKind(UpdatedUtc, DateTimeKind.Utc),
             };
             if(result.Success) {
-                result.Country =            Country;
-                result.Manufacturer =       Manufacturer;
-                result.Model =              Model;
-                result.ModelIcao =          ModelIcao;
-                result.Operator =           Operator;
-                result.OperatorIcao =       OperatorIcao;
-                result.Registration =       Registration;
-                result.Serial =             Serial;
+                result.Country =      Country;
+                result.Manufacturer = Manufacturer;
+                result.Model =        Model;
+                result.ModelIcao =    ModelIcao;
+                result.Operator =     Operator;
+                result.OperatorIcao = OperatorIcao;
+                result.Registration = Registration;
+                result.Serial =       Serial;
                 result.YearBuilt =    YearBuilt;
             }
 

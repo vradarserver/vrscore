@@ -11,7 +11,6 @@
 using Newtonsoft.Json;
 using VirtualRadar.Feed.Vatsim.ApiModels;
 using VirtualRadar.Message;
-using VirtualRadar.StandingData;
 
 namespace VirtualRadar.Feed.Vatsim
 {
@@ -32,7 +31,7 @@ namespace VirtualRadar.Feed.Vatsim
         public bool FeedContainsLookups => true;
 
         /// <inheritdoc/>
-        public event EventHandler<TransponderMessage> MessageReceived;
+        public event EventHandler<TransponderMessage>? MessageReceived;
 
         /// <summary>
         /// Raises <see cref="MessageReceived"/>.
@@ -44,7 +43,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         /// <inheritdoc/>
-        public event EventHandler<LookupByAircraftIdOutcome> LookupReceived;
+        public event EventHandler<LookupByAircraftIdOutcome>? LookupReceived;
 
         /// <summary>
         /// Raises <see cref="LookupReceived"/>.
@@ -97,7 +96,7 @@ namespace VirtualRadar.Feed.Vatsim
             var jsonText = Encoding.UTF8.GetString(packet.ToArray());
             var filteredFeed = JsonConvert.DeserializeObject<FilteredFeed>(jsonText);
 
-            foreach(var pilot in filteredFeed.Pilots) {
+            foreach(var pilot in filteredFeed?.Pilots ?? []) {
                 GenerateMessagesForPilot(pilot);
                 GenerateLookupForPilot(pilot);
             }
@@ -112,7 +111,9 @@ namespace VirtualRadar.Feed.Vatsim
         private void GenerateMessagesForPilot(VatsimDataV3Pilot pilot)
         {
             var pilotState = _CommonFeedParser.BuildOrReusePilotState(pilot);
-            OnMessageReceived(pilotState.TransponderMessage);
+            if(pilotState?.TransponderMessage != null) {
+                OnMessageReceived(pilotState.TransponderMessage);
+            }
         }
 
         /// <summary>
@@ -122,7 +123,9 @@ namespace VirtualRadar.Feed.Vatsim
         private void GenerateLookupForPilot(VatsimDataV3Pilot pilot)
         {
             var pilotState = _CommonFeedParser.BuildOrReusePilotState(pilot);
-            OnLookupReceived(pilotState.LookupOutcome);
+            if(pilotState.LookupOutcome != null) {
+                OnLookupReceived(pilotState.LookupOutcome);
+            }
         }
     }
 }

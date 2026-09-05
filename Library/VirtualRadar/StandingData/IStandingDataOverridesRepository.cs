@@ -25,6 +25,6 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="icao24"></param>
         /// <returns></returns>
-        CodeBlock CodeBlockOverrideFor(Icao24 icao24);
+        CodeBlock? CodeBlockOverrideFor(Icao24? icao24);
     }
 }

@@ -27,7 +27,7 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="ex"></param>
         /// <param name="message"></param>
-        void Exception(Exception ex, string message = null);
+        void Exception(Exception ex, string? message = null);
 
         /// <summary>
         /// Reads all lines from the log.

@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using VirtualRadar.Drawing;
 
 namespace VirtualRadar.WebSite.Models
@@ -20,7 +21,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// The basic image to send back to the browser.
         /// </summary>
-        public string ImageName { get; set; }
+        public string? ImageName { get; set; }
 
         /// <summary>
         /// The format requested by the browser.
@@ -30,7 +31,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// The file to read from the web site.
         /// </summary>
-        public string WebSiteFileName { get; set; }
+        public string? WebSiteFileName { get; set; }
 
         /// <summary>
         /// The angle of rotation to apply to the image.
@@ -72,7 +73,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// The name of a file that should be used as the source for the image.
         /// </summary>
-        public string File { get; set; }
+        public string? File { get; set; }
 
         /// <summary>
         /// The standard size at which to render particular images.
@@ -82,7 +83,12 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// A collection of text strings that need to be overlaid onto the image.
         /// </summary>
-        public List<string> TextLines { get; } = [];
+        public List<string?> TextLines { get; } = [];
+
+        /// <summary>
+        /// <see cref="TextLines"/> but guaranteed not to contain any nulls.
+        /// </summary>
+        public IEnumerable<string> Safe_TextLines => TextLines.OfType<string>();
 
         /// <summary>
         /// Indicates that the browser is going to display the image in a space half the size of the img tag,
@@ -93,7 +99,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// Returns true if <see cref="TextLines"/> contains something.
         /// </summary>
-        public bool HasTextLines => TextLines.Count > 0 && TextLines.Any(r => r != null);
+        public bool HasTextLines => TextLines != null && TextLines.Count > 0 && TextLines.Any(r => r != null);
 
         /// <summary>
         /// True if the web image should always be fetched from disk rather than from the cache. This should

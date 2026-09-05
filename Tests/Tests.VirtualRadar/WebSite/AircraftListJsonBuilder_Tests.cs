@@ -24,29 +24,27 @@ namespace Tests.VirtualRadar.WebSite
     public class AircraftListJsonBuilder_Tests
     {
         private static readonly DateTime _StartUtc = new DateTime(2024, 12, 16, 17, 20, 21, 123);
-        private AircraftListJsonBuilder _Builder;
-        private AircraftListJsonBuilderArgs _Args;
-        private AircraftListJsonBuilderFilter _Filter;
-        private Mock<IReceiverFactory> _ReceiverFactory;
-        private Mock<IReceiver> _Receiver;
-        private List<Aircraft> _AllAircraft;
+        private AircraftListJsonBuilder _Builder = null!;
+        private AircraftListJsonBuilderArgs _Args = null!;
+        private Mock<IReceiverFactory> _ReceiverFactory = null!;
+        private Mock<IReceiver> _Receiver = null!;
+        private List<Aircraft> _AllAircraft = null!;
         private long _AircraftListToArrayStamp;
-        private Mock<IAircraftList> _AircraftList;
-        private List<Mock<IReceiver>> _AllReceivers;
-        private MockSettings<AircraftMapSettingsDto> _AircraftMapSettings;
-        private MockSettings<AircraftPictureSettingsDto> _AircraftPictureSettings;
-        private MockSettings<InternetClientSettingsDto> _InternetClientSettings;
-        private MockSettings<OperatorAndTypeFlagSettingsDto> _OperatorAndTypeFlagSettings;
-        private MockSettings<WebClientSettingsDto> _WebClientSettings;
-        private MockFileSystem _FileSystem;
-        private MockClock _Clock;
-        private MockPostOffice _PostOffice;
+        private Mock<IAircraftList> _AircraftList = null!;
+        private List<Mock<IReceiver>> _AllReceivers = null!;
+        private MockSettings<AircraftMapSettingsDto> _AircraftMapSettings = null!;
+        private MockSettings<AircraftPictureSettingsDto> _AircraftPictureSettings = null!;
+        private MockSettings<InternetClientSettingsDto> _InternetClientSettings = null!;
+        private MockSettings<OperatorAndTypeFlagSettingsDto> _OperatorAndTypeFlagSettings = null!;
+        private MockSettings<WebClientSettingsDto> _WebClientSettings = null!;
+        private MockFileSystem _FileSystem = null!;
+        private MockClock _Clock = null!;
+        private MockPostOffice _PostOffice = null!;
 
         [TestInitialize]
         public void TestInitialise()
         {
             _Args = new();
-            _Filter = new();
 
             _AllAircraft = [];
             _AircraftListToArrayStamp = 0L;
@@ -95,9 +93,9 @@ namespace Tests.VirtualRadar.WebSite
 
         private Mock<IReceiver> SetupReceiver(
             string name,
-            Mock<IReceiver> receiver,
+            Mock<IReceiver>? receiver,
             int? id = null,
-            Mock<IAircraftList> aircraftList = null
+            Mock<IAircraftList>? aircraftList = null
         )
         {
             receiver ??= MockHelper.CreateMock<IReceiver>();
@@ -117,11 +115,11 @@ namespace Tests.VirtualRadar.WebSite
         }
 
         private Aircraft SetupAircraft(
-            Aircraft aircraft = null,
+            Aircraft? aircraft = null,
             int? id = null,
             long? stamp = null,
-            Action<TransponderMessage> fillMessage = null,
-            LookupOutcome lookup = null,
+            Action<TransponderMessage>? fillMessage = null,
+            LookupOutcome? lookup = null,
             int addMilliseconds = 0
         )
         {
@@ -180,7 +178,7 @@ namespace Tests.VirtualRadar.WebSite
             aircraft.CopyFromMessage(message);
         }
 
-        private static Route SetupRoute(Airport fromAirport, Airport toAirport, Airport[] stopovers = null)
+        private static Route SetupRoute(Airport fromAirport, Airport toAirport, Airport[]? stopovers = null)
         {
             var result = new Route() {
                 From =      fromAirport,
@@ -241,7 +239,7 @@ namespace Tests.VirtualRadar.WebSite
         [TestMethod]
         public void Build_Returns_Empty_Json_When_There_Are_No_Feeds()
         {
-            _Receiver = null;
+            _Receiver = null!;
 
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
@@ -253,7 +251,7 @@ namespace Tests.VirtualRadar.WebSite
         [TestMethod]
         public void Build_Returns_Requested_SourceFeedId_When_There_Are_No_Feeds()
         {
-            _Receiver = null;
+            _Receiver = null!;
             _Args.ReceiverId = 9;
 
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
@@ -482,7 +480,7 @@ namespace Tests.VirtualRadar.WebSite
         [TestMethod]
         public void Build_Sets_LastDataVersion_To_Zero_If_Receiver_Is_Missing()
         {
-            _Receiver = null;
+            _Receiver = null!;
 
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
@@ -1379,6 +1377,7 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual("", aircraftJson.TrailType);
             Assert.IsNull(aircraftJson.ShortCoordinates);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(3, actual.Count);
             Assert.AreEqual(10, actual[0]);
             Assert.AreEqual(11, actual[1]);
@@ -1398,6 +1397,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(6, actual.Count);
             var idx = 0;
 
@@ -1424,6 +1424,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(6, actual.Count);
             var idx = 0;
 
@@ -1451,6 +1452,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(6, actual.Count);
             var idx = 0;
 
@@ -1479,6 +1481,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(3, actual.Count);
             Assert.AreEqual(false, json.Aircraft[0].ResetTrail);
             var idx = 0;
@@ -1503,6 +1506,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(0, actual.Count);
         }
 
@@ -1522,6 +1526,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(6, actual.Count);
             Assert.AreEqual(true, json.Aircraft[0].ResetTrail);
             var idx = 0;
@@ -1551,6 +1556,7 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual("a", aircraftJson.TrailType);
             Assert.IsNull(aircraftJson.ShortCoordinates);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(4, actual.Count);
             Assert.AreEqual(10, actual[0]);
             Assert.AreEqual(11, actual[1]);
@@ -1574,6 +1580,7 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual("s", aircraftJson.TrailType);
             Assert.IsNull(aircraftJson.ShortCoordinates);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(4, actual.Count);
             Assert.AreEqual(10, actual[0]);
             Assert.AreEqual(11, actual[1]);
@@ -1596,6 +1603,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(12, actual.Count);
             var idx = 0;
 
@@ -1630,6 +1638,7 @@ namespace Tests.VirtualRadar.WebSite
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
             var actual = json.Aircraft[0].FullCoordinates;
 
+            Assert.IsNotNull(actual);
             Assert.AreEqual(12, actual.Count);
             var idx = 0;
 
@@ -1663,6 +1672,7 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.AreEqual("", aircraftJson.TrailType);
             Assert.IsNull(aircraftJson.FullCoordinates);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(3, actual.Count);
 
             var idx = 0;
@@ -1685,7 +1695,8 @@ namespace Tests.VirtualRadar.WebSite
             _Clock.Now = _Clock.Now.AddMilliseconds(milliseconds);
             var json = _Builder.Build(_Args, ignoreInvisibleSources: true, fallbackToDefaultSource: true);
 
-            Assert.AreEqual(expectCoordinate ? 3 : 0, json.Aircraft[0].ShortCoordinates.Count);
+            Assert.IsNotNull(json.Aircraft[0].ShortCoordinates);
+            Assert.AreEqual(expectCoordinate ? 3 : 0, json.Aircraft[0].ShortCoordinates!.Count);
         }
 
         [TestMethod]
@@ -1703,6 +1714,7 @@ namespace Tests.VirtualRadar.WebSite
 
             Assert.IsFalse(aircraftJson.ResetTrail);
             var idx = 0;
+            Assert.IsNotNull(actual);
             Assert.AreEqual(3, actual.Count);
             Assert.AreEqual(14, actual[idx++]);
             Assert.AreEqual(15, actual[idx++]);
@@ -1724,6 +1736,7 @@ namespace Tests.VirtualRadar.WebSite
             var actual = aircraftJson.ShortCoordinates;
 
             Assert.IsTrue(aircraftJson.ResetTrail);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(9, actual.Count);
             var idx = 0;
 
@@ -1754,6 +1767,7 @@ namespace Tests.VirtualRadar.WebSite
             var actual = aircraftJson.ShortCoordinates;
 
             Assert.AreEqual("a", aircraftJson.TrailType);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(4, actual.Count);
 
             var idx = 0;
@@ -1777,6 +1791,7 @@ namespace Tests.VirtualRadar.WebSite
             var actual = aircraftJson.ShortCoordinates;
 
             Assert.AreEqual("s", aircraftJson.TrailType);
+            Assert.IsNotNull(actual);
             Assert.AreEqual(4, actual.Count);
 
             var idx = 0;
@@ -1803,7 +1818,7 @@ namespace Tests.VirtualRadar.WebSite
             _Args.BrowserLongitude = browserLongitude;
             var aircraft = SetupAircraft(fillMessage: m => {
                 m.GroundSpeedKnots = 100;
-                if(aircraftLatitude != null) {
+                if(aircraftLatitude != null && aircraftLongitude != null) {
                     m.Location = new(aircraftLatitude.Value, aircraftLongitude.Value);
                 }
             });
@@ -1835,7 +1850,7 @@ namespace Tests.VirtualRadar.WebSite
             _Args.BrowserLongitude = browserLongitude;
             var aircraft = SetupAircraft(fillMessage: m => {
                 m.GroundSpeedKnots = 100;
-                if(aircraftLatitude != null) {
+                if(aircraftLatitude != null && aircraftLongitude != null) {
                     m.Location = new(aircraftLatitude.Value, aircraftLongitude.Value);
                 }
             });

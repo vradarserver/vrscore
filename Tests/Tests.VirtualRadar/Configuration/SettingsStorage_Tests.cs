@@ -22,7 +22,7 @@ namespace Tests.VirtualRadar.Configuration
     [TestClass]
     public class SettingsStorage_Tests
     {
-        record SettingsDto(int Id, string Name);
+        record SettingsDto(int Id, string? Name);
         readonly SettingsDto _DefaultSettingsDto = new(0, null);
 
         class ArrayOfStrings
@@ -34,7 +34,7 @@ namespace Tests.VirtualRadar.Configuration
                 Lines = lines;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 var result = Object.ReferenceEquals(this, obj);
                 if(!result && obj is ArrayOfStrings other) {
@@ -49,14 +49,14 @@ namespace Tests.VirtualRadar.Configuration
 
         readonly ArrayOfStrings _DefaultArrayOfStrings = new([]);
 
-        private SettingsStorage _Service;
-        private MockFileSystem _FileSystem;
-        private MockWorkingFolder _WorkingFolder;
-        private Mock<ISettingsConfiguration> _MockSettingsConfig;
-        private Mock<ILog> _MockLog;
+        private SettingsStorage _Service = null!;
+        private MockFileSystem _FileSystem = null!;
+        private MockWorkingFolder _WorkingFolder = null!;
+        private Mock<ISettingsConfiguration> _MockSettingsConfig = null!;
+        private Mock<ILog> _MockLog = null!;
 
-        private Dictionary<Type, string> _SettingsDtoTypeToKey;
-        private Dictionary<string, JObject> _SettingsDtoKeyToDefaultValue;
+        private Dictionary<Type, string> _SettingsDtoTypeToKey = null!;
+        private Dictionary<string, JObject> _SettingsDtoKeyToDefaultValue = null!;
 
         [TestInitialize]
         public void TestInitialise()
@@ -99,7 +99,7 @@ namespace Tests.VirtualRadar.Configuration
         private void SetupConfigForType<T>(string key, T defaultValue)
         {
             _SettingsDtoTypeToKey[typeof(T)] = key;
-            _SettingsDtoKeyToDefaultValue[key] = JObject.FromObject(defaultValue);
+            _SettingsDtoKeyToDefaultValue[key] = JObject.FromObject(defaultValue!);
         }
 
         private string ExpectedSettingsFileName()
@@ -110,7 +110,7 @@ namespace Tests.VirtualRadar.Configuration
             );
         }
 
-        private void SetupConfigFile(string content, string folder = null)
+        private void SetupConfigFile(string content, string? folder = null)
         {
             if(folder != null) {
                 _WorkingFolder.Folder = folder;
@@ -263,7 +263,7 @@ namespace Tests.VirtualRadar.Configuration
         public void ChangeValue_Throws_If_Passed_Null_Type()
         {
             SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
-            _Service.ChangeValue(null, new SettingsDto(1, ""));
+            _Service.ChangeValue(null!, new SettingsDto(1, ""));
         }
 
         [TestMethod]
@@ -271,7 +271,7 @@ namespace Tests.VirtualRadar.Configuration
         public void ChangeValue_Throws_If_Passed_Null_Value()
         {
             SetupConfigForType<SettingsDto>("options", _DefaultSettingsDto);
-            _Service.ChangeValue(typeof(SettingsDto), null);
+            _Service.ChangeValue(typeof(SettingsDto), null!);
         }
 
         [TestMethod]
@@ -384,12 +384,13 @@ namespace Tests.VirtualRadar.Configuration
 
             var expected = new SettingsDto(2, "Honky Tonk Badonkadonk");
             var callCount = 0;
-            ValueChangedCallbackArgs actual = null;
+            ValueChangedCallbackArgs? actual = null;
             using(_Service.AddValueChangedCallback(args => { actual = args; ++callCount; })) {
                 _Service.ChangeValue(expected);
             }
 
             Assert.AreEqual(1, callCount);
+            Assert.IsNotNull(actual);
             Assert.AreEqual("options", actual.Key);
             Assert.AreEqual(expected, actual.Value);
         }
@@ -403,7 +404,7 @@ namespace Tests.VirtualRadar.Configuration
             _Service.ChangeValue(version1);
 
             var callCount = 0;
-            ValueChangedCallbackArgs actual = null;
+            ValueChangedCallbackArgs? actual = null;
             using(_Service.AddValueChangedCallback(args => { actual = args; ++callCount; })) {
                 _Service.ChangeValue(version2);
             }

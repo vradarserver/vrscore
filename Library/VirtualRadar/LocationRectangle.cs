@@ -91,19 +91,19 @@ namespace VirtualRadar
             var halfHeightKm = distanceUnit.To(height / 2.0, DistanceUnit.Kilometres);
 
             var topLeft = new Location(
-                GreatCircleMaths.Destination(centre, 0.0,   halfHeightKm).Latitude,
-                GreatCircleMaths.Destination(centre, 270.0, halfWidthKm).Longitude
+                GreatCircleMaths.Destination(centre, 0.0,   halfHeightKm)!.Latitude,
+                GreatCircleMaths.Destination(centre, 270.0, halfWidthKm)!.Longitude
             );
             var bottomRight = new Location(
-                GreatCircleMaths.Destination(centre, 180.0, halfHeightKm).Latitude,
-                GreatCircleMaths.Destination(centre, 90.0,  halfWidthKm).Longitude
+                GreatCircleMaths.Destination(centre, 180.0, halfHeightKm)!.Latitude,
+                GreatCircleMaths.Destination(centre, 90.0,  halfWidthKm)!.Longitude
             );
 
             return new(topLeft, bottomRight);
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is LocationRectangle other) {
@@ -150,9 +150,9 @@ namespace VirtualRadar
         /// <returns></returns>
         public static bool IsWithinBounds(double? latitude, double? longitude, double top, double left, double bottom, double right)
         {
-            var result = latitude != null && longitude != null;
+            var result = false;
 
-            if(result) {
+            if(latitude != null && longitude != null) {
                 // Latitude is simple because we assume there is nothing past the poles
                 result = top >= latitude && bottom <= latitude;
 

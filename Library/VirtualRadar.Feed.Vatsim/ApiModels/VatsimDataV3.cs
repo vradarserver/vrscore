@@ -16,31 +16,31 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
     public class VatsimDataV3
     {
         [DataMember(Name = "general")]
-        public VatsimDataV3General General { get; set; } = new();
+        public VatsimDataV3General? General { get; set; } = new();
 
         [DataMember(Name = "pilots")]
-        public List<VatsimDataV3Pilot> Pilots { get; } = [];
+        public List<VatsimDataV3Pilot>? Pilots { get; } = [];
 
         [DataMember(Name = "controllers")]
-        public List<VatsimDataV3Controller> Controllers { get; } = [];
+        public List<VatsimDataV3Controller>? Controllers { get; } = [];
 
         [DataMember(Name = "atis")]
-        public List<VatsimDataV3Atis> Atis { get; } = [];
+        public List<VatsimDataV3Atis>? Atis { get; } = [];
 
         [DataMember(Name = "servers")]
-        public List<VatsimDataV3Server> Servers { get; } = [];
+        public List<VatsimDataV3Server>? Servers { get; } = [];
 
         [DataMember(Name = "prefiles")]
-        public List<VatsimDataV3Prefile> Prefiles { get; } = [];
+        public List<VatsimDataV3Prefile>? Prefiles { get; } = [];
 
         [DataMember(Name = "facilities")]
-        public List<VatsimDataV3Facility> Facilities { get; } = [];
+        public List<VatsimDataV3Facility>? Facilities { get; } = [];
 
         [DataMember(Name = "ratings")]
-        public List<VatsimDataV3Rating> Ratings { get; } = [];
+        public List<VatsimDataV3Rating>? Ratings { get; } = [];
 
         [DataMember(Name = "pilot_ratings")]
-        public List<VatsimDataV3PilotRating> PilotRatings { get; } = [];
+        public List<VatsimDataV3PilotRating>? PilotRatings { get; } = [];
 
         public override string ToString()
         {

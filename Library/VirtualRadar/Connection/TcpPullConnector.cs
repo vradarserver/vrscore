@@ -33,9 +33,9 @@ namespace VirtualRadar.Connection
             TcpPullConnector _Connector) : CancellableState
             #pragma warning restore IDE1006 // .editorconfig does not support naming rules for primary ctors
         {
-            public Socket           Socket;     // The socket that communication is running over
-            public NetworkStream    Stream;     // The network stream that we are reading
-            public Task             PumpTask;   // The background packet pump thread
+            public Socket?          Socket;     // The socket that communication is running over
+            public NetworkStream?   Stream;     // The network stream that we are reading
+            public Task?            PumpTask;   // The background packet pump thread
 
             protected override void TearDownState()
             {
@@ -76,8 +76,8 @@ namespace VirtualRadar.Connection
             }
         }
 
-        private Connection _Connection;             // The current connection
-        private TcpPullConnectorSettingsDto _SettingsDto;
+        private Connection? _Connection;             // The current connection
+        private readonly TcpPullConnectorSettingsDto _SettingsDto;
 
         /// <inheritdoc/>
         public TcpPullConnectorSettingsDto SettingsDto => _SettingsDto;
@@ -101,7 +101,7 @@ namespace VirtualRadar.Connection
         }
 
         /// <inheritdoc/>
-        public event EventHandler ConnectionStateChanged;
+        public event EventHandler? ConnectionStateChanged;
 
         /// <summary>
         /// Raises <see cref="ConnectionStateChanged"/>.
@@ -112,9 +112,9 @@ namespace VirtualRadar.Connection
             ConnectionStateChanged?.Invoke(this, args);
         }
 
-        private TimestampedException _LastException;
+        private TimestampedException? _LastException;
         /// <inheritdoc/>
-        public TimestampedException LastException
+        public TimestampedException? LastException
         {
             get => _LastException;
             private set {
@@ -126,7 +126,7 @@ namespace VirtualRadar.Connection
         }
 
         /// <inheritdoc/>
-        public event EventHandler LastExceptionChanged;
+        public event EventHandler? LastExceptionChanged;
 
         /// <summary>
         /// Raises <see cref="LastExceptionChanged"/>.
@@ -141,7 +141,7 @@ namespace VirtualRadar.Connection
         public int PacketSize { get; set; } = 1024;
 
         /// <inheritdoc/>
-        public event EventHandler<ReadOnlyMemory<byte>> PacketReceived;
+        public event EventHandler<ReadOnlyMemory<byte>>? PacketReceived;
 
         /// <summary>
         /// Raises <see cref="PacketReceived"/>.
@@ -158,6 +158,7 @@ namespace VirtualRadar.Connection
         /// <param name="settingsDto"></param>
         public TcpPullConnector(TcpPullConnectorSettingsDto settingsDto)
         {
+            ArgumentNullException.ThrowIfNull(settingsDto);
             _SettingsDto = settingsDto;
         }
 
@@ -186,17 +187,20 @@ namespace VirtualRadar.Connection
 
             ConnectionState = ConnectionState.Opening;
 
-            Connection connection = null;
+            Connection? connection = null;
             try {
+                var parsedAddress = SettingsDto.ParsedAddress
+                    ?? throw new InvalidOperationException($"Cannot open a connection to \"{SettingsDto.Address}\", it is not a valid IP address");
+
                 connection = new(this) {
                     Socket = new Socket(
-                        SettingsDto.ParsedAddress.AddressFamily,
+                        parsedAddress.AddressFamily,
                         SocketType.Stream,
                         ProtocolType.Tcp
                     )
                 };
 
-                var ipEndPoint = new IPEndPoint(SettingsDto.ParsedAddress, SettingsDto.Port);
+                var ipEndPoint = new IPEndPoint(parsedAddress, SettingsDto.Port);
                 await connection.Socket.ConnectAsync(ipEndPoint, cancellationToken);
 
                 if(!cancellationToken.IsCancellationRequested) {
@@ -230,7 +234,7 @@ namespace VirtualRadar.Connection
                 ConnectionState = ConnectionState.Closing;
 
                 try {
-                    _Connection.TearDown();
+                    _Connection?.TearDown();
                 } finally {
                     _Connection = null;
                     ConnectionState = ConnectionState.Closed;
@@ -284,11 +288,14 @@ namespace VirtualRadar.Connection
 
         private async Task RunPacketPump(Connection connection)
         {
-            IMemoryOwner<byte> buffer = null;
+            var stream = connection.Stream
+                ?? throw new InvalidOperationException($"{nameof(RunPacketPump)} started before the network stream was created");
+
+            IMemoryOwner<byte>? buffer = null;
             var bufferLength = 0;
 
             try {
-                while(!connection.LinkedCancelToken.IsCancellationRequested) {
+                while(!(connection.LinkedCancelToken?.IsCancellationRequested ?? true)) {
                     var packetSize = Math.Max(1, Math.Min(PacketSize, 64 * 1024));
                     if(buffer == null || bufferLength != packetSize) {
                         buffer?.Dispose();
@@ -296,8 +303,8 @@ namespace VirtualRadar.Connection
                         buffer = MemoryPool<byte>.Shared.Rent(bufferLength);
                     }
 
-                    var bytesRead = await connection.Stream.ReadAsync(buffer.Memory, connection.LinkedCancelToken.Token);
-                    if(!connection.LinkedCancelToken.IsCancellationRequested) {
+                    var bytesRead = await stream.ReadAsync(buffer.Memory, connection.LinkedCancelToken.Token);
+                    if(!(connection.LinkedCancelToken?.IsCancellationRequested ?? true)) {
                         if(bytesRead > 0) {
                             OnPacketReceived(buffer.Memory[..bytesRead]);
                         } else {

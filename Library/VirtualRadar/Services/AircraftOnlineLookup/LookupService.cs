@@ -27,7 +27,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         private int _TimerPauseSeconds = 1;
 
         /// <inheritdoc/>
-        public event EventHandler<BatchedLookupOutcome<LookupByIcaoOutcome>> LookupCompleted;
+        public event EventHandler<BatchedLookupOutcome<LookupByIcaoOutcome>>? LookupCompleted;
 
         /// <summary>
         /// Raises <see cref="LookupCompleted"/>.
@@ -67,7 +67,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         }
 
         /// <inheritdoc/>
-        public async Task<LookupOutcome> LookupAsync(Icao24 icao24, CancellationToken cancellationToken)
+        public async Task<LookupOutcome?> LookupAsync(Icao24 icao24, CancellationToken cancellationToken)
         {
             using(var awaiter = new LookupAwaiter(this, [ icao24 ])) {
                 var awaiterTask = awaiter.WaitUntilCompleted(cancellationToken);
@@ -110,7 +110,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             throw new NotImplementedException();
         }
 
-        private async void Timer_Ticked(object state)
+        private async void Timer_Ticked(object? state)
         {
             var backOff = false;
 
@@ -207,7 +207,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         )
         {
             if(icao24s.Length > 0) {
-                BatchedLookupOutcome<LookupByIcaoOutcome> lookupOutcome;
+                BatchedLookupOutcome<LookupByIcaoOutcome>? lookupOutcome;
                 try {
                     lookupOutcome = await _Provider.LookupIcaos(icao24s, CancellationToken.None);
                 } catch {

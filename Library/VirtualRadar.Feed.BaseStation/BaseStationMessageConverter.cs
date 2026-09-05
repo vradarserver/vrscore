@@ -30,9 +30,9 @@ namespace VirtualRadar.Feed.BaseStation
             return ConvertBaseStationToTransponder(_Parser.FromFeed(chunk));
         }
 
-        private TransponderMessage[] ConvertBaseStationToTransponder(BaseStationMessage baseStationMessage)
+        private TransponderMessage[] ConvertBaseStationToTransponder(BaseStationMessage? baseStationMessage)
         {
-            TransponderMessage[] result = null;
+            TransponderMessage[]? result = null;
 
             if(baseStationMessage != null && baseStationMessage.IsAircraftMessage) {
                 if(Icao24.TryParse(baseStationMessage.Icao24, out var icao24, ignoreNonHexDigits: Options.Icao24CanHaveNonHexDigits)) {

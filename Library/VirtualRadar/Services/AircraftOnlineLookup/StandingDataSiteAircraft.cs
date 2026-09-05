@@ -15,10 +15,11 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
     /// </summary>
     public class StandingDataSiteAircraft
     {
+        private string _Icao = "";
         /// <summary>
         /// Gets or sets the aircraft's ICAO as a string.
         /// </summary>
-        public string Icao { get; set; }
+        public string Icao { get => _Icao; set => _Icao = value ?? ""; }
 
         /// <summary>
         /// Gets <see cref="Icao"/> as an <see cref="Icao24"/>.
@@ -28,42 +29,42 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
         /// <summary>
         /// Gets or sets the aircraft's registration.
         /// </summary>
-        public string Registration { get; set; }
+        public string? Registration { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft's country of registration.
         /// </summary>
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft's manufacturer.
         /// </summary>
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft model.
         /// </summary>
-        public string Model { get; set; }
+        public string? Model { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft model's ICAO 8643 code.
         /// </summary>
-        public string ModelIcao { get; set; }
+        public string? ModelIcao { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft's operator.
         /// </summary>
-        public string Operator { get; set; }
+        public string? Operator { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft's operator ICAO.
         /// </summary>
-        public string OperatorIcao { get; set; }
+        public string? OperatorIcao { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft's serial number.
         /// </summary>
-        public string Serial { get; set; }
+        public string? Serial { get; set; }
 
         /// <summary>
         /// Gets or sets the aircraft's year of manufacture.

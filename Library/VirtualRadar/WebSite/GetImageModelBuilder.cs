@@ -28,21 +28,25 @@ namespace VirtualRadar.WebSite
         /// </summary>
         /// <param name="requestPath"></param>
         /// <returns></returns>
-        public GetImageModel ExtractImageRequestFromWebPath(string requestPath)
+        public GetImageModel? ExtractImageRequestFromWebPath(string? requestPath)
         {
-            var fileName = _FileSystem.GetFileName(requestPath);
-            var imageFormat = ImageFormatExtensions.FromExtension(
-                _FileSystem.GetExtension(fileName)
-            );
+            GetImageModel? result = null;
 
-            var result = imageFormat == null
-                ? null
-                : new GetImageModel() {
-                    ImageName = _FileSystem.GetFileNameWithoutExtension(fileName).ToUpperInvariant(),
-                    ImageFormat = imageFormat.Value,
-                };
-            if(result != null) {
-                ExtractImageRequestFromPathSegments(requestPath, fileName, result);
+            if(!String.IsNullOrEmpty(requestPath)) {
+                var fileName = _FileSystem.GetFileName(requestPath);
+                var imageFormat = ImageFormatExtensions.FromExtension(
+                    _FileSystem.GetExtension(fileName)
+                );
+
+                result = imageFormat == null || fileName == null
+                    ? null
+                    : new GetImageModel() {
+                        ImageName = _FileSystem.GetFileNameWithoutExtension(fileName).ToUpperInvariant(),
+                        ImageFormat = imageFormat.Value,
+                    };
+                if(result != null && fileName != null) {
+                    ExtractImageRequestFromPathSegments(requestPath, fileName, result);
+                }
             }
 
             return result;
@@ -81,7 +85,7 @@ namespace VirtualRadar.WebSite
                     var pathAndFileName = new StringBuilder("/images/");
                     var hyphenPosn = pathPart.IndexOf('-');
                     if(hyphenPosn != -1) {
-                        var folder = pathPart.Substring(hyphenPosn + 1).Replace("\\", "/").Trim();
+                        var folder = pathPart[(hyphenPosn + 1)..].Replace("\\", "/").Trim();
                         if(folder.Length > 0) {
                             pathAndFileName.AppendFormat("{0}{1}", folder, folder[^1] == '/' ? "" : "/");
                         }

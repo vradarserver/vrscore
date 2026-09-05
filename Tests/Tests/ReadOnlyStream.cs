@@ -57,7 +57,7 @@ namespace Tests
         /// <summary>
         /// Raised when Read runs out of backing store.
         /// </summary>
-        public event EventHandler StreamFinished;
+        public event EventHandler? StreamFinished;
 
         /// <summary>
         /// Raises <see cref="StreamFinished"/>.
@@ -90,6 +90,7 @@ namespace Tests
             int packetSize
         )
         {
+            ArgumentNullException.ThrowIfNull(content);
             _BackingStore = content;
             PacketSize = packetSize;
         }
@@ -102,7 +103,7 @@ namespace Tests
         /// <param name="packetSize"></param>
         /// <param name="sendOnePacket"></param>
         public void Configure(
-            byte[] backingStore = null,
+            byte[]? backingStore = null,
             long position = -1,
             int packetSize = -1,
             bool sendOnePacket = false

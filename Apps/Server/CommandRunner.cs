@@ -17,7 +17,9 @@ namespace VirtualRadar.Server
 {
     abstract class CommandRunner
     {
-        public Options Options { get; set; }
+        public Options? Options { get; set; }
+
+        public Options Safe_Options => Options ?? throw new InvalidOperationException($"{nameof(Options)} has not been set");
 
         public abstract Task<bool> Run();
 

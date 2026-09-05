@@ -34,16 +34,16 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             ;
         }
 
         /// <inheritdoc/>
-        public override object ReadJson(
+        public override object? ReadJson(
             JsonReader reader,
             Type objectType,
-            object existingValue,
+            object? existingValue,
             JsonSerializer serialiser
         )
         {
@@ -54,7 +54,7 @@ namespace VirtualRadar.Configuration
                 ? null
                 : ConfigurationConfig.ProviderType(providerName);
 
-            object result = null;
+            object? result = null;
             if(concreteType != null) {
                 result = jObject.ToObject(concreteType, serialiser);
             }

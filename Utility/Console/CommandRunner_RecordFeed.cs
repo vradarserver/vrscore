@@ -18,10 +18,12 @@ using VirtualRadar.Feed.Recording;
 namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_RecordFeed(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         IServiceProvider _ServiceProvider,
         Options _Options,
         HeaderService _Header,
         IRecorder _FeedRecorder
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
     ) : CommandRunner
     {
         public override async Task<bool> Run()
@@ -50,6 +52,9 @@ namespace VirtualRadar.Utility.CLIConsole
                 Port = _Options.Port,
             };
             var connector = connectorFactory.Create(connectorSettingsDto);
+            if(connector == null) {
+                OptionsParser.Usage($"Failed to create connector for {connectorSettingsDto}");
+            }
 
             await WriteLine($"Opening {_Options.SaveFileName} for writing");
             var fileStream = new FileStream(_Options.SaveFileName, FileMode.Create, FileAccess.Write, FileShare.Read);

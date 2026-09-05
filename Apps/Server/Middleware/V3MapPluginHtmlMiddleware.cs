@@ -70,8 +70,8 @@ namespace VirtualRadar.Server.Middleware
         private string ReplaceContent(string content)
         {
             content ??= "";
-            string mapStylesheet = null;
-            string mapJavascript = null;
+            string? mapStylesheet = null;
+            string? mapJavascript = null;
 
             switch(_AircraftMapSettingsDto.LatestValue.MapProvider) {
                 case MapProvider.GoogleMaps:

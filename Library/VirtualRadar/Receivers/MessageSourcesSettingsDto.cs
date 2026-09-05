@@ -18,8 +18,7 @@ namespace VirtualRadar.Receivers
     [SettingsDto("MessageSources")]
     public class MessageSourcesSettingsDto
     {
-        private ReceiverSettingsDto[] _Receivers = [];
-        public ReceiverSettingsDto[] Receivers { get; set; }
+        public ReceiverSettingsDto[] Receivers { get; set; } = [];
 
         public int DefaultSourceId { get; set; }
 
@@ -29,12 +28,10 @@ namespace VirtualRadar.Receivers
 
         public MessageSourcesSettingsDto(ReceiverSettingsDto[] receivers)
         {
-            _Receivers = receivers;
+            Receivers = receivers ?? [];
         }
 
-        public MessageSourcesSettingsDto(MessageSourcesSettingsDto source) : this(
-            receivers: source.Receivers
-        )
+        public MessageSourcesSettingsDto(MessageSourcesSettingsDto source) : this(receivers: source.Receivers)
         {
         }
 
@@ -42,7 +39,7 @@ namespace VirtualRadar.Receivers
 
         public static bool operator!=(MessageSourcesSettingsDto lhs, MessageSourcesSettingsDto rhs) => !Object.Equals(lhs, rhs);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is MessageSourcesSettingsDto other) {

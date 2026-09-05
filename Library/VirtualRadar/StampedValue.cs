@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace VirtualRadar
 {
     /// <summary>
@@ -26,14 +28,16 @@ namespace VirtualRadar
         public bool HasNeverBeenSet => Stamp == 0;
 
         /// <summary>
-        /// The value last assigned.
+        /// The value last assigned (or default(T) if never assigned).
         /// </summary>
+        [MaybeNull, AllowNull]
         public T Value { get; private set; }
 
         /// <summary>
         /// Implicit conversion from a stamped value to the <see cref="Value"/>.
         /// </summary>
         /// <param name="stampedValue"></param>
+        [return: MaybeNull]
         public static implicit operator T(StampedValue<T> stampedValue) => stampedValue.Value;
 
         /// <summary>
@@ -61,10 +65,10 @@ namespace VirtualRadar
         /// <param name="newValue"></param>
         /// <param name="stamp"></param>
         /// <returns></returns>
-        public bool SetIfNotDefault(T newValue, long stamp)
+        public bool SetIfNotDefault(T? newValue, long stamp)
         {
             return !EqualityComparer<T>.Default.Equals(newValue, default)
-                ? Set(newValue, stamp)
+                ? Set(newValue!, stamp)
                 : false;
         }
 
@@ -78,10 +82,10 @@ namespace VirtualRadar
         /// <param name="stamp"></param>
         /// <param name="toValue"></param>
         /// <returns></returns>
-        public bool SetIfNotDefault<TRaw>(TRaw newValue, long stamp, Func<TRaw, T> toValue)
+        public bool SetIfNotDefault<TRaw>(TRaw? newValue, long stamp, Func<TRaw, T> toValue)
         {
             return !EqualityComparer<TRaw>.Default.Equals(newValue, default)
-                ? Set(toValue(newValue), stamp)
+                ? Set(toValue(newValue!), stamp)
                 : false;
         }
 
@@ -104,7 +108,7 @@ namespace VirtualRadar
         /// <param name="previousValueStamp"></param>
         /// <param name="unchangedValue"></param>
         /// <returns></returns>
-        public T ValueIfChanged(long previousValueStamp, T unchangedValue = default)
+        public T? ValueIfChanged(long previousValueStamp, T? unchangedValue = default)
         {
             return Stamp > previousValueStamp
                 ? Value
@@ -120,7 +124,7 @@ namespace VirtualRadar
         /// <param name="previousValueStamp"></param>
         /// <param name="toValue"></param>
         /// <returns></returns>
-        public TCon ValueIfChanged<TCon>(long previousValueStamp, Func<T, TCon> toValue, TCon unchangedValue = default)
+        public TCon? ValueIfChanged<TCon>(long previousValueStamp, Func<T?, TCon> toValue, TCon? unchangedValue = default)
         {
             return Stamp > previousValueStamp
                 ? toValue(Value)

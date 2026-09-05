@@ -23,7 +23,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the version number of the server.
         /// </summary>
         [DataMember]
-        public string VrsVersion { get; set; }
+        public required string VrsVersion { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that the server is running under Mono.
@@ -76,7 +76,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the initial settings, if any, to apply to new users.
         /// </summary>
         [DataMember]
-        public string InitialSettings { get; set; }
+        public string? InitialSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the initial latitude for maps.
@@ -94,7 +94,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the map type to use if the user hasn't already configured one.
         /// </summary>
         [DataMember]
-        public string InitialMapType { get; set; }
+        public string? InitialMapType { get; set; }
 
         /// <summary>
         /// Gets or sets the initial level of zoom to use.
@@ -106,19 +106,19 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the initial distance unit to use.
         /// </summary>
         [DataMember]
-        public string InitialDistanceUnit { get; set; }
+        public string? InitialDistanceUnit { get; set; }
 
         /// <summary>
         /// Gets or sets the initial height unit to use.
         /// </summary>
         [DataMember]
-        public string InitialHeightUnit { get; set; }
+        public string? InitialHeightUnit { get; set; }
 
         /// <summary>
         /// Gets or sets the initial speed unit.
         /// </summary>
         [DataMember]
-        public string InitialSpeedUnit { get; set; }
+        public string? InitialSpeedUnit { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that an Internet client can run reports.
@@ -166,13 +166,13 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the API key to use when working with Google Maps.
         /// </summary>
         [DataMember]
-        public string GoogleMapsApiKey { get; set; }
+        public string? GoogleMapsApiKey { get; set; }
 
         /// <summary>
         /// Gets or sets the tile server settings selected by the user.
         /// </summary>
         [DataMember]
-        public DownloadedTileServerSettings TileServerSettings { get; set; }
+        public required DownloadedTileServerSettings TileServerSettings { get; set; }
 
         /// <summary>
         /// Gets or sets a list of layers that can be switched on and off by the user.

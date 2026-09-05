@@ -20,10 +20,10 @@ namespace VirtualRadar.Extensions
         /// <exception cref="InvalidOperationException">Throw if the type has no suitable ctor.</exception>
         public static object CreateDefaultInstance(this Type type, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public)
         {
-            object result = null;
+            object? result = null;
 
             foreach(var ctorInfo in type.GetConstructors(bindingFlags)) {
-                object[] parameterValues = null;
+                object?[]? parameterValues = null;
 
                 var parameters = ctorInfo.GetParameters();
                 if(parameters.Length == 0) {

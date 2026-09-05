@@ -22,12 +22,12 @@ namespace VirtualRadar.TileServer
         /// Gets or sets the name of the option.
         /// </summary>
         [DataMember(IsRequired = true)]
-        public string Option { get; set; }
+        public required string Option { get; set; }
 
         /// <summary>
         /// Gets or sets the option's value.
         /// </summary>
         [DataMember(IsRequired = true)]
-        public string Value { get; set; }
+        public required string Value { get; set; }
     }
 }

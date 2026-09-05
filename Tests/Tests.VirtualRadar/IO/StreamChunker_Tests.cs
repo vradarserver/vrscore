@@ -21,13 +21,13 @@ namespace Tests.VirtualRadar.IO
 
             private readonly byte[] _EndMarker;
 
-            protected override int _MaximumChunkSize { get; }
+            protected override int MaximumChunkSize { get; }
 
             public TestChunker(byte[] startMarker, byte[] endMarker, int maximumChunkSize)
             {
                 _StartMarker = startMarker;
                 _EndMarker = endMarker;
-                _MaximumChunkSize = maximumChunkSize;
+                MaximumChunkSize = maximumChunkSize;
             }
 
             protected override (int, int) FindStartAndEndOffset(Span<byte> buffer, int newBlockStartOffset)
@@ -61,19 +61,17 @@ namespace Tests.VirtualRadar.IO
             }
         }
 
-        private TestChunker                         _TestChunker;
-        private IStreamChunkerState                 _TestChunkerState;
-        private Action<ReadOnlyMemory<byte>>        _ChunkExtractedCallback;
+        private TestChunker                         _TestChunker = null!;
+        private IStreamChunkerState?                _TestChunkerState;
+        private Action<ReadOnlyMemory<byte>>?       _ChunkExtractedCallback;
         private int                                 _CountChunksSeen;
-        private CancellationTokenSource             _CancellationTokenSource;
-        private CancellationToken                   _CancellationToken;
-        private ReadOnlyStream                      _Stream;
+        private CancellationTokenSource             _CancellationTokenSource = null!;
+        private ReadOnlyStream                      _Stream = null!;
 
         [TestInitialize]
         public void TestInitialise()
         {
             _CancellationTokenSource = new();
-            _CancellationToken = _CancellationTokenSource.Token;
             _Stream = new();
             _Stream.StreamFinished += (_,_) => _CancellationTokenSource.Cancel();
 
@@ -90,11 +88,11 @@ namespace Tests.VirtualRadar.IO
         }
 
         private TestChunker CreateTestChunker(
-            byte[] startMarkers = null,
-            byte[] endMarkers = null,
+            byte[]? startMarkers = null,
+            byte[]? endMarkers = null,
             int maxChunkSize = 3,
             bool setFields = true,
-            Action<ReadOnlyMemory<byte>> callback = null
+            Action<ReadOnlyMemory<byte>>? callback = null
         )
         {
             var result = new TestChunker(
@@ -147,7 +145,7 @@ namespace Tests.VirtualRadar.IO
             return result.ToString();
         }
 
-        private void AssertChunk(ReadOnlySpan<byte> expected, ReadOnlyMemory<byte> actual, string message = null)
+        private void AssertChunk(ReadOnlySpan<byte> expected, ReadOnlyMemory<byte> actual, string? message = null)
         {
             var areEqual = expected.SequenceEqual(actual.Span);
             if(!areEqual && message == null) {

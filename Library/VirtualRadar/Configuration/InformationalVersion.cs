@@ -74,23 +74,24 @@ namespace VirtualRadar.Configuration
             : $"{Major}.{Minor}.{Patch}-{(ReleaseType == ReleaseType.Alpha ? "alpha" : "beta")}-{Revision}";
 
         /// <inheritdoc/>
-        public int CompareTo(InformationalVersion other)
+        public int CompareTo(InformationalVersion? other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            var result = 1;
+            if(other != null) {
+                result = Major - other.Major;
 
-            var result = Major - other.Major;
-
-            if(result == 0) {
-                result = Minor - other.Minor;
-            }
-            if(result == 0) {
-                result = Patch - other.Patch;
-            }
-            if(result == 0) {
-                result = (int)ReleaseType - (int)other.ReleaseType;
-            }
-            if(result == 0) {
-                result = Revision - other.Revision;
+                if(result == 0) {
+                    result = Minor - other.Minor;
+                }
+                if(result == 0) {
+                    result = Patch - other.Patch;
+                }
+                if(result == 0) {
+                    result = (int)ReleaseType - (int)other.ReleaseType;
+                }
+                if(result == 0) {
+                    result = Revision - other.Revision;
+                }
             }
 
             return result;
@@ -132,7 +133,7 @@ namespace VirtualRadar.Configuration
         /// </summary>
         /// <param name="assembly">The assembly to extract an informational version from.</param>
         /// <returns>The informational version or null if the assembly has not been tagged.</returns>
-        public static InformationalVersion FromAssembly(Assembly assembly)
+        public static InformationalVersion FromAssembly(Assembly? assembly)
         {
             var versionText = assembly
                 ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
@@ -162,11 +163,12 @@ namespace VirtualRadar.Configuration
         /// <param name="versionTag"></param>
         /// <param name="version"></param>
         /// <returns></returns>
-        public static bool TryParse(string versionTag, out InformationalVersion version)
+        public static bool TryParse(string? versionTag, out InformationalVersion version)
         {
-            version = default;      // <-- VS2022 cannot figure out that there's no path where version is not assigned, it needs this to compile
+            version = default!;     // <-- VS2022 cannot figure out that there's no path where version is not assigned, it needs this to compile
 
-            var match = _ParseRegex.Match(versionTag ?? "");
+            versionTag ??= "";
+            var match = _ParseRegex.Match(versionTag);
             var result = match.Success;
 
             if(result) {

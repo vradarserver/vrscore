@@ -27,10 +27,15 @@ namespace Tests
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public T GetService<T>() => (T)GetService(typeof(T));
+        public T GetService<T>() where T: class
+        {
+            return (GetService(typeof(T)) as T) ?? throw new InvalidOperationException(
+                $"Missing mock service implementation for {typeof(T)}"
+            );
+        }
 
         /// <inheritdoc />
-        public object GetService(Type serviceType) => Services.TryGetValue(serviceType, out var value) ? value : null;
+        public object? GetService(Type serviceType) => Services.TryGetValue(serviceType, out var value) ? value : null;
 
         /// <summary>
         /// True if the service is registered.
@@ -52,7 +57,7 @@ namespace Tests
         /// <typeparam name="T"></typeparam>
         /// <param name="service"></param>
         /// <returns></returns>
-        public MockServiceProvider AddService<T>(T service) => AddService(typeof(T), service);
+        public MockServiceProvider AddService<T>(T service) where T: class => AddService(typeof(T), service);
 
         /// <summary>
         /// Adds or overwrites the mapping between a service type and its implementation.

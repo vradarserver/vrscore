@@ -43,7 +43,7 @@ namespace VirtualRadar.Extensions
             this IServiceCollection services,
             Type serviceType,
             object serviceKey,
-            Func<IServiceProvider, object, object> implementationFactory
+            Func<IServiceProvider, object?, object> implementationFactory
         )
         {
             switch(GetLifetime(serviceType)) {
@@ -113,7 +113,7 @@ namespace VirtualRadar.Extensions
         (
             this IServiceCollection services,
             object serviceKey,
-            Func<IServiceProvider, object, TService> implementationFactory
+            Func<IServiceProvider, object?, TService> implementationFactory
         )
             where TService : class
         {
@@ -130,7 +130,7 @@ namespace VirtualRadar.Extensions
         (
             this IServiceCollection services,
             object serviceKey,
-            Func<IServiceProvider, object, TImplementation> implementationFactory
+            Func<IServiceProvider, object?, TImplementation> implementationFactory
         )
             where TService : class
             where TImplementation : class, TService
@@ -291,7 +291,7 @@ namespace VirtualRadar.Extensions
             this IServiceCollection collection,
             Type service,
             object serviceKey,
-            Func<IServiceProvider, object, object> implementationFactory
+            Func<IServiceProvider, object?, object> implementationFactory
         )
         {
             switch(GetLifetime(service)) {
@@ -342,7 +342,7 @@ namespace VirtualRadar.Extensions
         (
             this IServiceCollection services,
             object serviceKey,
-            Func<IServiceProvider, object, TService> implementationFactory
+            Func<IServiceProvider, object?, TService> implementationFactory
         )
             where TService : class
         {
@@ -488,12 +488,12 @@ namespace VirtualRadar.Extensions
         /// <param name="target"></param>
         public static void InjectServices(this IServiceProvider serviceProvider, object target)
         {
-            Type type = target?.GetType();
+            var type = target?.GetType();
 
-            if(serviceProvider != null && target != null) {
+            if(serviceProvider != null && target != null && type != null) {
                 const BindingFlags publicInstanceOnly = BindingFlags.Public | BindingFlags.Instance;
 
-                object getService(Type serviceType, InjectedServiceAttribute controlAttr)
+                object? getService(Type serviceType, InjectedServiceAttribute controlAttr)
                 {
                     return controlAttr.IsOptional
                         ? serviceProvider.GetService(serviceType)
@@ -530,7 +530,7 @@ namespace VirtualRadar.Extensions
                     var methodInjectedService = methodInfo.GetCustomAttribute<InjectedServiceAttribute>();
                     if(methodInjectedService != null) {
                         var paramInfos = methodInfo.GetParameters();
-                        var parameters = new object[paramInfos.Length];
+                        var parameters = new object?[paramInfos.Length];
                         for(var idx = 0;idx < paramInfos.Length;++idx) {
                             var paramInfo = paramInfos[idx];
                             var parameterInjectedService = paramInfo.GetCustomAttribute<InjectedServiceAttribute>();

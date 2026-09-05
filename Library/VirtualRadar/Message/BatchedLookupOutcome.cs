@@ -43,7 +43,7 @@ namespace VirtualRadar.Message
         /// </summary>
         /// <param name="found"></param>
         /// <param name="missing"></param>
-        public BatchedLookupOutcome(IEnumerable<T> found, IEnumerable<T> missing) : this()
+        public BatchedLookupOutcome(IEnumerable<T>? found, IEnumerable<T>? missing) : this()
         {
             if(found != null) {
                 Found.AddRange(found);

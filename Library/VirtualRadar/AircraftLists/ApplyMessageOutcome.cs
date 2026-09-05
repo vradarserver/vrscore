@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using VirtualRadar.AircraftHistory;
 using VirtualRadar.Message;
 
@@ -21,12 +22,12 @@ namespace VirtualRadar.AircraftLists
         /// <summary>
         /// The aircraft list that applied the message.
         /// </summary>
-        public IAircraftList AircraftList { get; init; }
+        public required IAircraftList AircraftList { get; init; }
 
         /// <summary>
         /// The message that was applied to the aircraft list.
         /// </summary>
-        public TransponderMessage Message { get; init; }
+        public required TransponderMessage Message { get; init; }
 
         /// <summary>
         /// True if the message was the first message seen for this aircraft by this list.
@@ -36,7 +37,7 @@ namespace VirtualRadar.AircraftLists
         /// <summary>
         /// The fields that changed as a result of this message getting applied.
         /// </summary>
-        public ChangeSet ChangeSet { get; init; }
+        public required ChangeSet ChangeSet { get; init; }
 
         /// <summary>
         /// True if at least one field changed as a result of the message.
@@ -57,6 +58,7 @@ namespace VirtualRadar.AircraftLists
         /// <param name="message"></param>
         /// <param name="addedAircraft"></param>
         /// <param name="changeSet"></param>
+        [SetsRequiredMembers]
         public ApplyMessageOutcome(
             IAircraftList aircraftList,
             TransponderMessage message,

@@ -19,13 +19,13 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Cid { get; set; }
 
         [DataMember(Name = "name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DataMember(Name = "callsign")]
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         [DataMember(Name = "frequency")]
-        public string Frequency { get; set; }
+        public string? Frequency { get; set; }
 
         [DataMember(Name = "facility")]
         public int Facility { get; set; }
@@ -34,7 +34,7 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Rating { get; set; }
 
         [DataMember(Name = "server")]
-        public string Server { get; set; }
+        public string? Server { get; set; }
 
         [DataMember(Name = "visual_range")]
         public int VisualRange { get; set; }
@@ -48,9 +48,9 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         [DataMember(Name = "logon_time")]
         public DateTimeOffset LogonTime { get; set; }
 
-        public static VatsimDataV3Controller CopyFrom(VatsimDataV3Controller copyFrom)
+        public static VatsimDataV3Controller? CopyFrom(VatsimDataV3Controller? copyFrom)
         {
-            VatsimDataV3Controller result = null;
+            VatsimDataV3Controller? result = null;
 
             if(copyFrom != null) {
                 result = new() {

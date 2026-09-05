@@ -21,7 +21,7 @@ namespace VirtualRadar.StandingData
         /// <remarks>
         /// In the flight number ANZ039C this would be ANZ.
         /// </remarks>
-        public string AirlineCode { get; set; }
+        public required string AirlineCode { get; set; }
 
         /// <summary>
         /// Gets the flight code portion of the flight number.
@@ -29,7 +29,7 @@ namespace VirtualRadar.StandingData
         /// <remarks>
         /// In the flight number ANZ039C this would be 039C.
         /// </remarks>
-        public string FlightCode { get; set; }
+        public required string FlightCode { get; set; }
 
         /// <summary>
         /// Gets a list of airports in the route that the flight number describes.

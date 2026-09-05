@@ -19,23 +19,23 @@ namespace VirtualRadar.StandingData
         /// <summary>
         /// Gets or sets the ICAO24 of the aircraft whose route has been fetched.
         /// </summary>
-        public string Icao24 { get; set; }
+        public required string Icao24 { get; set; }
 
         /// <summary>
         /// Gets or sets the callsign that the route was based on.
         /// </summary>
-        public string Callsign { get; set; }
+        public required string Callsign { get; set; }
 
         /// <summary>
         /// Gets or sets the callsign that the route was actually found under.
         /// </summary>
-        public string UsedCallsign { get; set; }
+        public required string UsedCallsign { get; set; }
 
         /// <summary>
         /// Gets or sets the route for the callsign. This will be null if no details could
         /// be fetched for the callsign.
         /// </summary>
-        public Route Route { get; set; }
+        public Route? Route { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that this is probably a positioning / ferry flight.

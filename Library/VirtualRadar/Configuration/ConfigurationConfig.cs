@@ -24,7 +24,7 @@ namespace VirtualRadar.Configuration
         /// </summary>
         /// <param name="addToServices"></param>
         /// <param name="assembly"></param>
-        public static void RegisterAssembly(IServiceCollection addToServices, Assembly assembly = null)
+        public static void RegisterAssembly(IServiceCollection addToServices, Assembly? assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
             RegisterSettingProviders(assembly);
@@ -79,7 +79,7 @@ namespace VirtualRadar.Configuration
         /// <param name="assembly">
         /// The optional assembly, defaults to the calling assembly if not supplied.
         /// </param>
-        public static void RegisterSettingProviders(Assembly assembly = null)
+        public static void RegisterSettingProviders(Assembly? assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
             try {
@@ -98,7 +98,7 @@ namespace VirtualRadar.Configuration
         /// </summary>
         /// <param name="providerName">Case-insensitive provider name.</param>
         /// <returns></returns>
-        public static Type ProviderType(string providerName)
+        public static Type? ProviderType(string providerName)
         {
             lock(_SyncLock) {
                 _ProviderNameToSettingsProviderTypeMap.TryGetValue(providerName, out var result);
@@ -113,7 +113,7 @@ namespace VirtualRadar.Configuration
         /// </summary>
         /// <param name="settingsProvider"></param>
         /// <returns></returns>
-        public static Type ProviderType(ISettingsProvider settingsProvider) => ProviderType(settingsProvider.SettingsProvider);
+        public static Type? ProviderType(ISettingsProvider settingsProvider) => ProviderType(settingsProvider.SettingsProvider);
 
         /// <summary>
         /// Registers a settings type and default value to a key. If more than one object
@@ -175,6 +175,10 @@ namespace VirtualRadar.Configuration
         /// <param name="addToServices"></param>
         public static void RegisterKey<TSettingsDto>(string key, TSettingsDto defaultValue, IServiceCollection addToServices)
         {
+            ArgumentNullException.ThrowIfNullOrEmpty(key);
+            ArgumentNullException.ThrowIfNull(defaultValue);
+            ArgumentNullException.ThrowIfNull(addToServices);
+            
             RegisterKey(key, typeof(TSettingsDto), defaultValue, addToServices);
         }
 
@@ -191,7 +195,7 @@ namespace VirtualRadar.Configuration
         /// cref="SettingsDtoAttribute"/>. If this is null then the calling assembly is
         /// searched.
         /// </param>
-        public static void RegisterAssemblySettingDtos(IServiceCollection addToServices, Assembly assembly = null)
+        public static void RegisterAssemblySettingDtos(IServiceCollection addToServices, Assembly? assembly = null)
         {
             assembly ??= Assembly.GetCallingAssembly();
             try {

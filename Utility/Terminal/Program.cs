@@ -17,7 +17,7 @@ namespace VirtualRadar.Utility.Terminal
         static async Task Main(string[] args)
         {
             var exitCode = 0;
-            Options options = null;
+            Options? options = null;
 
             Console.OutputEncoding = Encoding.UTF8;
 

@@ -75,7 +75,7 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static DateTimeOffset ExtractBuildDate(string fileName)
+        public static DateTimeOffset ExtractBuildDate(string? fileName)
         {
             DateTimeOffset result = default;
 

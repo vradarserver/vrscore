@@ -47,25 +47,25 @@ namespace VirtualRadar.TileServer
         /// Gets or sets the name of the tile server in the user interface. This must be unique for the <see cref="MapProvider"/>.
         /// </summary>
         [DataMember(IsRequired = true)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the tile server's URL.
         /// </summary>
         [DataMember(IsRequired = true)]
-        public string Url { get; set; }
+        public required string Url { get; set; }
 
         /// <summary>
         /// Gets or sets the subdomains to substitutes into the URL, if any.
         /// </summary>
         [DataMember]
-        public string Subdomains { get; set; }
+        public string? Subdomains { get; set; }
 
         /// <summary>
         /// Gets or sets the API's version number.
         /// </summary>
         [DataMember]
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum allowable zoom.
@@ -113,7 +113,7 @@ namespace VirtualRadar.TileServer
         /// Gets or sets the name of the CSS class to assign to the tiles.
         /// </summary>
         [DataMember]
-        public string ClassName { get; set; }
+        public string? ClassName { get; set; }
 
         /// <summary>
         /// Gets or sets the attribution notice to show for the map provider.
@@ -133,13 +133,13 @@ namespace VirtualRadar.TileServer
         /// the same map provider.
         /// </para></remarks>
         [DataMember(IsRequired = true)]
-        public string Attribution { get; set; }
+        public required string Attribution { get; set; }
 
         /// <summary>
         /// The URL of the image to show if the tile server returns an error response when fetching a tile.
         /// </summary>
         [DataMember]
-        public string ErrorTileUrl { get; set; }
+        public string? ErrorTileUrl { get; set; }
 
         /// <summary>
         /// True if the tile server is TMS.

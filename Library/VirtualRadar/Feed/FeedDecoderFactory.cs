@@ -21,11 +21,11 @@ namespace VirtualRadar.Feed
     {
         private readonly object _SyncLock = new();
 
-        public IFeedDecoder FeedDecoder { get; private set; }
+        public IFeedDecoder? FeedDecoder { get; private set; }
 
         ~FeedDecoderFactory() => Dispose(false);
 
-        public IFeedDecoder Create(IFeedDecoderSettingsDto settingsDto)
+        public IFeedDecoder? Create(IFeedDecoderSettingsDto? settingsDto)
         {
             lock(_SyncLock) {
                 if(settingsDto != null && FeedDecoder == null) {

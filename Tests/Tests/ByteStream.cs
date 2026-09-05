@@ -19,11 +19,11 @@ namespace Tests
     /// </summary>
     public class ByteStream : Stream
     {
-        private List<byte> _Content = new();
+        private List<byte> _Content = [];
 
         private long _Position;
 
-        private Action<IReadOnlyList<byte>> WriteCallback { get; }
+        private Action<IReadOnlyList<byte>>? WriteCallback { get; }
 
         /// <inheritdoc/>
         public override bool CanRead => true;
@@ -56,7 +56,7 @@ namespace Tests
         /// </summary>
         /// <param name="initialContent"></param>
         /// <param name="writeCallback">Called when the stream content is changed.</param>
-        public ByteStream(IEnumerable<byte> initialContent, Action<IReadOnlyList<byte>> writeCallback = null)
+        public ByteStream(IEnumerable<byte> initialContent, Action<IReadOnlyList<byte>>? writeCallback = null)
         {
             if(initialContent != null) {
                 _Content.AddRange(initialContent);

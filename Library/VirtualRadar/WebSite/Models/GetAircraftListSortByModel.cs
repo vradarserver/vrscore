@@ -18,7 +18,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// The <see cref="AircraftComparerColumn"/> column value.
         /// </summary>
-        public string Col { get; set; }
+        public required string Col { get; set; }
 
         /// <summary>
         /// True (default) if the sort order is ascending, false if it's descending.

@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using VirtualRadar.Extensions;
 
 namespace VirtualRadar
@@ -24,13 +25,13 @@ namespace VirtualRadar
         /// <summary>
         /// Cancelling this will cancel <see cref="LinkedCancelToken"/>.
         /// </summary>
-        public CancellationTokenSource PrivateCancelToken { get; private set; }
+        public CancellationTokenSource? PrivateCancelToken { get; private set; }
 
         /// <summary>
         /// A linked token between <see cref="PrivateCancelToken"/> and whatever was passed
         /// into <see cref="SetupCancellation"/>.
         /// </summary>
-        public CancellationTokenSource LinkedCancelToken { get; private set; }
+        public CancellationTokenSource? LinkedCancelToken { get; private set; }
 
         /// <summary>
         /// Creates <see cref="PrivateCancelToken"/> and then links that and <paramref name="userToken"/>
@@ -38,6 +39,8 @@ namespace VirtualRadar
         /// then registered to <see cref="LinkedCancelToken"/>.
         /// </summary>
         /// <param name="userToken"></param>
+        [MemberNotNull(nameof(PrivateCancelToken))]
+        [MemberNotNull(nameof(LinkedCancelToken))]
         public void SetupCancellation(CancellationToken userToken)
         {
             PrivateCancelToken = new();
@@ -81,7 +84,7 @@ namespace VirtualRadar
             }
         }
 
-        protected void TearDownCancellationTokens(List<Exception> exceptions)
+        protected void TearDownCancellationTokens(List<Exception>? exceptions)
         {
             if(exceptions == null) {
                 LinkedCancelToken?.Dispose();

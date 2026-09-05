@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
 namespace VirtualRadar.WebSite.Models
@@ -93,7 +94,7 @@ namespace VirtualRadar.WebSite.Models
         /// <remarks>The browser sends this value back to the server when it asks for another aircraft list. In this
         /// way the server can figure out what has changed since the last time the browser asked for a list.</remarks>
         [DataMember(Name="lastDv")]
-        public string LastDataVersion { get; set; }
+        public required string LastDataVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the number of seconds of positions to show in short trails.
@@ -112,5 +113,22 @@ namespace VirtualRadar.WebSite.Models
         /// </summary>
         [DataMember(Name="configChanged", IsRequired=false, EmitDefaultValue=false)]
         public bool ServerConfigChanged { get; set; }
+
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        public AircraftListJson()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="lastDataVersion"></param>
+        [SetsRequiredMembers]
+        public AircraftListJson(string lastDataVersion)
+        {
+            LastDataVersion = lastDataVersion;
+        }
     }
 }

@@ -16,38 +16,42 @@ namespace VirtualRadar.StandingData
     /// <param name="_Repository"></param>
     /// <param name="_Overrides"></param>
     class StandingDataManager(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         IStandingDataRepository _Repository,
         IStandingDataOverridesRepository _Overrides
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
     ) : IStandingDataManager
     {
         /// <inheritdoc/>
         public string RouteStatus => _Repository.Route_GetStatus();
 
         /// <inheritdoc/>
-        public AircraftType FindAircraftType(string type) => _Repository.AircraftType_GetByCode(type);
+        public AircraftType? FindAircraftType(string? type) => _Repository.AircraftType_GetByCode(type);
 
         /// <inheritdoc/>
-        public IReadOnlyList<Airline> FindAirlinesForCode(string code) => _Repository.Airlines_GetByCode(code);
+        public IReadOnlyList<Airline> FindAirlinesForCode(string? code) => _Repository.Airlines_GetByCode(code);
 
         /// <inheritdoc/>
-        public Airport FindAirportForCode(string code) => _Repository.Airport_GetByCode(code);
+        public Airport? FindAirportForCode(string? code) => _Repository.Airport_GetByCode(code);
 
         /// <inheritdoc/>
-        public CodeBlock FindCodeBlock(Icao24 icao24)
+        public CodeBlock? FindCodeBlock(Icao24? icao24)
         {
             return _Overrides.CodeBlockOverrideFor(icao24)
                 ?? _Repository.CodeBlock_GetForIcao24(icao24);
         }
 
         /// <inheritdoc/>
-        public Route FindRoute(string callsign)
+        public Route? FindRoute(string? callsign)
         {
-            Route result = null;
+            Route? result = null;
 
-            var parsed = new Callsign(callsign);
-            if(parsed.IsOriginalCallsignValid) {
-                result = _Repository.Route_GetForCallsign(parsed.TrimmedCallsign);
-                // TODO: Port all the callsign alternative shenanigans
+            if(callsign != null) {
+                var parsed = new Callsign(callsign);
+                if(parsed.IsOriginalCallsignValid) {
+                    result = _Repository.Route_GetForCallsign(parsed.TrimmedCallsign);
+                    // TODO: Port all the callsign alternative shenanigans
+                }
             }
 
             return result;

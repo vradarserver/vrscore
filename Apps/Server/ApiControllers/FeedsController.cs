@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using VirtualRadar.Filtering;
 using VirtualRadar.Receivers;
@@ -37,6 +38,7 @@ namespace VirtualRadar.Server.ApiControllers
                 .Receivers
                 .Where(receiver => !receiver.Hidden)
                 .Select(receiver => FeedJson.FromReceiver(receiver))
+                .OfType<FeedJson>()
                 .ToArray();
         }
 
@@ -46,7 +48,7 @@ namespace VirtualRadar.Server.ApiControllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet, Route("api/3.00/feeds/{id}")]
-        public FeedJson GetFeed(int id)
+        public FeedJson? GetFeed(int id)
         {
             var receiver = _ReceiverFactory.FindById(id);
             if(receiver?.Hidden ?? false) {
@@ -64,7 +66,7 @@ namespace VirtualRadar.Server.ApiControllers
         [HttpGet]
         [Route("api/3.00/feeds/polar-plot/{feedId}")]
         [Route("PolarPlot.json")]                       // pre-version 3 route
-        public object GetPolarPlot(int feedId = -1)
+        public object? GetPolarPlot(int feedId = -1)
         {
             // TODO
             return null;
@@ -114,7 +116,17 @@ namespace VirtualRadar.Server.ApiControllers
         /// <returns></returns>
         [HttpPost]
         [Route("v3/AircraftList.json")]
-        public AircraftListJson AircraftListV2Post(string ids = null, int feed = -1, double? lat = null, double? lng = null, string ldv = null, long stm = -1, byte refreshTrails = 0, int selAc = -1, string trFmt = null)
+        public AircraftListJson AircraftListV2Post(
+            string? ids = null,
+            int feed = -1,
+            double? lat = null,
+            double? lng = null,
+            string? ldv = null,
+            long stm = -1,
+            byte refreshTrails = 0,
+            int selAc = -1,
+            string? trFmt = null
+        )
         {
             var lastStamp = -1L;
             if(!String.IsNullOrEmpty(ldv) && !long.TryParse(ldv, out lastStamp)) {
@@ -155,7 +167,7 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private void SortByFromModel(AircraftListJsonBuilderArgs args, GetAircraftListModel model)
+        private void SortByFromModel(AircraftListJsonBuilderArgs args, GetAircraftListModel? model)
         {
             if(model == null || model.SortBy == null || model.SortBy.Count == 0) {
                 SetDefaultAircraftListSortBy(args);
@@ -186,7 +198,7 @@ namespace VirtualRadar.Server.ApiControllers
             }
         }
 
-        private void PreviousAircraftFromModel(AircraftListJsonBuilderArgs args, GetAircraftListModel model)
+        private void PreviousAircraftFromModel(AircraftListJsonBuilderArgs args, GetAircraftListModel? model)
         {
             if(model != null && model.PreviousAircraft != null && model.PreviousAircraft.Count > 0) {
                 foreach(var icao in model.PreviousAircraft) {
@@ -197,7 +209,7 @@ namespace VirtualRadar.Server.ApiControllers
             }
         }
 
-        private void PreviousAircraftFromBody(AircraftListJsonBuilderArgs args, string ids)
+        private void PreviousAircraftFromBody(AircraftListJsonBuilderArgs args, string? ids)
         {
             if(!String.IsNullOrEmpty(ids)) {
                 foreach(var hexUniqueID in ids.Split('-')) {
@@ -209,9 +221,9 @@ namespace VirtualRadar.Server.ApiControllers
             }
         }
 
-        private AircraftListJsonBuilderFilter ExpandModelFilters(List<GetAircraftListFilter> filters)
+        private AircraftListJsonBuilderFilter? ExpandModelFilters(List<GetAircraftListFilter>? filters)
         {
-            AircraftListJsonBuilderFilter result = null;
+            AircraftListJsonBuilderFilter? result = null;
 
             if(filters != null) {
                 foreach(var jsonFilter in filters) {
@@ -243,9 +255,9 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter JsonToBoolFilter(
+        private AircraftListJsonBuilderFilter? JsonToBoolFilter(
             GetAircraftListFilter jsonFilter,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterBool> assignFilter
         )
         {
@@ -265,9 +277,9 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter JsonToCoordPair(
+        private AircraftListJsonBuilderFilter? JsonToCoordPair(
             GetAircraftListFilter jsonFilter,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, LocationRectangle> _
         )
         {
@@ -284,9 +296,9 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter JsonToDoubleRangeFilter(
+        private AircraftListJsonBuilderFilter? JsonToDoubleRangeFilter(
             GetAircraftListFilter jsonFilter,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterRange<double>> assignFilter
         )
         {
@@ -305,9 +317,9 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter JsonToEnumFilter<T>(
+        private AircraftListJsonBuilderFilter? JsonToEnumFilter<T>(
             GetAircraftListFilter jsonFilter,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterEnum<T>> assignFilter
         )
             where T: struct, IComparable
@@ -315,7 +327,7 @@ namespace VirtualRadar.Server.ApiControllers
             switch(jsonFilter.Condition) {
                 case FilterCondition.Missing:
                 case FilterCondition.Equals:
-                    if(!String.IsNullOrEmpty(jsonFilter.Value) && Enum.TryParse<T>(jsonFilter.Value, out T enumValue)) {
+                    if(!String.IsNullOrEmpty(jsonFilter.Value) && Enum.TryParse<T>(jsonFilter.Value, out var enumValue)) {
                         if(Enum.IsDefined(typeof(T), enumValue)) {
                             DoAssignFilter(ref result, assignFilter, new FilterEnum<T>() {
                                 Condition =         FilterCondition.Equals,
@@ -330,9 +342,9 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter JsonToIntRangeFilter(
+        private AircraftListJsonBuilderFilter? JsonToIntRangeFilter(
             GetAircraftListFilter jsonFilter,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterRange<int>> assignFilter
         )
         {
@@ -351,9 +363,9 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter JsonToStringFilter(
+        private AircraftListJsonBuilderFilter? JsonToStringFilter(
             GetAircraftListFilter jsonFilter,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterString> assignFilter
         )
         {
@@ -374,7 +386,7 @@ namespace VirtualRadar.Server.ApiControllers
         }
 
         private void DoAssignFilter<T>(
-            ref AircraftListJsonBuilderFilter result,
+            [NotNull] ref AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, T> assignFilter,
             T filter
         )
@@ -383,15 +395,15 @@ namespace VirtualRadar.Server.ApiControllers
             assignFilter(result, filter);
         }
 
-        private AircraftListJsonBuilderFilter ExpandQueryStringFilters()
+        private AircraftListJsonBuilderFilter? ExpandQueryStringFilters()
         {
-            AircraftListJsonBuilderFilter result = null;
+            AircraftListJsonBuilderFilter? result = null;
 
             var query = HttpContext.Request.Query;
             foreach(var kvp in query.Where(r => r.Key.Length > 3 && (r.Key[0] == 'f' || r.Key[0] == 'F'))) {
                 var key = kvp.Key.ToUpperInvariant();
                 var value = kvp.Value.FirstOrDefault() ?? "";
-                switch(key.Substring(0, 3)) {
+                switch(key[..3]) {
                     case "FAI":     result = DecodeStringFilter     ("FAIR",    key, value, result, (f,v) => f.Airport = v); break;
                     case "FCA":     result = DecodeStringFilter     ("FCALL",   key, value, result, (f,v) => f.Callsign = v); break;
                     case "FCO":     result = DecodeStringFilter     ("FCOU",    key, value, result, (f,v) => f.Icao24Country = v); break;
@@ -450,11 +462,11 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter DecodeBoolFilter(
+        private AircraftListJsonBuilderFilter? DecodeBoolFilter(
             string prefix,
             string key,
             string value,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterBool> assignFilter
         )
         {
@@ -469,17 +481,19 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter DecodeDoubleRangeFilter(
+        private AircraftListJsonBuilderFilter? DecodeDoubleRangeFilter(
             string prefix,
             string key,
             string value,
-            AircraftListJsonBuilderFilter result,
-            Func<AircraftListJsonBuilderFilter, FilterRange<double>> getFilter,
+            AircraftListJsonBuilderFilter? result,
+            Func<AircraftListJsonBuilderFilter, FilterRange<double>?> getFilter,
             Action<AircraftListJsonBuilderFilter, FilterRange<double>> assignFilter
         )
         {
             if(double.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out double doubleValue)) {
-                var filter = result == null ? new FilterRange<double>() : getFilter(result);
+                var filter = result == null
+                    ? new FilterRange<double>()
+                    : getFilter(result) ?? new FilterRange<double>();
                 switch(DecodeFilter(prefix, filter, key)) {
                     case 'L':   filter.LowerValue = doubleValue; break;
                     case 'U':   filter.UpperValue = doubleValue; break;
@@ -493,11 +507,11 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter DecodeEnumFilter<T>(
+        private AircraftListJsonBuilderFilter? DecodeEnumFilter<T>(
             string prefix,
             string key,
             string value,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterEnum<T>> assignFilter
         )
             where T: struct, IComparable
@@ -516,17 +530,19 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter DecodeIntRangeFilter(
+        private AircraftListJsonBuilderFilter? DecodeIntRangeFilter(
             string prefix,
             string key,
             string value,
-            AircraftListJsonBuilderFilter result,
-            Func<AircraftListJsonBuilderFilter, FilterRange<int>> getFilter,
+            AircraftListJsonBuilderFilter? result,
+            Func<AircraftListJsonBuilderFilter, FilterRange<int>?> getFilter,
             Action<AircraftListJsonBuilderFilter, FilterRange<int>> assignFilter
         )
         {
             if(int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out int intValue)) {
-                var filter = result == null ? new FilterRange<int>() : getFilter(result);
+                var filter = result == null
+                    ? new FilterRange<int>()
+                    : getFilter(result) ?? new FilterRange<int>();
                 switch(DecodeFilter(prefix, filter, key)) {
                     case 'L':   filter.LowerValue = intValue; break;
                     case 'U':   filter.UpperValue = intValue; break;
@@ -540,11 +556,11 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter DecodeStringFilter(
+        private AircraftListJsonBuilderFilter? DecodeStringFilter(
             string prefix,
             string key,
             string value,
-            AircraftListJsonBuilderFilter result,
+            AircraftListJsonBuilderFilter? result,
             Action<AircraftListJsonBuilderFilter, FilterString> assignFilter
         )
         {
@@ -562,12 +578,12 @@ namespace VirtualRadar.Server.ApiControllers
             return result;
         }
 
-        private AircraftListJsonBuilderFilter DecodeBounds(
-            AircraftListJsonBuilderFilter result,
-            string northText,
-            string westText,
-            string southText,
-            string eastText
+        private AircraftListJsonBuilderFilter? DecodeBounds(
+            AircraftListJsonBuilderFilter? result,
+            string? northText,
+            string? westText,
+            string? southText,
+            string? eastText
         )
         {
             if(   !String.IsNullOrEmpty(northText)
@@ -575,10 +591,10 @@ namespace VirtualRadar.Server.ApiControllers
                && !String.IsNullOrEmpty(southText)
                && !String.IsNullOrEmpty(eastText)
             ) {
-                if(   double.TryParse(northText, NumberStyles.Any, CultureInfo.InvariantCulture, out double north)
-                   && double.TryParse(southText, NumberStyles.Any, CultureInfo.InvariantCulture, out double south)
-                   && double.TryParse(westText,  NumberStyles.Any, CultureInfo.InvariantCulture, out double west)
-                   && double.TryParse(eastText,  NumberStyles.Any, CultureInfo.InvariantCulture, out double east)
+                if(   double.TryParse(northText, NumberStyles.Any, CultureInfo.InvariantCulture, out var north)
+                   && double.TryParse(southText, NumberStyles.Any, CultureInfo.InvariantCulture, out var south)
+                   && double.TryParse(westText,  NumberStyles.Any, CultureInfo.InvariantCulture, out var west)
+                   && double.TryParse(eastText,  NumberStyles.Any, CultureInfo.InvariantCulture, out var east)
                 ) {
                     result ??= new();
                     result.PositionWithin = new(

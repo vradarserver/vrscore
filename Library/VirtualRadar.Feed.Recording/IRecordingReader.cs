@@ -25,7 +25,7 @@ namespace VirtualRadar.Feed.Recording
         /// <summary>
         /// The header read from the stream.
         /// </summary>
-        Header Header { get; }
+        Header? Header { get; }
 
         /// <summary>
         /// Initialises the stream that we will be reading from.
@@ -54,6 +54,6 @@ namespace VirtualRadar.Feed.Recording
         /// <returns>The next parcel on the stream or null if there are no more parcels.</returns>
         /// <exception cref="BadFeedHeaderException">Thrown if the stream is not a
         /// feed recording.</exception>
-        Task<Parcel> GetNextAsync(CancellationToken token);
+        Task<Parcel?> GetNextAsync(CancellationToken token);
     }
 }

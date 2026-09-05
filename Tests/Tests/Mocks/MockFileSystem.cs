@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Moq;
 using VirtualRadar;
@@ -24,11 +25,14 @@ namespace Tests.Mocks
 
         public Dictionary<string, byte[]> CaseSensitiveFileContent { get; } = new();
 
-        public static string NormalisePathDos(string path) => NormalisePath(path, '\\', '/');
+        [return: NotNullIfNotNull(nameof(path))]
+        public static string? NormalisePathDos(string? path) => NormalisePath(path, '\\', '/');
 
-        public static string NormalisePathUnix(string path) => NormalisePath(path, '/', '\\');
+        [return: NotNullIfNotNull(nameof(path))]
+        public static string? NormalisePathUnix(string? path) => NormalisePath(path, '/', '\\');
 
-        private static string NormalisePath(string path, char osSeparator, char otherOSSeperator)
+        [return: NotNullIfNotNull(nameof(path))]
+        private static string? NormalisePath(string? path, char osSeparator, char otherOSSeperator)
         {
             if(path?.Length > 0 && path[^1] != osSeparator) {
                 if(path[^1] == otherOSSeperator) {
@@ -43,10 +47,12 @@ namespace Tests.Mocks
         /// Adds a folder to <see cref="CaseSensitiveFolders"/>
         /// </summary>
         /// <param name="path"></param>
-        public void AddFolder(string path)
+        public void AddFolder(string? path)
         {
-            if(!CaseSensitiveFolders.Contains(path)) {
-                CaseSensitiveFolders.Add(path);
+            if(path != null) {
+                if(!CaseSensitiveFolders.Contains(path)) {
+                    CaseSensitiveFolders.Add(path);
+                }
             }
         }
 
@@ -55,13 +61,15 @@ namespace Tests.Mocks
         /// that refer to it.
         /// </summary>
         /// <param name="path"></param>
-        public void RemoveFolder(string path)
+        public void RemoveFolder(string? path)
         {
             var dosPath = NormalisePathDos(path);
             var unixPath = NormalisePathUnix(path);
 
-            if(CaseSensitiveFolders.Contains(path) && !CaseSensitiveFileContent.Any(r => r.Key.StartsWith(dosPath) || r.Key.StartsWith(unixPath))) {
-                CaseSensitiveFolders.Remove(path);
+            if(path != null && dosPath != null && unixPath != null) {
+                if(CaseSensitiveFolders.Contains(path) && !CaseSensitiveFileContent.Any(r => r.Key.StartsWith(dosPath) || r.Key.StartsWith(unixPath))) {
+                    CaseSensitiveFolders.Remove(path);
+                }
             }
         }
 
@@ -84,7 +92,7 @@ namespace Tests.Mocks
         /// <param name="fullPath"></param>
         /// <param name="content"></param>
         /// <param name="encoding"></param>
-        public void AddFileContent(string fullPath, string content, Encoding encoding = null)
+        public void AddFileContent(string fullPath, string content, Encoding? encoding = null)
         {
             AddFileContent(
                 fullPath,
@@ -99,7 +107,7 @@ namespace Tests.Mocks
         /// <param name="lines"></param>
         /// <param name="encoding"></param>
         /// <param name="lineSeparator"></param>
-        public void AddFileContent(string fullPath, IEnumerable<string> lines, Encoding encoding = null, string lineSeparator = null)
+        public void AddFileContent(string fullPath, IEnumerable<string> lines, Encoding? encoding = null, string? lineSeparator = null)
         {
             AddFileContent(
                 fullPath,
@@ -114,7 +122,7 @@ namespace Tests.Mocks
         /// <param name="fullPath"></param>
         /// <param name="encoding"></param>
         /// <returns></returns>
-        public string GetFileContentAsString(string fullPath, Encoding encoding = null)
+        public string GetFileContentAsString(string fullPath, Encoding? encoding = null)
         {
             return (encoding ?? Encoding.UTF8).GetString(
                 CaseSensitiveFileContent[fullPath]
@@ -127,19 +135,22 @@ namespace Tests.Mocks
         /// </summary>
         /// <param name="fullPath"></param>
         /// <param name="removeFolderIfEmpty"></param>
-        public void RemoveFile(string fullPath, bool removeFolderIfEmpty = true)
+        public void RemoveFile(string? fullPath, bool removeFolderIfEmpty = true)
         {
-            if(CaseSensitiveFileContent.ContainsKey(fullPath)) {
-                CaseSensitiveFileContent.Remove(fullPath);
-                if(removeFolderIfEmpty) {
-                    RemoveFolder(Path.GetDirectoryName(fullPath));
+            if(fullPath != null) {
+                if(CaseSensitiveFileContent.ContainsKey(fullPath)) {
+                    CaseSensitiveFileContent.Remove(fullPath);
+                    if(removeFolderIfEmpty) {
+                        RemoveFolder(Path.GetDirectoryName(fullPath));
+                    }
                 }
             }
         }
 
         private void ThrowIfFileDirectoryNotFound(string fullPath)
         {
-            if(!CaseSensitiveFolders.Contains(Path.GetDirectoryName(fullPath))) {
+            var folder = Path.GetDirectoryName(fullPath);
+            if(folder != null && !CaseSensitiveFolders.Contains(folder)) {
                 throw new DirectoryNotFoundException();
             }
         }
@@ -159,26 +170,30 @@ namespace Tests.Mocks
         public string Combine(params string[] paths) => Path.Combine(paths);
 
         public bool IsValidFileNameResult { get; set; } = true;
-        public bool IsValidFileName(string fileName) => IsValidFileNameResult;
+        public bool IsValidFileName(string? fileName) => fileName != null && IsValidFileNameResult;
 
         public bool IsValidPathNameResult { get; set; } = true;
-        public bool IsValidPathName(string path) => IsValidPathNameResult;
+        public bool IsValidPathName(string? path) => path != null && IsValidPathNameResult;
 
         /// <summary>
         /// This is not mocked, it just passes through to Path.
         /// </summary>
         /// <param name="fullPath"></param>
         /// <returns></returns>
-        public string GetDirectory(string fullPath) => Path.GetDirectoryName(fullPath);
+        public string? GetDirectory(string? fullPath) => Path.GetDirectoryName(fullPath);
 
-        public string GetFileName(string fullPath) => Path.GetFileName(fullPath);
+        public string? GetFileName(string? fullPath) => Path.GetFileName(fullPath);
 
-        public string GetFileNameWithoutExtension(string fullPath) => Path.GetFileNameWithoutExtension(fullPath);
+        public string? GetFileNameWithoutExtension(string? fullPath) => Path.GetFileNameWithoutExtension(fullPath);
 
-        public string GetExtension(string fullPath) => Path.GetExtension(fullPath);
+        [return: NotNullIfNotNull(nameof(fullPath))]
+        public string? GetExtension(string? fullPath) => Path.GetExtension(fullPath);
 
         public void CopyFile(string sourceFileName, string destFileName, bool overwrite)
         {
+            ArgumentNullException.ThrowIfNullOrEmpty(sourceFileName);
+            ArgumentNullException.ThrowIfNullOrEmpty(destFileName);
+
             if(!UseFileContent) {
                 Mock.Object.CopyFile(sourceFileName, destFileName, overwrite);
             } else {
@@ -208,6 +223,8 @@ namespace Tests.Mocks
 
         public void DeleteFile(string fileName)
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+
             if(!UseFileContent) {
                 Mock.Object.DeleteFile(fileName);
             } else {
@@ -216,22 +233,25 @@ namespace Tests.Mocks
             }
         }
 
-        public bool DirectoryExists(string path)
+        public bool DirectoryExists([NotNullWhen(true)] string? path)
         {
+            ArgumentNullException.ThrowIfNull(path);
             return !UseFileContent
                 ? Mock.Object.DirectoryExists(path)
-                : CaseSensitiveFolders.Contains(path);
+                : path != null && CaseSensitiveFolders.Contains(path);
         }
 
-        public bool FileExists(string fileName)
+        public bool FileExists([NotNullWhen(true)] string? fileName)
         {
             return !UseFileContent
                 ? Mock.Object.FileExists(fileName)
-                : CaseSensitiveFileContent.ContainsKey(fileName);
+                : fileName != null && CaseSensitiveFileContent.ContainsKey(fileName);
         }
 
         public long FileSize(string fileName)
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+
             long result;
             if(!UseFileContent) {
                 result = Mock.Object.FileSize(fileName);
@@ -245,6 +265,9 @@ namespace Tests.Mocks
 
         public void MoveFile(string sourceFileName, string destFileName, bool overwrite)
         {
+            ArgumentNullException.ThrowIfNull(sourceFileName);
+            ArgumentNullException.ThrowIfNull(destFileName);
+
             ThrowIfFileNotFound(sourceFileName);
             if(FileExists(destFileName) && !overwrite) {
                 throw new IOException();
@@ -256,6 +279,8 @@ namespace Tests.Mocks
 
         public Stream OpenFileStream(string fileName, FileMode fileMode, FileAccess fileAccess, FileShare fileShare)
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             switch(fileMode) {
                 case FileMode.CreateNew:
                     if(FileExists(fileName)) {
@@ -296,6 +321,8 @@ namespace Tests.Mocks
 
         public byte[] ReadAllBytes(string fileName)
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             byte[] result;
             if(!UseFileContent) {
                 result = Mock.Object.ReadAllBytes(fileName);
@@ -309,6 +336,8 @@ namespace Tests.Mocks
 
         public async Task<byte[]> ReadAllBytesAsync(string fileName, CancellationToken cancellationToken = default(CancellationToken))
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             byte[] result;
             if(!UseFileContent) {
                 result = await Mock.Object.ReadAllBytesAsync(fileName, cancellationToken);
@@ -322,6 +351,8 @@ namespace Tests.Mocks
 
         public string[] ReadAllLines(string fileName)
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             return !UseFileContent
                 ? Mock.Object.ReadAllLines(fileName)
                 : GetContentAsLines(fileName);
@@ -329,26 +360,32 @@ namespace Tests.Mocks
 
         public async Task<string[]> ReadAllLinesAsync(string fileName, CancellationToken cancellationToken = default(CancellationToken))
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             return !UseFileContent
                 ? await Mock.Object.ReadAllLinesAsync(fileName, cancellationToken)
                 : GetContentAsLines(fileName);
         }
 
-        public string ReadAllText(string fileName, Encoding encoding = null)
+        public string ReadAllText(string fileName, Encoding? encoding = null)
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             return !UseFileContent
                 ? Mock.Object.ReadAllText(fileName, encoding)
                 : GetContentAsText(fileName);
         }
 
-        public async Task<string> ReadAllTextAsync(string fileName, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<string> ReadAllTextAsync(string fileName, Encoding? encoding = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            ArgumentException.ThrowIfNullOrEmpty(fileName);
+
             return !UseFileContent
                 ? await Mock.Object.ReadAllTextAsync(fileName, encoding, cancellationToken)
                 : GetContentAsText(fileName);
         }
 
-        private string GetContentAsText(string fileName, Encoding encoding = null)
+        private string GetContentAsText(string fileName, Encoding? encoding = null)
         {
             ThrowIfFileNotFound(fileName);
             return (encoding ?? Encoding.UTF8).GetString(
@@ -356,7 +393,7 @@ namespace Tests.Mocks
             );
         }
 
-        private string[] GetContentAsLines(string fileName, Encoding encoding = null)
+        private string[] GetContentAsLines(string fileName, Encoding? encoding = null)
         {
             return GetContentAsText(fileName, encoding)
                 .Split(new string[] { "\r\n", "\n", }, StringSplitOptions.None);
@@ -364,6 +401,9 @@ namespace Tests.Mocks
 
         public void WriteAllBytes(string fileName, byte[] bytes)
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+            ArgumentNullException.ThrowIfNull(bytes);
+
             if(!UseFileContent) {
                 Mock.Object.WriteAllBytes(fileName, bytes);
             } else {
@@ -373,6 +413,9 @@ namespace Tests.Mocks
 
         public async Task WriteAllBytesAsync(string fileName, byte[] bytes, CancellationToken cancellationToken = default(CancellationToken))
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+            ArgumentNullException.ThrowIfNull(bytes);
+
             if(!UseFileContent) {
                 await Mock.Object.WriteAllBytesAsync(fileName, bytes, cancellationToken);
             } else {
@@ -382,6 +425,9 @@ namespace Tests.Mocks
 
         public void WriteAllLines(string fileName, IEnumerable<string> contents)
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+            ArgumentNullException.ThrowIfNull(contents);
+
             if(!UseFileContent) {
                 Mock.Object.WriteAllLines(fileName, contents);
             } else {
@@ -391,6 +437,9 @@ namespace Tests.Mocks
 
         public async Task WriteAllLinesAsync(string fileName, IEnumerable<string> contents, CancellationToken cancellationToken = default(CancellationToken))
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+            ArgumentNullException.ThrowIfNull(contents);
+
             if(!UseFileContent) {
                 await Mock.Object.WriteAllLinesAsync(fileName, contents, cancellationToken);
             } else {
@@ -398,8 +447,11 @@ namespace Tests.Mocks
             }
         }
 
-        public void WriteAllText(string fileName, string text, Encoding encoding = null)
+        public void WriteAllText(string fileName, string text, Encoding? encoding = null)
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+            ArgumentNullException.ThrowIfNull(text);
+
             if(!UseFileContent) {
                 Mock.Object.WriteAllText(fileName, text, encoding);
             } else {
@@ -407,8 +459,11 @@ namespace Tests.Mocks
             }
         }
 
-        public async Task WriteAllTextAsync(string fileName, string text, Encoding encoding = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task WriteAllTextAsync(string fileName, string text, Encoding? encoding = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            ArgumentNullException.ThrowIfNull(fileName);
+            ArgumentNullException.ThrowIfNull(text);
+
             if(!UseFileContent) {
                 await Mock.Object.WriteAllTextAsync(fileName, text, encoding, cancellationToken);
             } else {

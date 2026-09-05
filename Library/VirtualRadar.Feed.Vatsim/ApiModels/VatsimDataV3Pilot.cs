@@ -19,13 +19,13 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Cid { get; set; }
 
         [DataMember(Name = "name")]
-        public string Name  { get; set; }
+        public string? Name  { get; set; }
 
         [DataMember(Name = "callsign")]
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         [DataMember(Name = "server")]
-        public string Server { get; set; }
+        public string? Server { get; set; }
 
         [DataMember(Name = "pilot_rating")]
         public int PilotRating { get; set; }
@@ -36,7 +36,7 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         [DataMember(Name = "longitude")]
         public float Longitude { get; set; }
 
-        private Location _Location;
+        private Location? _Location;
         public Location Location
         {
             get {
@@ -54,9 +54,9 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int GroundSpeedKnots { get; set; }
 
         [DataMember(Name = "transponder")]
-        public string Transponder { get; set; }
+        public string? Transponder { get; set; }
 
-        private string _TransponderText;
+        private string? _TransponderText;
         private int? _TransponderParsed;
         /// <summary>
         /// See <see cref="Transponder"/> parsed into a base-10 integer.
@@ -86,7 +86,7 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int QnhMillibars { get; set; }
 
         [DataMember(Name = "flight_plan")]
-        public VatsimDataV3FlightPlan FlightPlan { get; set; }
+        public VatsimDataV3FlightPlan? FlightPlan { get; set; }
 
         [DataMember(Name = "logon_time")]
         public DateTimeOffset LogonTime { get; set; }
@@ -94,9 +94,9 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         [DataMember(Name = "last_updated")]
         public DateTimeOffset LastUpdated { get; set; }
 
-        public static VatsimDataV3Pilot CopyFrom(VatsimDataV3Pilot copyFrom)
+        public static VatsimDataV3Pilot? CopyFrom(VatsimDataV3Pilot? copyFrom)
         {
-            VatsimDataV3Pilot result = null;
+            VatsimDataV3Pilot? result = null;
 
             if(copyFrom != null) {
                 result = new() {

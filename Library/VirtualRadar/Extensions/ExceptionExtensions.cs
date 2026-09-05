@@ -35,7 +35,7 @@ namespace VirtualRadar.Extensions
         public static void AddStringData(
             this Exception ex,
             string key,
-            string value,
+            string? value,
             bool append = true,
             string separator = ";",
             bool distinct = false
@@ -44,7 +44,7 @@ namespace VirtualRadar.Extensions
             try {
                 var newValue = value ?? "";
                 if(append) {
-                    string oldValue = null;
+                    string? oldValue = null;
                     if(ex.Data.Contains(key)) {
                         oldValue = ex.Data[key] as string;
                     }
@@ -75,7 +75,7 @@ namespace VirtualRadar.Extensions
         public static void AddStringData(
             this Exception ex,
             string key,
-            Func<string> valueFunc,
+            Func<string?> valueFunc,
             bool append = true,
             string separator = ";",
             bool distinct = false

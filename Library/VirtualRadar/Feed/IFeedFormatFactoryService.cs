@@ -29,7 +29,7 @@ namespace VirtualRadar.Feed
         /// </summary>
         /// <param name="configId"></param>
         /// <returns></returns>
-        FeedFormatConfig GetConfig(string configId);
+        FeedFormatConfig? GetConfig(string configId);
 
         /// <summary>
         /// Retrieves all registered configs.

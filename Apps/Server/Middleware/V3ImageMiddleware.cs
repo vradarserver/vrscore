@@ -50,12 +50,10 @@ namespace VirtualRadar.Server.Middleware
 
         private async Task<bool> ProcessRequest(HttpContext context)
         {
+            var result = false;
+
             var imageRequest = _RequestBuilder.ExtractImageRequestFromWebPath(context.Request.Path.Value);
-            var result = imageRequest != null;
-
-            if(result) {
-                result = false;
-
+            if(imageRequest != null) {
                 if(imageRequest.WebSiteFileName != null) {
                     result = await ServeImageFromFile(context, imageRequest);
                 }
@@ -83,8 +81,8 @@ namespace VirtualRadar.Server.Middleware
                 ? flagSettingsDto.TypeFlagsFolder
                 : flagSettingsDto.OperatorFlagsFolder;
 
-            IImage image = null;
-            if(!String.IsNullOrEmpty(folder)) {
+            IImage? image = null;
+            if(!String.IsNullOrEmpty(folder) && !String.IsNullOrEmpty(imageRequest.File)) {
                 var chunks = imageRequest
                     .File
                     .Split(_PipeCharacterArray, StringSplitOptions.RemoveEmptyEntries);
@@ -116,7 +114,7 @@ namespace VirtualRadar.Server.Middleware
             var fileName = $"{_PathPrefix}{imageRequest.WebSiteFileName}";
             var fileProvider = _WebHostEnvironment.WebRootFileProvider;
             var fileInfo = fileProvider.GetFileInfo(fileName);
-            if(fileInfo.Exists) {
+            if(fileInfo.Exists && !String.IsNullOrEmpty(fileInfo.PhysicalPath)) {
                 var bytes = await _FileSystem.ReadAllBytesAsync(fileInfo.PhysicalPath);
                 var image = _Graphics.CreateImage(bytes);
                 try {
@@ -147,7 +145,7 @@ namespace VirtualRadar.Server.Middleware
             if(imageRequest.IsHighDpi) {
                 image = _Graphics.ResizeForHiDpi(image);
             }
-            if((imageRequest.RotateDegrees ?? 0) != 0) {
+            if(imageRequest.RotateDegrees != null && imageRequest.RotateDegrees.Value != 0) {
                 image = _Graphics.RotateImage(image, imageRequest.RotateDegrees.Value);
             }
             if(imageRequest.Width != null) {
@@ -166,7 +164,15 @@ namespace VirtualRadar.Server.Middleware
                     var fileName = "/v3/fonts/Roboto-Regular.ttf";
                     var fileProvider = _WebHostEnvironment.WebRootFileProvider;
                     var fileInfo = fileProvider.GetFileInfo(fileName);
-                    image = _Graphics.AddTextLines(image, fileInfo.PhysicalPath, imageRequest.TextLines, centreText: true, isHighDpi: imageRequest.IsHighDpi);
+                    if(!String.IsNullOrEmpty(fileInfo.PhysicalPath)) {
+                        image = _Graphics.AddTextLines(
+                            image,
+                            fileInfo.PhysicalPath,
+                            imageRequest.Safe_TextLines,
+                            centreText: true,
+                            isHighDpi: imageRequest.IsHighDpi
+                        );
+                    }
                 }
             }
 

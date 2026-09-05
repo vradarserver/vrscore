@@ -48,7 +48,7 @@ namespace VirtualRadar.Message
         /// <summary>
         /// The callsign transmitted by the aircraft.
         /// </summary>
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         /// <summary>
         /// True if <see cref="Callsign"/> is not null and it was gleaned from a raw message that might hold
@@ -108,7 +108,7 @@ namespace VirtualRadar.Message
         /// <summary>
         /// The aircraft's location in WGS84 coordinates.
         /// </summary>
-        public Location Location { get; set; }
+        public Location? Location { get; set; }
 
         /// <summary>
         /// The aircraft's base 8 squawk code as a base 10 number.

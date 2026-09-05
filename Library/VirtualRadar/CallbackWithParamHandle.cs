@@ -17,7 +17,7 @@ namespace VirtualRadar
     /// <typeparam name="TArgs"></typeparam>
     public class CallbackWithParamHandle<TArgs> : ICallbackHandle
     {
-        private CallbackWithParamList<TArgs> _Owner;
+        private CallbackWithParamList<TArgs>? _Owner;
 
         private readonly Action<TArgs> _Callback;
 

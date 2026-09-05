@@ -19,7 +19,7 @@ namespace VirtualRadar.Feed
         private volatile Dictionary<string, FeedFormatConfig> _FeedFormats = new(StringComparer.InvariantCultureIgnoreCase);
 
         /// <inheritdoc/>
-        public FeedFormatConfig GetConfig(string configId)
+        public FeedFormatConfig? GetConfig(string configId)
         {
             var feedFormats = _FeedFormats;
             feedFormats.TryGetValue(configId, out var result);

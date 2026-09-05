@@ -22,7 +22,7 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="fullRegistration"></param>
         /// <returns></returns>
-        RegistrationPrefixDetail FindDetailForFullRegistration(string fullRegistration);
+        RegistrationPrefixDetail? FindDetailForFullRegistration(string fullRegistration);
 
         /// <summary>
         /// Returns all candidate details for a registration with the hyphen stripped out.

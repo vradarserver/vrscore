@@ -8,11 +8,13 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace WindowProcessor
 {
     public class Table<T>
     {
-        public Window Window { get; private set; }
+        public Window? Window { get; private set; }
 
         public Point HeadingTopLeft { get; private set; }
 
@@ -70,6 +72,7 @@ namespace WindowProcessor
             BodyColors = bodyColors;
         }
 
+        [MemberNotNull(nameof(Window))]
         public void DrawHeadingInto(Window window)
         {
             Window = window;
@@ -137,55 +140,57 @@ namespace WindowProcessor
 
         public void DrawBody(IEnumerable<T> rows, int countDisplayRows)
         {
-            var resetColors = FBColors.Current;
+            if(Window != null) {
+                var resetColors = FBColors.Current;
 
-            using(var enumerator = rows.GetEnumerator()) {
-                var hasRow = true;
+                using(var enumerator = rows.GetEnumerator()) {
+                    var hasRow = true;
 
-                var actualDisplayRows = HasOuterHorizontal
-                    ? countDisplayRows - 1
-                    : countDisplayRows;
+                    var actualDisplayRows = HasOuterHorizontal
+                        ? countDisplayRows - 1
+                        : countDisplayRows;
 
-                for(var displayRow = 0;displayRow < actualDisplayRows;++displayRow) {
-                    hasRow = hasRow && enumerator.MoveNext();
-                    var row = hasRow ? enumerator.Current : default;
-                    var cells = hasRow ? ExtractCells(row) : null;
+                    for(var displayRow = 0;displayRow < actualDisplayRows;++displayRow) {
+                        hasRow = hasRow && enumerator.MoveNext();
+                        var row = hasRow ? enumerator.Current : default;
+                        var cells = row != null ? ExtractCells(row) : null;
 
-                    Window.Position = BodyTopLeft.Down(displayRow);
-                    if(HasOuterVertical) {
-                        (OuterBorderColors ?? resetColors).Apply();
-                        Window.Write(OuterBorder.Vertical);
-                    }
-                    for(var idx = 0;idx < Columns.Length;++idx) {
-                        var column = Columns[idx];
-                        (BodyColors ?? resetColors).Apply();
-                        Window.WriteField(cells == null ? "" : cells[idx], column.Width, column.Alignment);
-                        if(idx + 1 < Columns.Length) {
-                            (InnerBorderColors ?? resetColors).Apply();
-                            Window.Write(HasColumnDividers ? InnerBorder.Vertical : ' ');
+                        Window.Position = BodyTopLeft.Down(displayRow);
+                        if(HasOuterVertical) {
+                            (OuterBorderColors ?? resetColors).Apply();
+                            Window.Write(OuterBorder.Vertical);
+                        }
+                        for(var idx = 0;idx < Columns.Length;++idx) {
+                            var column = Columns[idx];
+                            (BodyColors ?? resetColors).Apply();
+                            Window.WriteField(cells == null ? "" : cells[idx], column.Width, column.Alignment);
+                            if(idx + 1 < Columns.Length) {
+                                (InnerBorderColors ?? resetColors).Apply();
+                                Window.Write(HasColumnDividers ? InnerBorder.Vertical : ' ');
+                            }
+                        }
+                        if(HasOuterVertical) {
+                            (OuterBorderColors ?? resetColors).Apply();
+                            Window.Write(OuterBorder.Vertical);
                         }
                     }
-                    if(HasOuterVertical) {
+
+                    if(HasOuterHorizontal) {
                         (OuterBorderColors ?? resetColors).Apply();
-                        Window.Write(OuterBorder.Vertical);
+                        Window.Position = BodyTopLeft.Down(countDisplayRows - 1);
+                        Window.Write(OuterBorder.BottomLeft);
+                        for(var idx = 0;idx < Columns.Length;++idx) {
+                            Window.Write(OuterBorder.Horizontal, Columns[idx].Width);
+                            if(idx + 1 < Columns.Length) {
+                                Window.Write(TopBottomJunction.BottomJunction);
+                            }
+                        }
+                        Window.Write(OuterBorder.BottomRight);
                     }
                 }
 
-                if(HasOuterHorizontal) {
-                    (OuterBorderColors ?? resetColors).Apply();
-                    Window.Position = BodyTopLeft.Down(countDisplayRows - 1);
-                    Window.Write(OuterBorder.BottomLeft);
-                    for(var idx = 0;idx < Columns.Length;++idx) {
-                        Window.Write(OuterBorder.Horizontal, Columns[idx].Width);
-                        if(idx + 1 < Columns.Length) {
-                            Window.Write(TopBottomJunction.BottomJunction);
-                        }
-                    }
-                    Window.Write(OuterBorder.BottomRight);
-                }
+                resetColors.Apply();
             }
-
-            resetColors.Apply();
         }
     }
 }

@@ -45,7 +45,7 @@ namespace VirtualRadar
         /// <returns></returns>
         public static IHost StartVirtualRadarServer(
             this IHost host,
-            Action<StartVirtualRadarServerOptions> configCallback = null
+            Action<StartVirtualRadarServerOptions>? configCallback = null
         )
         {
             var startupOptions = new StartVirtualRadarServerOptions();

@@ -18,7 +18,7 @@ namespace VirtualRadar.Feed.BaseStation
         /// <summary>
         /// Gets or sets the type of message.
         /// </summary>
-        public string MessageType { get; set; }
+        public string? MessageType { get; set; }
 
         /// <summary>
         /// True if <see cref="MessageType"/> represents a transmission from an aircraft.
@@ -28,17 +28,17 @@ namespace VirtualRadar.Feed.BaseStation
         /// <summary>
         /// Gets or sets the type of transmission sent in a Transmission message.
         /// </summary>
-        public string TransmissionType { get; set; }
+        public string? TransmissionType { get; set; }
 
         /// <summary>
         /// Gets or sets the status change in a StatusChanged message.
         /// </summary>
-        public string StatusCode { get; set; }
+        public string? StatusCode { get; set; }
 
         /// <summary>
         /// Gets or sets the Mode S identifier transmitted by the aircraft.
         /// </summary>
-        public string Icao24 { get; set; }
+        public string? Icao24 { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier of the BaseStation session.
@@ -68,7 +68,7 @@ namespace VirtualRadar.Feed.BaseStation
         /// <summary>
         /// Gets or sets the callsign of the aircraft, if known.
         /// </summary>
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         /// <summary>
         /// Gets or sets the altitude of the aircraft, if known.
@@ -136,7 +136,7 @@ namespace VirtualRadar.Feed.BaseStation
         public string ToBaseStationString()
         {
             var result = new StringBuilder();
-            void appendWithComma(string content)
+            void appendWithComma(string? content)
             {
                 result.Append(content);
                 result.Append(',');

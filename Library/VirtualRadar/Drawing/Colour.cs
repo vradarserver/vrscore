@@ -97,7 +97,7 @@ namespace VirtualRadar.Drawing
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => obj is Colour other && this == other;
+        public override bool Equals(object? obj) => obj is Colour other && this == other;
 
         /// <inheritdoc/>
         public override int GetHashCode() => HashCode.Combine(R, G, B, A);

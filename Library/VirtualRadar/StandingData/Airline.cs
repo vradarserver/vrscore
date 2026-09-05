@@ -20,29 +20,29 @@ namespace VirtualRadar.StandingData
         /// <summary>
         /// Gets or sets the IATA code of the airline, if any.
         /// </summary>
-        public string IataCode { get; set; }
+        public string? IataCode { get; set; }
 
         /// <summary>
         /// Gets or sets the ICAO code of the airline, if any.
         /// </summary>
-        public string IcaoCode { get; set; }
+        public string? IcaoCode { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the airline.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the regular expression that, when matched, indicates that
         /// a flight for this airline is a positioning or ferry flight.
         /// </summary>
-        public string PositioningFlightPattern { get; set; }
+        public string? PositioningFlightPattern { get; set; }
 
         /// <summary>
         /// Gets or sets the regular expression that, when matched, indicates that
         /// a flight for this airline is a charter flight.
         /// </summary>
-        public string CharterFlightPattern { get; set; }
+        public string? CharterFlightPattern { get; set; }
 
         /// <inheritdoc/>
         public override string ToString() => $"{(!String.IsNullOrEmpty(IcaoCode) ? IcaoCode : IataCode)} {Name}";
@@ -52,19 +52,19 @@ namespace VirtualRadar.StandingData
         /// </summary>
         /// <param name="flightNumber"></param>
         /// <returns></returns>
-        public bool IsPositioningFlightNumber(string flightNumber) => MatchesFlightNumber(PositioningFlightPattern, flightNumber);
+        public bool IsPositioningFlightNumber(string? flightNumber) => MatchesFlightNumber(PositioningFlightPattern, flightNumber);
 
         /// <summary>
         /// Returns true if the flight number represents a charter flight.
         /// </summary>
         /// <param name="flightNumber"></param>
         /// <returns></returns>
-        public bool IsCharterFlightNumber(string flightNumber) => MatchesFlightNumber(CharterFlightPattern, flightNumber);
+        public bool IsCharterFlightNumber(string? flightNumber) => MatchesFlightNumber(CharterFlightPattern, flightNumber);
 
-        private static bool MatchesFlightNumber(string regex, string flightNumber)
+        private static bool MatchesFlightNumber(string? regex, string? flightNumber)
         {
-            var result = !String.IsNullOrEmpty(regex) && !String.IsNullOrEmpty(flightNumber);
-            if(result) {
+            var result = false;
+            if(!String.IsNullOrEmpty(regex) && !String.IsNullOrEmpty(flightNumber)) {
                 result = Regex.IsMatch(flightNumber, regex);
             }
 

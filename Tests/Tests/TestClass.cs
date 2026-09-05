@@ -1,11 +1,13 @@
-﻿namespace Tests
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Tests
 {
     /// <summary>
     /// The base for test classes that need to interact with dependency injection.
     /// </summary>
     public abstract class TestClass
     {
-        protected MockServiceProvider _ServiceProvider;
+        protected MockServiceProvider _ServiceProvider = null!;
 
         [TestInitialize]
         public void TestInitialise()

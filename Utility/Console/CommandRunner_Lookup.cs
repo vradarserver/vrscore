@@ -43,7 +43,7 @@ namespace VirtualRadar.Utility.CLIConsole
 
         private async Task LookupAircraft()
         {
-            var icaos = _Options.Id.Split([ "-", ], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var icaos = (_Options.Id ?? "").Split([ "-", ], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             var icao24s = new List<Icao24>();
             foreach(var icao in icaos) {
                 if(!Icao24.TryParse(icao, out var icao24)) {

@@ -69,9 +69,9 @@ namespace VirtualRadar
         /// Creates a new object.
         /// </summary>
         /// <param name="callsign"></param>
-        public Callsign(string callsign)
+        public Callsign(string? callsign)
         {
-            OriginalCallsign = callsign?.ToUpperInvariant().Trim();
+            OriginalCallsign = callsign?.ToUpperInvariant().Trim() ?? "";
 
             if(!String.IsNullOrEmpty(callsign)) {
                 var match = CallsignRegex.Match(callsign);

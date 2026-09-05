@@ -19,9 +19,9 @@ namespace VirtualRadar.Feed.Recording
     /// </summary>
     public class RecordingPlaybackStream : Stream
     {
-        private RecordingReader _Reader;
-        private PlaybackTimeSync _PlaybackTime = new();
-        private Parcel _CurrentParcel;
+        private readonly RecordingReader _Reader;
+        private readonly PlaybackTimeSync _PlaybackTime = new();
+        private Parcel? _CurrentParcel;
         private int _ReturnedUpToOffset;
 
         /// <inheritdoc/>
@@ -58,6 +58,8 @@ namespace VirtualRadar.Feed.Recording
         /// <param name="leaveOpen"></param>
         public RecordingPlaybackStream(Stream recordingStream, bool leaveOpen)
         {
+            ArgumentNullException.ThrowIfNull(recordingStream);
+
             var reader = new RecordingReader();
             reader.InitialiseStreamAsync(recordingStream, leaveOpen)
                 .GetAwaiter()

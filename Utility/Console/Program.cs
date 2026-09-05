@@ -17,7 +17,7 @@ namespace VirtualRadar.Utility.CLIConsole
         static async Task Main(string[] args)
         {
             var exitCode = 0;
-            Options options = null;
+            Options? options = null;
 
             try {
                 options = OptionsParser.Parse(args);
@@ -46,7 +46,7 @@ namespace VirtualRadar.Utility.CLIConsole
 
                 using(var host = builder.Build()) {
                     using(var scope = host.Services.CreateScope()) {
-                        CommandRunner commandRunner = null;
+                        CommandRunner? commandRunner = null;
                         var services = scope.ServiceProvider;
                         switch(options.Command) {
                             case Command.ConnectListener:       commandRunner = services.GetRequiredService<CommandRunner_ConnectListener>(); break;

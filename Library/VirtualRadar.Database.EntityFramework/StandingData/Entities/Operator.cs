@@ -19,19 +19,19 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
         public long OperatorId { get; set; }
 
         [MaxLength(3)]
-        public string Icao { get; set; }
+        public string? Icao { get; set; }
 
         [MaxLength(2)]
-        public string Iata { get; set; }
+        public string? Iata { get; set; }
 
         [MaxLength(80)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [MaxLength(50)]
-        public string PositioningFlightPattern { get; set; }
+        public string? PositioningFlightPattern { get; set; }
 
         [MaxLength(50)]
-        public string CharterFlightPattern { get; set; }
+        public string? CharterFlightPattern { get; set; }
 
         public override string ToString() => $"[{OperatorId}] [{Icao}/{Iata}] {Name}";
 

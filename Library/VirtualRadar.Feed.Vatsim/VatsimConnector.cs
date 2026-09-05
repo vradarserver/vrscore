@@ -21,8 +21,8 @@ namespace VirtualRadar.Feed.Vatsim
     [ReceiveConnector(typeof(VatsimConnectorSettingsDto))]
     public class VatsimConnector : IReceiveConnector
     {
-        private object _SyncLock = new();
-        private ICallbackHandle _DownloaderDataDownloadedHandle;
+        private readonly object _SyncLock = new();
+        private ICallbackHandle? _DownloaderDataDownloadedHandle;
 
         /// <summary>
         /// The configurable settings that the connector was created with.
@@ -58,9 +58,9 @@ namespace VirtualRadar.Feed.Vatsim
             }
         }
 
-        private TimestampedException _LastException;
+        private TimestampedException? _LastException;
         /// <inheritdoc/>
-        public TimestampedException LastException
+        public TimestampedException? LastException
         {
             get => _LastException;
             protected set {
@@ -72,7 +72,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         /// <inheritdoc/>
-        public event EventHandler<ReadOnlyMemory<byte>> PacketReceived;
+        public event EventHandler<ReadOnlyMemory<byte>>? PacketReceived;
 
         /// <summary>
         /// Raises <see cref="PacketReceived"/>.
@@ -84,7 +84,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         /// <inheritdoc/>
-        public event EventHandler ConnectionStateChanged;
+        public event EventHandler? ConnectionStateChanged;
 
         /// <summary>
         /// Raises <see cref="ConnectionStateChanged"/>.
@@ -96,7 +96,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         /// <inheritdoc/>
-        public event EventHandler LastExceptionChanged;
+        public event EventHandler? LastExceptionChanged;
 
         /// <summary>
         /// Raises <see cref="LastExceptionChanged"/>.
@@ -191,7 +191,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// <param name="data"></param>
         protected virtual void VatsimDataDownloaded(VatsimDataV3 data)
         {
-            if(data != null) {
+            if(data?.Pilots != null) {
                 var geofence = BuildGeofence(data);
                 var filteredFeed = new FilteredFeed();
                 filteredFeed.Pilots.AddRange(data
@@ -207,7 +207,7 @@ namespace VirtualRadar.Feed.Vatsim
 
         private LocationRectangle BuildGeofence(VatsimDataV3 data)
         {
-            Location centre;
+            Location? centre;
             switch(SettingsDto.CentreOn) {
                 case GeofenceCentreOn.Airport:
                     var airport = StandingData.FindAirportForCode(SettingsDto.CentreOnAirport);
@@ -217,7 +217,7 @@ namespace VirtualRadar.Feed.Vatsim
                     centre = SettingsDto.CentreOnLocation;
                     break;
                 case GeofenceCentreOn.PilotCid:
-                    var pilot = data.Pilots.FirstOrDefault(pilot => pilot.Cid == SettingsDto.CentreOnPilotCid);
+                    var pilot = data.Pilots?.FirstOrDefault(pilot => pilot.Cid == SettingsDto.CentreOnPilotCid);
                     centre = pilot?.Location;
                     break;
                 default:

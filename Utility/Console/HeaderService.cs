@@ -50,7 +50,7 @@ namespace VirtualRadar.Utility.CLIConsole
         /// Outputs each name/value pair on separate lines, with the values lines up underneath each other.
         /// </summary>
         /// <param name="nameValuePairs"></param>
-        public async Task OutputOptions(params (string Name, string Value)[] nameValuePairs)
+        public async Task OutputOptions(params (string Name, string? Value)[] nameValuePairs)
         {
             var longestName = nameValuePairs.DefaultIfEmpty().Max(r => r.Name?.Length ?? 0);
             var lineBuffer = new StringBuilder();

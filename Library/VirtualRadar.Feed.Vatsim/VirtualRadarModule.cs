@@ -17,10 +17,10 @@ namespace VirtualRadar.Feed.Vatsim
     public class VirtualRadarModule : IVirtualRadarModule
     {
         [InjectedService]
-        public IFeedFormatFactoryService FeedFormatFactory { get; set; }
+        public IFeedFormatFactoryService FeedFormatFactory { get; set; } = null!;
 
         [InjectedService]
-        public FormatConfig FormatConfig { get; set; }
+        public FormatConfig FormatConfig { get; set; } = null!;
 
         /// <inheritdoc/>
         public int Priority => 0;

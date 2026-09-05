@@ -22,10 +22,10 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         public int Reload { get; set; }
 
         [DataMember(Name = "update")]
-        public string Update { get; set; }
+        public string? Update { get; set; }
 
         [DataMember(Name = "update_timestamp")]
-        public string UpdateTimestamp { get; set; }
+        public string? UpdateTimestamp { get; set; }
 
         [DataMember(Name = "connected_clients")]
         public int ConnectedClients { get; set; }
@@ -33,9 +33,9 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
         [DataMember(Name = "unique_users")]
         public int UniqueUsers { get; set; }
 
-        public static VatsimDataV3General CopyFrom(VatsimDataV3General copyFrom)
+        public static VatsimDataV3General? CopyFrom(VatsimDataV3General? copyFrom)
         {
-            VatsimDataV3General result = null;
+            VatsimDataV3General? result = null;
             
             if(copyFrom != null) {
                 result = new() {

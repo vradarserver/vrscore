@@ -29,16 +29,16 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the name of the receiver.
         /// </summary>
         [DataMember]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         /// <summary>
         /// Returns a new object from a receiver.
         /// </summary>
         /// <param name="receiver"></param>
         /// <returns></returns>
-        public static ServerReceiverJson ToModel(IReceiver receiver)
+        public static ServerReceiverJson? ToModel(IReceiver receiver)
         {
-            ServerReceiverJson result = null;
+            ServerReceiverJson? result = null;
 
             if(receiver != null && !receiver.Hidden) {
                 result = new ServerReceiverJson() {

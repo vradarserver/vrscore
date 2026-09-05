@@ -19,30 +19,30 @@ namespace VirtualRadar.Database.EntityFramework.StandingData.Entities
         public long AirportId { get; set; }
 
         [MaxLength(4)]
-        public string Icao { get; set; }
+        public string? Icao { get; set; }
 
         [MaxLength(3)]
-        public string Iata { get; set; }
+        public string? Iata { get; set; }
 
         [MaxLength(80)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [MaxLength(80), Column("Location")]
-        public string Town { get; set; }
+        public string? Town { get; set; }
 
         public long CountryId { get; set; }
 
-        public Country Country { get; set; }
+        public Country? Country { get; set; }
 
         public double? Latitude { get; set; }
 
         public double? Longitude { get; set; }
 
-        private Location _Location;
+        private Location? _Location;
         private double? _LocationLatitude;
         private double? _LocationLongitude;
         [NotMapped]
-        public Location Location
+        public Location? Location
         {
             get {
                 var result = _Location;

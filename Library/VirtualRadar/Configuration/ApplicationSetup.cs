@@ -44,7 +44,7 @@ namespace VirtualRadar.Configuration
         /// Creates a new object.
         /// </summary>
         /// <param name="assembly">The assembly to extract all information from.</param>
-        public ApplicationSetup(Assembly assembly)
+        public ApplicationSetup(Assembly? assembly)
         {
             ApplicationName =       assembly?.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "No name configured";
             InformationalVersion =  InformationalVersion.FromAssembly(assembly);

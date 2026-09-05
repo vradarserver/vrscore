@@ -54,7 +54,7 @@ namespace VirtualRadar.Services.AircraftOnlineLookup
             return _Outcomes;
         }
 
-        private void Service_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> e)
+        private void Service_LookupCompleted(object? sender, BatchedLookupOutcome<LookupByIcaoOutcome> e)
         {
             lock(_SyncLock) {
                 foreach(var outcome in e.AllOutcomes) {

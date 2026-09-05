@@ -26,9 +26,9 @@ namespace VirtualRadar.TileServer
         #pragma warning restore IDE1006
     ) : IDownloadedTileServerSettingsStorage
     {
-        internal const string _DownloadedTileServerSettingsFileName = "TileServerSettings-Downloaded.json";
-        internal const string _CustomTileServerSettingsFileName =     "TileServerSettings-Custom.json";
-        internal const string _ReadMeFileName =                       "TileServerSettings-ReadMe.txt";
+        internal const string DownloadedTileServerSettingsFileName =    "TileServerSettings-Downloaded.json";
+        internal const string CustomTileServerSettingsFileName =        "TileServerSettings-Custom.json";
+        internal const string ReadMeFileName =                          "TileServerSettings-ReadMe.txt";
 
         private string Folder
         {
@@ -43,7 +43,7 @@ namespace VirtualRadar.TileServer
         /// <inheritdoc/>
         public bool DownloadedSettingsFileExists()
         {
-            var fullPath = _FileSystem.Combine(Folder, _DownloadedTileServerSettingsFileName);
+            var fullPath = _FileSystem.Combine(Folder, DownloadedTileServerSettingsFileName);
             return _FileSystem.FileExists(fullPath);
         }
 
@@ -52,8 +52,8 @@ namespace VirtualRadar.TileServer
         {
             var result = new List<DownloadedTileServerSettings>();
 
-            LoadIfFileExists(result, _DownloadedTileServerSettingsFileName, isCustom: false);
-            LoadIfFileExists(result, _CustomTileServerSettingsFileName, isCustom: true);
+            LoadIfFileExists(result, DownloadedTileServerSettingsFileName, isCustom: false);
+            LoadIfFileExists(result, CustomTileServerSettingsFileName, isCustom: true);
 
             return result;
         }
@@ -64,7 +64,7 @@ namespace VirtualRadar.TileServer
             var folder = Folder;
 
             _FileSystem.CreateDirectoryIfNotExists(folder);
-            var fullPath = _FileSystem.Combine(folder, _DownloadedTileServerSettingsFileName);
+            var fullPath = _FileSystem.Combine(folder, DownloadedTileServerSettingsFileName);
 
             var jsonText = JsonConvert.SerializeObject(settings, Formatting.Indented);
             _FileSystem.WriteAllText(fullPath, jsonText);
@@ -82,7 +82,7 @@ namespace VirtualRadar.TileServer
                     var jsonText = _FileSystem.ReadAllText(fullPath);
                     var settingsList = JsonConvert.DeserializeObject<DownloadedTileServerSettings[]>(jsonText);
 
-                    foreach(var setting in settingsList) {
+                    foreach(var setting in settingsList ?? []) {
                         setting.Name = (setting.Name ?? "").Trim();
                         if(setting.Name == "") {
                             continue;
@@ -138,12 +138,13 @@ namespace VirtualRadar.TileServer
         /// </remarks>
         private void PortBrightnessClasses(DownloadedTileServerSettings setting)
         {
-            var match = _BrightnessRegex.Match(setting?.ClassName ?? "");
+            var className = setting.ClassName ?? "";
+            var match = _BrightnessRegex.Match(className);
             if(match.Success) {
                 var classGroup = match.Groups["class"];
                 var brightnessGroup = match.Groups["brightness"];
 
-                setting.ClassName = setting.ClassName
+                setting.ClassName = className
                     .Remove(classGroup.Index, classGroup.Length)
                     .Trim();
 
@@ -157,7 +158,7 @@ namespace VirtualRadar.TileServer
             var folder = Folder;
             _FileSystem.CreateDirectoryIfNotExists(folder);
             _FileSystem.WriteAllText(
-                _FileSystem.Combine(folder, _ReadMeFileName),
+                _FileSystem.Combine(folder, ReadMeFileName),
                 "ReadMe text goes here"     // TODO
             );
         }

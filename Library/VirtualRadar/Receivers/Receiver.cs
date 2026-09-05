@@ -171,7 +171,7 @@ namespace VirtualRadar.Receivers
             return Task.CompletedTask;
         }
 
-        private Task LookupCallsignRouteInBackground(int aircraftId, string callsign)
+        private Task LookupCallsignRouteInBackground(int aircraftId, string? callsign)
         {
             try {
                 var route = _StandingDataManager.FindRoute(callsign);
@@ -212,26 +212,26 @@ namespace VirtualRadar.Receivers
             }
         }
 
-        private void AircraftLookupService_LookupCompleted(object sender, BatchedLookupOutcome<LookupByIcaoOutcome> args)
+        private void AircraftLookupService_LookupCompleted(object? sender, BatchedLookupOutcome<LookupByIcaoOutcome> args)
         {
             Task.Run(() => LookupStandingDataDetailsInBackground(args));
             AircraftList.ApplyLookup(args);
         }
 
-        private void Connector_PacketReceived(object sender, ReadOnlyMemory<byte> args)
+        private void Connector_PacketReceived(object? sender, ReadOnlyMemory<byte> args)
         {
             Interlocked.Increment(ref _CountPacketsReceived);
             FeedDecoder.ParseFeedPacket(args);
         }
 
-        private void FeedDecoder_LookupReceived(object sender, LookupByAircraftIdOutcome lookupOutcome)
+        private void FeedDecoder_LookupReceived(object? sender, LookupByAircraftIdOutcome lookupOutcome)
         {
             // Feeds that provide their own lookups are expected to provide all lookup details.
             // We do not add our own lookups.
             AircraftList.ApplyLookup(lookupOutcome);
         }
 
-        private void FeedDecoder_MessageReceived(object sender, TransponderMessage args)
+        private void FeedDecoder_MessageReceived(object? sender, TransponderMessage args)
         {
             Interlocked.Increment(ref _CountMessagesReceived);
             var outcome = AircraftList.ApplyMessage(args);

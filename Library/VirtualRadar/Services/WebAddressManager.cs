@@ -56,7 +56,7 @@ namespace VirtualRadar.Services
         }
 
         /// <inheritdoc/>
-        public string RegisterAddress(string name, string address, IList<string> oldAddresses = null)
+        public string RegisterAddress(string name, string address, IList<string>? oldAddresses = null)
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(name);
             ArgumentNullException.ThrowIfNullOrWhiteSpace(address);
@@ -96,11 +96,11 @@ namespace VirtualRadar.Services
                 }
             }
 
-            return LookupAddress(name);
+            return LookupAddress(name) ?? address;
         }
 
         /// <inheritdoc/>
-        public string LookupAddress(string name)
+        public string? LookupAddress(string name)
         {
             Load();
 
@@ -125,7 +125,7 @@ namespace VirtualRadar.Services
 
                             Dictionary<string, string> rawDictionary;
                             try {
-                                rawDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonText);
+                                rawDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonText) ?? [];
                             } catch(Newtonsoft.Json.JsonException) {
                                 BackupOldFileAsBad();
                                 Save();

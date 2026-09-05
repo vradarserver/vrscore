@@ -32,7 +32,7 @@ namespace VirtualRadar.Feed.Recording
     /// that work.
     /// </remarks>
     public record RecordingPlaybackConnectorSettingsDto (
-        string RecordingFileName,
+        string? RecordingFileName,
         double PlaybackSpeed = 1.0
     ) : IReceiveConnectorSettingsDto
     {
@@ -44,6 +44,6 @@ namespace VirtualRadar.Feed.Recording
         }
 
         /// <inheritdoc/>
-        public override string ToString() => $"{RecordingFileName} x{PlaybackSpeed} speed";
+        public override string ToString() => $"{RecordingFileName ?? "No recording"} x{PlaybackSpeed} speed";
     }
 }

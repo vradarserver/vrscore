@@ -24,12 +24,12 @@
 
             public ConsoleColor? Background { get; }
 
-            public Chunk(string text)
+            public Chunk(string? text)
             {
-                Text = text;
+                Text = text ?? "";
             }
 
-            public Chunk(ConsoleColor? foreground, ConsoleColor? background)
+            public Chunk(ConsoleColor? foreground, ConsoleColor? background) : this(null)
             {
                 Foreground = foreground;
                 Background = background;

@@ -19,6 +19,6 @@ namespace VirtualRadar.Connection
         /// Raised on background threads when the connector receives a packet. The event handlers
         /// must not use the packet after they return and they must return as quickly as possible.
         /// </summary>
-        event EventHandler<ReadOnlyMemory<byte>> PacketReceived;
+        event EventHandler<ReadOnlyMemory<byte>>? PacketReceived;
     }
 }

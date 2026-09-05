@@ -30,7 +30,7 @@ namespace VirtualRadar.WebSite.Models
         /// <summary>
         /// The last data version received by the browser.
         /// </summary>
-        public string LastDataVersion { get; set; }
+        public string? LastDataVersion { get; set; }
 
         /// <summary>
         /// <see cref="LastDataVersion"/> parsed into a long.

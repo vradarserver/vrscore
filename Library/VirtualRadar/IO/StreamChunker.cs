@@ -28,7 +28,7 @@ namespace VirtualRadar.IO
         /// <summary>
         /// Used to allocate byte arrays that are exposed to the wider world.
         /// </summary>
-        public static IsolatedMemoryPool _IsolatedPool = new();
+        public static IsolatedMemoryPool IsolatedPool { get; } = new();
 
         /// <summary>
         /// The maximum length of a chunk. If a sequence of bytes has not been identified
@@ -36,7 +36,7 @@ namespace VirtualRadar.IO
         /// chunker begins looking for the start of the next chunk. Note that the chunker
         /// will allocate a buffer of this size, so don't set it to anything mad.
         /// </summary>
-        protected virtual int _MaximumChunkSize { get; } = 100;
+        protected virtual int MaximumChunkSize { get; } = 100;
 
         /// <summary>
         /// The number of chunks seen by the chunker over its current run of <see cref="ReadChunksFromStream"/>.
@@ -50,7 +50,7 @@ namespace VirtualRadar.IO
         /// use the chunk after the event handler returns then you must copy it and use the
         /// copy.
         /// </summary>
-        public event EventHandler<ReadOnlyMemory<byte>> ChunkRead;
+        public event EventHandler<ReadOnlyMemory<byte>>? ChunkRead;
 
         /// <summary>
         /// Raises <see cref="ChunkRead"/>.
@@ -68,7 +68,7 @@ namespace VirtualRadar.IO
         /// you need to use the block after the event handler returns then you must copy it
         /// and use the copy.
         /// </summary>
-        public event EventHandler<ReadOnlyMemory<byte>> BlockRead;
+        public event EventHandler<ReadOnlyMemory<byte>>? BlockRead;
 
         /// <summary>
         /// Raises <see cref="BlockRead"/>.
@@ -95,7 +95,7 @@ namespace VirtualRadar.IO
         /// memory.
         /// </returns>
         /// <exception cref="ArgumentException"></exception>
-        public IStreamChunkerState ParseBlock(ReadOnlyMemory<byte> buffer, IStreamChunkerState state)
+        public IStreamChunkerState ParseBlock(ReadOnlyMemory<byte> buffer, IStreamChunkerState? state)
         {
             var parseState = state as StreamChunkerParseState;
             if(state != null && parseState == null) {
@@ -105,7 +105,7 @@ namespace VirtualRadar.IO
 
             var bufferOffset = 0;
             while(bufferOffset < buffer.Length) {
-                var parseBufferUsable = _MaximumChunkSize - parseState.ParseBufferLength;
+                var parseBufferUsable = MaximumChunkSize - parseState.ParseBufferLength;
                 var windowLength = Math.Min(buffer.Length - bufferOffset, parseBufferUsable);
                 if(windowLength < 1) {
                     throw new InvalidOperationException($"Unexpected window length when parsing block: {nameof(parseBufferUsable)}={parseBufferUsable}");
@@ -114,8 +114,8 @@ namespace VirtualRadar.IO
                 var bufferWindow = buffer.Span[bufferOffset..bufferEndOffset];
 
                 var newBlockStart = parseState.ParseBufferLength;
-                var newParseBufferLength = Math.Min(newBlockStart + bufferWindow.Length, _MaximumChunkSize);
-                parseState.ExpandParseBuffer(_IsolatedPool, newParseBufferLength);
+                var newParseBufferLength = Math.Min(newBlockStart + bufferWindow.Length, MaximumChunkSize);
+                parseState.ExpandParseBuffer(IsolatedPool, newParseBufferLength);
 
                 bufferWindow.CopyTo(
                     parseState.ParseBuffer.Memory.Span[parseState.ParseBufferLength..]
@@ -144,14 +144,14 @@ namespace VirtualRadar.IO
                 );
 
                 if(startOffset == -1 && endOffset == -1) {
-                    if(window.Length > _MaximumChunkSize) {
+                    if(window.Length > MaximumChunkSize) {
                         window = [];
                     }
                     break;
                 }
                 if(startOffset != -1 && endOffset == -1) {
                     var incompleteChunkSize = window.Length - startOffset;
-                    if(incompleteChunkSize >= _MaximumChunkSize) {
+                    if(incompleteChunkSize >= MaximumChunkSize) {
                         window = [];
                         break;
                     } else {
@@ -164,8 +164,8 @@ namespace VirtualRadar.IO
                 }
 
                 var chunkLength = (endOffset - startOffset) + 1;
-                if(chunkLength <= _MaximumChunkSize) {
-                    using(var chunk = _IsolatedPool.Rent(chunkLength)) {
+                if(chunkLength <= MaximumChunkSize) {
+                    using(var chunk = IsolatedPool.Rent(chunkLength)) {
                         ++CountChunksExtracted;
                         window
                             .Slice(startOffset, chunkLength)
@@ -184,7 +184,7 @@ namespace VirtualRadar.IO
             if(moveWindowToStartOfBuffer && window.Length > 0) {
                 window.CopyTo(buffer);
             }
-            if(window.Length == _MaximumChunkSize) {
+            if(window.Length == MaximumChunkSize) {
                 window = [];
             }
 

@@ -18,7 +18,7 @@ namespace VirtualRadar.StandingData
         /// <summary>
         /// Gets or sets the aircraft type code.
         /// </summary>
-        public string Type { get; set; }
+        public required string Type { get; set; }
 
         /// <summary>
         /// Gets a list of every manufacturer that has an aircraft that uses this type code.
@@ -45,7 +45,7 @@ namespace VirtualRadar.StandingData
         /// Gets or sets the number of engines - 1, 2, 3 etc. or C for two engines coupled to drive a single propeller.
         /// This will be null if the number of engines is not known or not applicable.
         /// </summary>
-        public string Engines { get; set; }
+        public string? Engines { get; set; }
 
         /// <summary>
         /// Gets or sets the type of engine predominantly used to propel the aircraft.
@@ -58,6 +58,6 @@ namespace VirtualRadar.StandingData
         public EnginePlacement EnginePlacement { get; set; }
 
         /// <inheritdoc/>
-        public override string ToString() => Type ?? "";
+        public override string ToString() => Type;
     }
 }

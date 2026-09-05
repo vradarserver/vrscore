@@ -26,7 +26,7 @@ namespace VirtualRadar.TileServer
     ) : IDownloadedTileServerSettingsDownloader
     {
         /// <inheritdoc/>
-        public async Task<IReadOnlyList<DownloadedTileServerSettings>> DownloadAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<DownloadedTileServerSettings>?> DownloadAsync(CancellationToken cancellationToken)
         {
             var url = _TileServerSettingsDto.LatestValue.DownloadUrl;
             _Log.Message($"Attempting to download tile server settings from {url}");
@@ -41,7 +41,7 @@ namespace VirtualRadar.TileServer
                 $"{(cancellationToken.IsCancellationRequested ? " (request cancelled)" : "")}"
             );
 
-            DownloadedTileServerSettings[] result = null;
+            DownloadedTileServerSettings[]? result = null;
             if(!cancellationToken.IsCancellationRequested && !String.IsNullOrEmpty(jsonText)) {
                 result = JsonConvert.DeserializeObject<DownloadedTileServerSettings[]>(jsonText);
             }
@@ -50,7 +50,7 @@ namespace VirtualRadar.TileServer
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<DownloadedTileServerSettings> Download(int timeoutSeconds = 30)
+        public IReadOnlyList<DownloadedTileServerSettings>? Download(int timeoutSeconds = 30)
         {
             using(var cancellationSource = timeoutSeconds > 0
                 ? new CancellationTokenSource(timeoutSeconds * 1000)

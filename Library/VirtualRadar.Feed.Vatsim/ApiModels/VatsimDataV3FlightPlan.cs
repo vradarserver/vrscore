@@ -16,56 +16,56 @@ namespace VirtualRadar.Feed.Vatsim.ApiModels
     public class VatsimDataV3FlightPlan
     {
         [DataMember(Name = "flight_rules")]
-        public string FlightRules { get; set; }
+        public string? FlightRules { get; set; }
 
         [DataMember(Name = "aircraft")]
-        public string Aircraft { get; set; }
+        public string? Aircraft { get; set; }
 
         [DataMember(Name = "aircraft_faa")]
-        public string AircraftFAA { get; set; }
+        public string? AircraftFAA { get; set; }
 
         [DataMember(Name = "aircraft_short")]
-        public string AircraftShort { get; set; }
+        public string? AircraftShort { get; set; }
 
         [DataMember(Name = "departure")]
-        public string Departure { get; set; }
+        public string? Departure { get; set; }
 
         [DataMember(Name = "arrival")]
-        public string Arrival { get; set; }
+        public string? Arrival { get; set; }
 
         [DataMember(Name = "alternate")]
-        public string Alternate { get; set; }
+        public string? Alternate { get; set; }
 
         [DataMember(Name = "cruise_tas")]
-        public string CruiseTrueAirspeedKnots { get; set; }
+        public string? CruiseTrueAirspeedKnots { get; set; }
 
         [DataMember(Name = "altitude")]
-        public string AltitudeFeet { get; set; }
+        public string? AltitudeFeet { get; set; }
 
         [DataMember(Name = "deptime")]
-        public string DepartureTime { get; set; }
+        public string? DepartureTime { get; set; }
 
         [DataMember(Name = "enroute_time")]
-        public string EnrouteTime { get; set; }
+        public string? EnrouteTime { get; set; }
 
         [DataMember(Name = "fuel_time")]
-        public string FuelTime { get; set; }
+        public string? FuelTime { get; set; }
 
         [DataMember(Name = "remarks")]
-        public string Remarks { get; set; }
+        public string? Remarks { get; set; }
 
         [DataMember(Name = "route")]
-        public string Route { get; set; }
+        public string? Route { get; set; }
 
         [DataMember(Name = "revision_id")]
         public int RevisionId { get; set; }
 
         [DataMember(Name = "assigned_transponder")]
-        public string AssignedTransponder { get; set; }
+        public string? AssignedTransponder { get; set; }
 
-        public static VatsimDataV3FlightPlan CopyFrom(VatsimDataV3FlightPlan copyFrom)
+        public static VatsimDataV3FlightPlan? CopyFrom(VatsimDataV3FlightPlan? copyFrom)
         {
-            VatsimDataV3FlightPlan result = null;
+            VatsimDataV3FlightPlan? result = null;
 
             if(copyFrom != null) {
                 result = new() {

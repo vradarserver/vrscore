@@ -21,239 +21,239 @@
         /// <param name="buffer"></param>
         /// <param name="count"></param>
         /// <param name="text></param>
-        public static void AppendMany(this StringBuilder buffer, int count, string text)
+        public static void AppendMany(this StringBuilder buffer, int count, string? text)
         {
             for(var idx = 0;idx < count;++idx) {
                 buffer.Append(text);
             }
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, object value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, object? value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, object value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, object? value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, char[] value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, char[]? value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, char[] value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, char[]? value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, ulong value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, ulong value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, ulong value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, ulong value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, uint value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, uint value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, uint value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, uint value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, ushort value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, ushort value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, ushort value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, ushort value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, decimal value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, decimal value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, decimal value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, decimal value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, double value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, double value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, double value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, double value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, float value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, float value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, float value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, float value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, int value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, int value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, int value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, int value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, short value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, short value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, short value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, short value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, char value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, char value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, char value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, char value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, long value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, long value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, long value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, long value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, sbyte value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, sbyte value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, sbyte value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, sbyte value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, bool value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, bool value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, bool value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, bool value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, string value, int startIndex, int count)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, string? value, int startIndex, int count)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value, startIndex, count);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, string value, int startIndex, int count)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, string? value, int startIndex, int count)
             => !condition ? builder : builder.AppendWithSeparator(separator, value, startIndex, count);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, char[] value, int startIndex, int count)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, char[]? value, int startIndex, int count)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value, startIndex, count);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, char[] value, int startIndex, int count)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, char[]? value, int startIndex, int count)
             => !condition ? builder : builder.AppendWithSeparator(separator, value, startIndex, count);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, char value, int repeatCount)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, char value, int repeatCount)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value, repeatCount);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, char value, int repeatCount)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, char value, int repeatCount)
             => !condition ? builder : builder.AppendWithSeparator(separator, value, repeatCount);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, byte value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, byte value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, byte value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, byte value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string separator, string value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, string? separator, string? value)
         {
             AppendSeparator(builder, separator);
             return builder.Append(value);
         }
 
-        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string separator, string value)
+        public static StringBuilder AppendWithSeparator(this StringBuilder builder, bool condition, string? separator, string? value)
             => !condition ? builder : builder.AppendWithSeparator(separator, value);
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string separator, string format, object arg0)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string? separator, string format, object? arg0)
         {
             AppendSeparator(builder, separator);
             return builder.AppendFormat(format, arg0);
         }
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string separator, string format, object arg0)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string? separator, string format, object? arg0)
             => !condition ? builder : builder.AppendFormatWithSeparator(separator, format, arg0);
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string separator, string format, object arg0, object arg1)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string? separator, string format, object? arg0, object? arg1)
         {
             AppendSeparator(builder, separator);
             return builder.AppendFormat(format, arg0, arg1);
         }
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string separator, string format, object arg0, object arg1)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string? separator, string format, object? arg0, object? arg1)
             => !condition ? builder : builder.AppendFormatWithSeparator(separator, format, arg0, arg1);
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string separator, string format, object arg0, object arg1, object arg2)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string? separator, string format, object? arg0, object? arg1, object? arg2)
         {
             AppendSeparator(builder, separator);
             return builder.AppendFormat(format, arg0, arg1, arg2);
         }
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string separator, string format, object arg0, object arg1, object arg2)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string? separator, string format, object? arg0, object? arg1, object? arg2)
             => !condition ? builder : builder.AppendFormatWithSeparator(separator, format, arg0, arg1, arg2);
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string separator, IFormatProvider provider, string format, params object[] args)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string? separator, IFormatProvider provider, string format, params object?[] args)
         {
             AppendSeparator(builder, separator);
             return builder.AppendFormat(provider, format, args);
         }
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string separator, IFormatProvider provider, string format, params object[] args)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string? separator, IFormatProvider provider, string format, params object?[] args)
             => !condition ? builder : builder.AppendFormatWithSeparator(separator, provider, format, args);
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string separator, string format, params object[] args)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, string? separator, string format, params object?[] args)
         {
             AppendSeparator(builder, separator);
             return builder.AppendFormat(format, args);
         }
 
-        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string separator, string format, params object[] args)
+        public static StringBuilder AppendFormatWithSeparator(this StringBuilder builder, bool condition, string? separator, string format, params object?[] args)
             => !condition ? builder : builder.AppendFormatWithSeparator(separator, format, args);
 
-        public static StringBuilder AppendLineWithSeparator(this StringBuilder builder, string separator, string value)
+        public static StringBuilder AppendLineWithSeparator(this StringBuilder builder, string? separator, string? value)
         {
             AppendSeparator(builder, separator);
             return builder.AppendLine(value);
         }
 
-        public static StringBuilder AppendLineWithSeparator(this StringBuilder builder, bool condition, string separator, string value)
+        public static StringBuilder AppendLineWithSeparator(this StringBuilder builder, bool condition, string? separator, string? value)
             => !condition ? builder : builder.AppendLineWithSeparator(separator, value);
 
-        public static StringBuilder AppendLineWithSeparator(this StringBuilder builder, string separator)
+        public static StringBuilder AppendLineWithSeparator(this StringBuilder builder, string? separator)
         {
             AppendSeparator(builder, separator);
             return builder.AppendLine();
@@ -409,9 +409,9 @@
         /// </summary>
         /// <param name="stringBuilder"></param>
         /// <param name="separator"></param>
-        private static void AppendSeparator(StringBuilder stringBuilder, string separator)
+        private static void AppendSeparator(StringBuilder? stringBuilder, string? separator)
         {
-            if((stringBuilder?.Length ?? 0) > 0) {
+            if(stringBuilder != null && stringBuilder.Length > 0) {
                 stringBuilder.Append(separator);
             }
         }

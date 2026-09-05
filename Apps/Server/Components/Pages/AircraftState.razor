@@ -70,11 +70,11 @@
     private int _AircraftId;
     private List<MessageHistory> _MessageHistory = [];
 
-    private IReceiver _SelectedReceiver => _ReceiverFactory
+    private IReceiver? _SelectedReceiver => _ReceiverFactory
         .Receivers
         .FirstOrDefault(receiver => receiver.Id == _ReceiverId);
 
-    private Aircraft _SelectedAircraft => _SelectedReceiver
+    private Aircraft? _SelectedAircraft => _SelectedReceiver
         ?.AircraftList
         .FindAircraft(_AircraftId);
 
@@ -90,7 +90,7 @@
                     _MessageHistory.Add(new(
                         Time: idx == 0 ? changeSet.Utc : null,
                         Field: changedValue.Field.ToString(),
-                        NewValue: changedValue.NewValueAsObject.ToString()
+                        NewValue: changedValue.NewValueAsObject?.ToString() ?? "<null>"
                     ));
                 }
             }

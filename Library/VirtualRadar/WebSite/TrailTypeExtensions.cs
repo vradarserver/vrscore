@@ -14,7 +14,7 @@ namespace VirtualRadar.WebSite
 {
     public static class TrailTypeExtensions
     {
-        public static TrailType TrailTypeFromCode(string trFmt)
+        public static TrailType TrailTypeFromCode(string? trFmt)
         {
             var result = TrailType.None;
 
@@ -58,7 +58,7 @@ namespace VirtualRadar.WebSite
 
         public static bool IncludesSpeed(this TrailType trailType) => trailType == TrailType.FullSpeed || trailType == TrailType.ShortSpeed;
 
-        public static string ToAircraftListTrailType(this TrailType trailType)
+        public static string? ToAircraftListTrailType(this TrailType trailType)
         {
             switch(trailType) {
                 case TrailType.Full:

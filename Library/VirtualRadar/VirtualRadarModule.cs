@@ -22,10 +22,10 @@ namespace VirtualRadar
         public int Priority => -1;
 
         [InjectedService]
-        public ReceiverEngine ReceiverEngine { get; set; }
+        public ReceiverEngine ReceiverEngine { get; set; } = null!;
 
         [InjectedService]
-        public IDownloadedTileServerSettingsManager TileServerSettingsManager { get; set; }
+        public IDownloadedTileServerSettingsManager TileServerSettingsManager { get; set; } = null!;
 
         /// <inheritdoc/>
         public void RegisterServices(IServiceCollection services)

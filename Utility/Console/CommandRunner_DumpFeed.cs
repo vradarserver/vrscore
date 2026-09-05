@@ -17,11 +17,13 @@ using VirtualRadar.IO;
 namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_DumpFeed(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         Options _Options,
         HeaderService _Header,
         IRecordingReader _Reader,
         IFeedFormatFactoryService _FeedFactory,
         IHost _Host
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
     ) : CommandRunner
     {
         private readonly HexDump _HexDump = new() {
@@ -50,7 +52,7 @@ namespace VirtualRadar.Utility.CLIConsole
                     ? _FeedFactory.GetConfig(_Options.FeedFormat)
                     : null;
                 var chunker = feedConfig?.CreateChunker();
-                IStreamChunkerState chunkerState = null;
+                IStreamChunkerState? chunkerState = null;
 
                 var countParcels = 0L;
 
@@ -60,10 +62,10 @@ namespace VirtualRadar.Utility.CLIConsole
                     await _Reader.InitialiseStreamAsync(stream, leaveOpen: true);
                     await WriteLine();
 
-                    Parcel parcel;
+                    Parcel? parcel;
                     do {
                         parcel = await _Reader.GetNextAsync(CancellationToken.None);
-                        if(parcel != null) {
+                        if(parcel != null && _Reader.Header != null) {
                             if(countParcels++ == 0) {
                                 await DumpHeader(_Reader.Header);
                             }
@@ -120,9 +122,9 @@ namespace VirtualRadar.Utility.CLIConsole
             }
         }
 
-        private IStreamChunkerState DumpMessages(StreamChunker chunker, byte[] packet, IStreamChunkerState chunkerState)
+        private IStreamChunkerState DumpMessages(StreamChunker chunker, byte[] packet, IStreamChunkerState? chunkerState)
         {
-            void chunkRead(object _, ReadOnlyMemory<byte> chunk)
+            void chunkRead(object? _, ReadOnlyMemory<byte> chunk)
             {
                 Console.WriteLine();
                 Console.WriteLine($"Message {chunker.CountChunksExtracted}");

@@ -24,7 +24,7 @@ namespace VirtualRadar.TileServer
     [SettingsDto("TileServer")]
     public record TileServerSettingsDto(
         string DownloadUrl = "http://sdm.virtualradarserver.co.uk/api/1.01/tile-servers",
-        string FolderOverride = null,
+        string? FolderOverride = null,
         int BlockingDownloadTimeoutSeconds = 10,
         int BackgroundDownloadTimeoutSeconds = 60,
         int BackoffPeriodSeconds = 60,

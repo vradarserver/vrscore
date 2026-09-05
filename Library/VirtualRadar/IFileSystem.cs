@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 namespace VirtualRadar
@@ -33,54 +34,57 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        bool IsValidFileName(string fileName);
+        bool IsValidFileName(string? fileName);
 
         /// <summary>
         /// True if the path does not contain any invalid path characters.
         /// </summary>
         /// <param name="folder"></param>
         /// <returns></returns>
-        bool IsValidPathName(string path);
+        bool IsValidPathName(string? path);
 
         /// <summary>
         /// Returns the folder portion of a full path.
         /// </summary>
         /// <param name="fullPath"></param>
         /// <returns></returns>
-        string GetDirectory(string fullPath);
+        string? GetDirectory(string? fullPath);
 
         /// <summary>
         /// Returns the filename portion of a full path.
         /// </summary>
         /// <param name="fullPath"></param>
         /// <returns></returns>
-        string GetFileName(string fullPath);
+        string? GetFileName(string? fullPath);
 
         /// <summary>
         /// Returns the filename portion of a full path without the extension.
         /// </summary>
         /// <param name="fullPath"></param>
         /// <returns></returns>
-        string GetFileNameWithoutExtension(string fullPath);
+        [return: NotNullIfNotNull(nameof(fullPath))]
+        string? GetFileNameWithoutExtension(string? fullPath);
 
         /// <summary>
         /// Returns the extension of a full path.
         /// </summary>
         /// <param name="fullPath"></param>
         /// <returns></returns>
-        string GetExtension(string fullPath);
+        [return: NotNullIfNotNull(nameof(fullPath))]
+        string? GetExtension(string? fullPath);
 
         /// <summary>
         /// Returns true if the directory exists.
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        bool DirectoryExists(string path);
+        bool DirectoryExists([NotNullWhen(true)] string? path);
 
         /// <summary>
         /// Creates the path and returns true if the path does not already exist, otherwise returns false.
         /// </summary>
         /// <param name="path"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         bool CreateDirectoryIfNotExists(string path);
 
         /// <summary>
@@ -88,13 +92,14 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="fileName">The name of the file. Case sensitivity depends on the underlying operating system.</param>
         /// <returns></returns>
-        bool FileExists(string fileName);
+        bool FileExists([NotNullWhen(true)] string? fileName);
 
         /// <summary>
         /// Returns the size of a file.
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         long FileSize(string fileName);
 
         /// <summary>
@@ -165,7 +170,7 @@ namespace VirtualRadar
         /// <param name="fileName"></param>
         /// <param name="encoding">Defaults to UTF8.</param>
         /// <returns></returns>
-        string ReadAllText(string fileName, Encoding encoding = null);
+        string ReadAllText(string fileName, Encoding? encoding = null);
 
         /// <summary>
         /// Returns all text from the file as read from a background thread.
@@ -174,7 +179,7 @@ namespace VirtualRadar
         /// <param name="encoding">Defaults to UTF8.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> ReadAllTextAsync(string fileName, Encoding encoding = null, CancellationToken cancellationToken = default);
+        Task<string> ReadAllTextAsync(string fileName, Encoding? encoding = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Overwrites the content of the file with the byte array passed across.
@@ -214,7 +219,7 @@ namespace VirtualRadar
         /// <param name="fileName"></param>
         /// <param name="text"></param>
         /// <param name="encoding">Defaults to UTF8.</param>
-        void WriteAllText(string fileName, string text, Encoding encoding = null);
+        void WriteAllText(string fileName, string text, Encoding? encoding = null);
 
         /// <summary>
         /// Overwrites the content of the file on a background thread.
@@ -224,6 +229,6 @@ namespace VirtualRadar
         /// <param name="encoding"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task WriteAllTextAsync(string fileName, string text, Encoding encoding = null, CancellationToken cancellationToken = default);
+        Task WriteAllTextAsync(string fileName, string text, Encoding? encoding = null, CancellationToken cancellationToken = default);
     }
 }

@@ -29,7 +29,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// <summary>
         /// Gets the full remarks.
         /// </summary>
-        public string Remarks { get; }
+        public string? Remarks { get; }
 
         /// <summary>
         /// Gets a collection of key-value properties extracted from <see cref="Remarks"/>.
@@ -58,7 +58,7 @@ namespace VirtualRadar.Feed.Vatsim
         /// Creates a new object.
         /// </summary>
         /// <param name="remarks">The remarks to parse into <see cref="Properties"/>.</param>
-        public RemarksParser(string remarks)
+        public RemarksParser(string? remarks)
         {
             Remarks = remarks;
             DecodeProperties();
@@ -96,7 +96,7 @@ namespace VirtualRadar.Feed.Vatsim
         }
 
         /// <inheritdoc/>
-        public override string ToString() => Remarks;
+        public override string ToString() => Remarks ?? "";
 
         /// <summary>
         /// Returns the <see cref="Properties"/> key passed across as long as (1) it

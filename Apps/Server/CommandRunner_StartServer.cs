@@ -33,20 +33,21 @@ namespace VirtualRadar.Server
             await WriteLine(title);
             await WriteLine(new String('=', title.Length));
 
-            if(Options.NoHttp && Options.NoHttps) {
+            if(Safe_Options.NoHttp && Safe_Options.NoHttps) {
                 OptionsParser.Usage("The server needs to listen to accept at least one of either HTTP or HTTPS");
             }
 
             // Trying to get the .NET 8 web application to path from the application folder
             // instead of CWD is a pain in the backside... so I'm just going with the flow
             var currentDirectory = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location)
+                ?? throw new InvalidOperationException($"{Assembly.GetEntryAssembly()?.FullName ?? "Null"} entry assembly has no {nameof(Assembly.Location)}");
 
             try {
                 var builder = WebApplication.CreateBuilder();
 
                 builder.Services.AddVirtualRadarServer();
-                var vrsWorkingFolder = Options.WorkingFolder;
+                var vrsWorkingFolder = Safe_Options.WorkingFolder;
                 await WriteLine($"Working folder is {vrsWorkingFolder}");
 
                 builder.Services.AddMvc(options => {
@@ -67,7 +68,7 @@ namespace VirtualRadar.Server
 
                 builder.Services.AddBlazorStrap();
 
-                if(!Options.ShowLog) {
+                if(!Safe_Options.ShowLog) {
                     builder.Logging.ClearProviders();
                 }
 
@@ -105,8 +106,8 @@ namespace VirtualRadar.Server
                     Console.WriteLine($"Starting server");
                     var serverTask = app.StartAsync(serverCancel.Token);
 
-                    if(!Options.SuppressBrowser) {
-                        var url = $"http://localhost:{Options.HttpPort}/admin";
+                    if(!Safe_Options.SuppressBrowser) {
+                        var url = $"http://localhost:{Safe_Options.HttpPort}/admin";
                         try {
                             await WriteLine($"Opening {url} in default browser");
                             ProcessStarter.OpenUrlInDefaultBrowser(url);
@@ -164,14 +165,14 @@ namespace VirtualRadar.Server
         private void ConfigureKestrel(WebApplicationBuilder builder)
         {
             builder.WebHost.ConfigureKestrel((context, options) => {
-                if(!Options.NoHttp) {
-                    Console.WriteLine($"Listening on http://localhost:{Options.HttpPort}");
-                    options.ListenLocalhost(Options.HttpPort);
+                if(!Safe_Options.NoHttp) {
+                    Console.WriteLine($"Listening on http://localhost:{Safe_Options.HttpPort}");
+                    options.ListenLocalhost(Safe_Options.HttpPort);
                 }
 
-                if(!Options.NoHttps) {
-                    Console.WriteLine($"Listening on https://localhost:{Options.HttpsPort}");
-                    options.ListenLocalhost(Options.HttpsPort, listenOptions => {
+                if(!Safe_Options.NoHttps) {
+                    Console.WriteLine($"Listening on https://localhost:{Safe_Options.HttpsPort}");
+                    options.ListenLocalhost(Safe_Options.HttpsPort, listenOptions => {
                         listenOptions.UseHttps();               // TODO: Need a *bunch* more stuff here
                     });
                 }

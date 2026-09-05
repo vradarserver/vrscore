@@ -22,17 +22,17 @@ namespace VirtualRadar.Receivers
     {
         public int Id { get; init; }
 
-        public string Name { get; init; }
+        public string Name { get; init; } = "";
 
         public bool Enabled { get; init; }
 
         public bool Hidden { get; init; }
 
-        public IReceiverConnectorSettingsDto Connector { get; init; }
+        public IReceiverConnectorSettingsDto? Connector { get; init; }
 
-        public IReceiverFeedDecoderSettingsDto FeedDecoder { get; init; }
+        public IReceiverFeedDecoderSettingsDto? FeedDecoder { get; init; }
 
-        public IReceiverAircraftListSettingsDto AircraftList { get; init; }
+        public IReceiverAircraftListSettingsDto? AircraftList { get; init; }
 
         public ReceiverSettingsDto()
         {
@@ -43,13 +43,13 @@ namespace VirtualRadar.Receivers
             string name,
             bool enabled,
             bool hidden,
-            IReceiverConnectorSettingsDto connector,
-            IReceiverFeedDecoderSettingsDto feedDecoder,
-            IReceiverAircraftListSettingsDto aircraftList
+            IReceiverConnectorSettingsDto? connector,
+            IReceiverFeedDecoderSettingsDto? feedDecoder,
+            IReceiverAircraftListSettingsDto? aircraftList
         )
         {
             Id = id;
-            Name = name;
+            Name = name ?? "";
             Enabled = enabled;
             Hidden = hidden;
             Connector = connector;
@@ -69,11 +69,11 @@ namespace VirtualRadar.Receivers
         {
         }
 
-        public static bool operator==(ReceiverSettingsDto lhs, ReceiverSettingsDto rhs) => Object.Equals(lhs, rhs);
+        public static bool operator==(ReceiverSettingsDto? lhs, ReceiverSettingsDto? rhs) => Object.Equals(lhs, rhs);
 
-        public static bool operator!=(ReceiverSettingsDto lhs, ReceiverSettingsDto rhs) => !Object.Equals(lhs, rhs);
+        public static bool operator!=(ReceiverSettingsDto? lhs, ReceiverSettingsDto? rhs) => !Object.Equals(lhs, rhs);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is ReceiverSettingsDto other) {

@@ -140,8 +140,8 @@ namespace WindowProcessor
             }
         }
 
-        private CancellationTokenSource _CancellationTokenSource;
-        protected CancellationToken _CancellationToken;
+        private CancellationTokenSource? _CancellationTokenSource;
+        protected CancellationToken? _CancellationToken;
 
         protected virtual void HandleKeyPress(ConsoleKeyInfo keyInfo)
         {
@@ -166,7 +166,7 @@ namespace WindowProcessor
 
         public void Cancel()
         {
-            _CancellationTokenSource.Cancel();
+            _CancellationTokenSource?.Cancel();
         }
     }
 }

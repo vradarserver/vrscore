@@ -46,7 +46,7 @@ namespace VirtualRadar
         /// in with a bunch of other outcomes. There is no relationship between the grouping of requests and
         /// the grouping of outcomes.
         /// </summary>
-        event EventHandler<BatchedLookupOutcome<LookupByIcaoOutcome>> LookupCompleted;
+        event EventHandler<BatchedLookupOutcome<LookupByIcaoOutcome>>? LookupCompleted;
 
         /// <summary>
         /// Requests a lookup for the details of a single aircraft. Hook <see cref="LookupCompleted"/> and
@@ -62,7 +62,7 @@ namespace VirtualRadar
         /// <param name="icao24"></param>
         /// <param name=""></param>
         /// <returns>The outcome or null if the task was cancelled early.</returns>
-        Task<LookupOutcome> LookupAsync(Icao24 icao24, CancellationToken cancellationToken);
+        Task<LookupOutcome?> LookupAsync(Icao24 icao24, CancellationToken cancellationToken);
 
         /// <summary>
         /// Request the lookup of many aircraft. Hook <see cref="LookupCompleted"/> and monitor it for the

@@ -13,23 +13,27 @@ using VirtualRadar.Extensions;
 namespace VirtualRadar.StandingData
 {
     class StandingDataOverridesRepository(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         IWorkingFolder _WorkingFolder,
         IFileSystem _FileSystem
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
     ) : IStandingDataOverridesRepository
     {
         private readonly object _SyncLock = new();
 
-        private volatile Dictionary<Icao24, CodeBlock> _CustomCodeBlocks;
+        private volatile Dictionary<Icao24, CodeBlock>? _CustomCodeBlocks;
 
-        private string _CodeBlocksFileFullyPathed => _FileSystem.Combine(_WorkingFolder.Folder, "LocalAircraft.txt");
+        private string CodeBlocksFileFullyPathed => _FileSystem.Combine(_WorkingFolder.Folder, "LocalAircraft.txt");
 
         /// <inheritdoc/>
-        public CodeBlock CodeBlockOverrideFor(Icao24 icao24)
+        public CodeBlock? CodeBlockOverrideFor(Icao24? icao24)
         {
-            CodeBlock result = null;
+            CodeBlock? result = null;
 
-            var cache = _CustomCodeBlocks;
-            cache?.TryGetValue(icao24, out result);
+            if(icao24 != null) {
+                var cache = _CustomCodeBlocks;
+                cache?.TryGetValue(icao24.Value, out result);
+            }
 
             return result;
         }
@@ -41,7 +45,7 @@ namespace VirtualRadar.StandingData
                 if(_CustomCodeBlocks != null) {
                     _CustomCodeBlocks = null;
                 }
-                if(_FileSystem.FileExists(_CodeBlocksFileFullyPathed)) {
+                if(_FileSystem.FileExists(CodeBlocksFileFullyPathed)) {
                     LoadCodeBlocks();
                 }
             }
@@ -51,9 +55,9 @@ namespace VirtualRadar.StandingData
         {
             var newCodeBlocks = new List<CustomCodeBlock>();
 
-            string country = null;
+            string? country = null;
             var lineNumber = 0;
-            foreach(var line in _FileSystem.ReadAllLines(_CodeBlocksFileFullyPathed)) {
+            foreach(var line in _FileSystem.ReadAllLines(CodeBlocksFileFullyPathed)) {
                 ++lineNumber;
                 var text = line.Trim();
 

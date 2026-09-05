@@ -16,7 +16,7 @@ namespace VirtualRadar
     /// </summary>
     public class CallbackNoParamHandle : ICallbackHandle
     {
-        private CallbackNoParamList _Owner;
+        private CallbackNoParamList? _Owner;
 
         private readonly Action _Callback;
 

@@ -22,14 +22,14 @@ namespace VirtualRadar.Feed.BaseStation
             _ApplicationSettings = applicationSettings.Value;
         }
 
-        public BaseStationMessage FromFeed(ReadOnlyMemory<byte> bytes)
+        public BaseStationMessage? FromFeed(ReadOnlyMemory<byte> bytes)
         {
             return FromFeed(bytes, _ApplicationSettings.LocalTimeZone.GetUtcOffset(DateTime.UtcNow));
         }
 
-        public BaseStationMessage FromFeed(ReadOnlyMemory<byte> bytes, TimeSpan localTimeOffset)
+        public BaseStationMessage? FromFeed(ReadOnlyMemory<byte> bytes, TimeSpan localTimeOffset)
         {
-            BaseStationMessage result = null;
+            BaseStationMessage? result = null;
 
             if(bytes.Length > 0) {
                 var messageLine = Encoding.ASCII.GetString(bytes.Span);
@@ -39,14 +39,14 @@ namespace VirtualRadar.Feed.BaseStation
             return result;
         }
 
-        public BaseStationMessage Translate(string text)
+        public BaseStationMessage? Translate(string text)
         {
             return Translate(text, _ApplicationSettings.LocalTimeZone.GetUtcOffset(DateTime.UtcNow));
         }
 
-        public BaseStationMessage Translate(string text, TimeSpan localTimeOffset)
+        public BaseStationMessage? Translate(string text, TimeSpan localTimeOffset)
         {
-            BaseStationMessage result = null;
+            BaseStationMessage? result = null;
 
             if(!String.IsNullOrEmpty(text)) {
                 var parts = text.Split(',');
@@ -95,8 +95,9 @@ namespace VirtualRadar.Feed.BaseStation
 
         private static bool ParseBool(string chunk) => chunk != "0";
 
-        // Note that locale settings can play havoc with delimiters sent from BaseStation. I've given up using DateTime.Parse and
-        // I'm just plucking out the numbers by hand...
+        // Note that locale settings can play havoc with delimiters sent from BaseStation.
+        // I've given up using DateTime.Parse and I'm just plucking out the numbers by
+        // hand...
         private static DateTimeOffset ParseDate(string chunk, TimeSpan localTimeOffset)
         {
             if(chunk.Length != 10) {

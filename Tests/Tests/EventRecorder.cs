@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Tests
 {
     /// <summary>
@@ -32,7 +34,7 @@ namespace Tests
         /// <summary>
         /// Gets the latest sender from <see cref="AllSenders"/> or null if <see cref="CallCount"/> is zero.
         /// </summary>
-        public object Sender => CallCount == 0 ? null : AllSenders[^1];
+        public object? Sender => CallCount == 0 ? null : AllSenders[^1];
 
         private readonly List<T> _AllArgs = [];
         /// <summary>
@@ -44,6 +46,7 @@ namespace Tests
         /// <summary>
         /// Gets the latest args from <see cref="AllArgs"/> or null if <see cref="CallCount"/> is zero.
         /// </summary>
+        [MaybeNull]
         public T Args => CallCount == 0 ? null : AllArgs[^1];
 
         /// <summary>
@@ -55,7 +58,7 @@ namespace Tests
         /// By the time the event is raised the EventRecorder's <see cref="Sender"/> property will be set to the
         /// sender of the original event.
         /// </remarks>
-        public event EventHandler<T> EventRaised;
+        public event EventHandler<T>? EventRaised;
 
         /// <summary>
         /// Raises <see cref="EventRaised"/>.

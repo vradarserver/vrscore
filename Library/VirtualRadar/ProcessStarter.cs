@@ -19,10 +19,11 @@ namespace VirtualRadar
         /// Opens a native explorer window on the file or folder passed across.
         /// </summary>
         /// <param name="fileOrFolder"></param>
-        /// <returns>The process handle of the native explorer window.</returns>
-        public static Process OpenExplorerOnFileOrFolder(string fileOrFolder)
+        /// <returns>The process handle of the native explorer window. This can be null
+        /// if the process did not start.</returns>
+        public static Process? OpenExplorerOnFileOrFolder(string fileOrFolder)
         {
-            Process result;
+            Process? result;
 
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 result = Process.Start(new ProcessStartInfo() {
@@ -48,6 +49,6 @@ namespace VirtualRadar
         /// </summary>
         /// <param name="url"></param>
         /// <returns>The process handle of the browser, shell, whatever.</returns>
-        public static Process OpenUrlInDefaultBrowser(string url) => OpenExplorerOnFileOrFolder(url);
+        public static Process? OpenUrlInDefaultBrowser(string url) => OpenExplorerOnFileOrFolder(url);
     }
 }

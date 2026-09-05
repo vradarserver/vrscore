@@ -20,32 +20,32 @@ namespace VirtualRadar.StandingData
         /// <summary>
         /// Gets or sets the IATA code for the airport.
         /// </summary>
-        public string IataCode { get; set; }
+        public string? IataCode { get; set; }
 
         /// <summary>
         /// Gets or sets the ICAO code for the airport.
         /// </summary>
-        public string IcaoCode { get; set; }
+        public string? IcaoCode { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the airport.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the town or city served by the airport.
         /// </summary>
-        public string Town { get; set; }
+        public string? Town { get; set; }
 
         /// <summary>
         /// Gets or sets the country that the airport is in.
         /// </summary>
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets the airport's location on the surface of the earth.
         /// </summary>
-        public Location Location { get; set; }
+        public Location? Location { get; set; }
 
         /// <summary>
         /// Gets or sets the altitude in feet of the airport.
@@ -97,14 +97,15 @@ namespace VirtualRadar.StandingData
         /// <returns></returns>
         public string NameAndTown()
         {
-            var result = new StringBuilder(Name ?? "");
+            var name = Name ?? "";
+            var result = new StringBuilder(name);
 
             if(!String.IsNullOrEmpty(Town)) {
                 if(   result.Length == 0
                    || (
-                          Name != Town
-                       && !Name.StartsWith($"{Town} ", StringComparison.InvariantCultureIgnoreCase)
-                       && !Name.Contains($" {Town}", StringComparison.InvariantCultureIgnoreCase)
+                          name != Town
+                       && !name.StartsWith($"{Town} ", StringComparison.InvariantCultureIgnoreCase)
+                       && !name.Contains($" {Town}", StringComparison.InvariantCultureIgnoreCase)
                     )
                 ) {
                     result.AppendWithSeparator(", ", Town);

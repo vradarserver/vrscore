@@ -37,7 +37,7 @@ namespace Tests.Mocks
         /// Creates a new object.
         /// </summary>
         /// <param name="folder"></param>
-        public MockWorkingFolder(string folder = null)
+        public MockWorkingFolder(string? folder = null)
         {
             if(folder == null) {
                 if(OperatingSystem.IsWindows()) {

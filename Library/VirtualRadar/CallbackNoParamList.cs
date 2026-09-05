@@ -115,20 +115,23 @@ namespace VirtualRadar
         }
 
         /// <summary>
-        /// See <see cref="Invoke"/>, except this invokes all callbacks regardless of whether any of them throws
-        /// an exception. Any exceptions thrown are wrapped in an aggregate exception which is returned to the
-        /// caller to deal with.
+        /// See <see cref="Invoke"/>, except this invokes all callbacks regardless of
+        /// whether any of them throws an exception. Any exceptions thrown are wrapped in
+        /// an aggregate exception which is returned to the caller to deal with.
         /// </summary>
         /// <param name="aggregateExceptionMessage"></param>
-        /// <returns></returns>
-        public AggregateException InvokeWithoutExceptions(string aggregateExceptionMessage = "Exceptions were encountered while invoking callbacks")
+        /// <returns>
+        /// Null if no exceptions were thrown, otherwise an <see
+        /// cref="AggregateException"/> that wraps all of the exceptions that were thrown.
+        /// </returns>
+        public AggregateException? InvokeWithoutExceptions(string aggregateExceptionMessage = "Exceptions were encountered while invoking callbacks")
         {
             CallbackNoParamHandle[] callbacks;
             lock(_SyncLock) {
                 callbacks = [.. _CallbackHandles];
             }
 
-            List<Exception> exceptions = null;
+            List<Exception>? exceptions = null;
             foreach(var callback in callbacks) {
                 try {
                     callback.Invoke();

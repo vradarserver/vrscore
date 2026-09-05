@@ -20,7 +20,7 @@ namespace VirtualRadar.StandingData
         /// Gets or sets the country that this block is assigned to. This will be null if the
         /// block is not assigned to a nation.
         /// </summary>
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating that this block is used by the nation's military.
@@ -31,7 +31,7 @@ namespace VirtualRadar.StandingData
         /// Gets the country as-per <see cref="Country"/> but returns null if the country is
         /// unknown (as opposed to unassigned).
         /// </summary>
-        public string ModeSCountry => (Country ?? "").StartsWith("Unknown ", StringComparison.InvariantCultureIgnoreCase)
+        public string? ModeSCountry => (Country ?? "").StartsWith("Unknown ", StringComparison.InvariantCultureIgnoreCase)
             ? null
             : Country;
     }

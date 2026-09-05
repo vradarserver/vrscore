@@ -24,9 +24,9 @@ namespace VirtualRadar
         /// <typeparam name="T"></typeparam>
         /// <param name="things"></param>
         /// <returns></returns>
-        public static T ChooseAtRandom<T>(IReadOnlyList<T> things)
+        public static T? ChooseAtRandom<T>(IReadOnlyList<T>? things)
         {
-            return (things?.Count?? 0) == 0
+            return things == null || things.Count == 0
                 ? default
                 : things[_Random.Next(things.Count)];
         }

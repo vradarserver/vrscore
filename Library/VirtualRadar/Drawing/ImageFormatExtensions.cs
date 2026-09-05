@@ -12,7 +12,7 @@ namespace VirtualRadar.Drawing
 {
     public static class ImageFormatExtensions
     {
-        public static ImageFormat? FromExtension(string extension)
+        public static ImageFormat? FromExtension(string? extension)
         {
             switch(extension?.ToUpperInvariant()) {
                 case ".BMP":    return ImageFormat.Bmp;

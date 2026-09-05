@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -30,10 +31,10 @@ namespace VirtualRadar.Configuration
         private readonly ILog _Log;
 
         private readonly object _SyncLock = new();
-        private Dictionary<string, JObject> _SettingKeyToJObject;
+        private Dictionary<string, JObject>? _SettingKeyToJObject;
         private HashSet<string> _ConfiguredKeys = [];
         private readonly Dictionary<string, object> _ParsedContent = [];
-        private string _ContentFileName;
+        private string? _ContentFileName;
         private readonly CallbackWithParamList<ValueChangedCallbackArgs> _ValueChangedCallbacks = new();
         private readonly CallbackNoParamList _SavedChangesCallbacks = new();
 
@@ -119,7 +120,7 @@ namespace VirtualRadar.Configuration
 
             LoadContent();
 
-            object result;
+            object? result;
             lock(_SyncLock) {
                 if(!_ParsedContent.TryGetValue(parsedContentKey, out result)) {
                     _SettingKeyToJObject.TryGetValue(contentKey, out var fileJObject);
@@ -135,7 +136,10 @@ namespace VirtualRadar.Configuration
                         JsonConfiguration.JsonDeserialiserSettings
                     );
 
-                    result = deserialised;
+                    result = deserialised
+                        ?? throw new InvalidOperationException(
+                            $"The content stored for the \"{contentKey}\" key deserialised to null for setting DTOs of type {settingsDtoType.Name}"
+                        );
                     _ParsedContent[parsedContentKey] = result;
                 }
             }
@@ -165,16 +169,14 @@ namespace VirtualRadar.Configuration
             return result;
         }
 
+        [MemberNotNull(nameof(_SettingKeyToJObject))]
         private void LoadContent()
         {
             var contentFileName = SettingsLocation();
 
-            bool contentNeedsLoading() => _SettingKeyToJObject == null
-                                       || _ContentFileName != contentFileName;
-
-            if(contentNeedsLoading()) {
+            if(_SettingKeyToJObject == null || _ContentFileName != contentFileName) {
                 lock(_SyncLock) {
-                    if(contentNeedsLoading()) {
+                    if(_SettingKeyToJObject == null || _ContentFileName != contentFileName) {
                         _ContentFileName = _FileSystem.Combine(_WorkingFolder.Folder, FileName);
                         _SettingKeyToJObject = [];
                         _ConfiguredKeys.Clear();
@@ -186,29 +188,31 @@ namespace VirtualRadar.Configuration
 
                         if(_FileSystem.FileExists(_ContentFileName)) {
                             var json = _FileSystem.ReadAllText(_ContentFileName);
-                            var loaded = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(json);
+                            var loadedObj = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(json);
 
-                            foreach(var kvp in _SettingKeyToJObject) {
-                                if(!loaded.TryGetValue(kvp.Key, out var loadedContent)) {
-                                    break;
-                                }
-                                if(!kvp.Value.Equals(loadedContent)) {
-                                    break;
-                                }
-                            }
-
-                            foreach(var kvp in loaded) {
-                                var key = kvp.Key;
-                                var actualContent = kvp.Value;
-
-                                if(_SettingKeyToJObject.TryGetValue(key, out var currentJObject)) {
-                                    MergeJObjects(currentJObject, actualContent);
-                                    actualContent = currentJObject;
+                            if(loadedObj != null) {
+                                foreach(var kvp in _SettingKeyToJObject) {
+                                    if(!loadedObj.TryGetValue(kvp.Key, out var loadedContent)) {
+                                        break;
+                                    }
+                                    if(!kvp.Value.Equals(loadedContent)) {
+                                        break;
+                                    }
                                 }
 
-                                _SettingKeyToJObject[key] = actualContent;
+                                foreach(var kvp in loadedObj) {
+                                    var key = kvp.Key;
+                                    var actualContent = kvp.Value;
 
-                                _ConfiguredKeys.Add(key);
+                                    if(_SettingKeyToJObject.TryGetValue(key, out var currentJObject)) {
+                                        MergeJObjects(currentJObject, actualContent);
+                                        actualContent = currentJObject;
+                                    }
+
+                                    _SettingKeyToJObject[key] = actualContent;
+
+                                    _ConfiguredKeys.Add(key);
+                                }
                             }
                         }
                     }
@@ -221,6 +225,8 @@ namespace VirtualRadar.Configuration
         {
             ArgumentNullException.ThrowIfNull(settingsDtoType);
             ArgumentNullException.ThrowIfNull(newSettingsDto);
+
+            LoadContent();
 
             var contentKey = _SettingsConfiguration.GetKeyForSettingsDtoType(settingsDtoType);
             if(!settingsDtoType.IsAssignableFrom(newSettingsDto.GetType())) {
@@ -259,12 +265,16 @@ namespace VirtualRadar.Configuration
         }
 
         /// <inheritdoc/>
-        public void ChangeValue<TSettingsDto>(TSettingsDto newSettingsDto) => ChangeValue(typeof(TSettingsDto), newSettingsDto);
+        public void ChangeValue<TSettingsDto>(TSettingsDto newSettingsDto)
+        {
+            ArgumentNullException.ThrowIfNull(newSettingsDto);
+            ChangeValue(typeof(TSettingsDto), newSettingsDto);
+        }
 
         /// <inheritdoc/>
         public void SaveChanges()
         {
-            string contentFileName = null;
+            string? contentFileName = null;
 
             lock(_SyncLock) {
                 if(_SettingKeyToJObject == null) {

@@ -29,22 +29,22 @@ namespace VirtualRadar.StandingData
         /// <summary>
         /// The filename of the standing data database.
         /// </summary>
-        private const string DatabaseFileName = "StandingData.sqb";
+        private const string _DatabaseFileName = "StandingData.sqb";
 
         /// <summary>
-        /// The full path to <see cref="DatabaseFileName"/>.
+        /// The full path to <see cref="_DatabaseFileName"/>.
         /// </summary>
-        private string DatabaseFileFullyPathed => _FileSystem.Combine(_WorkingFolder.Folder, DatabaseFileName);
+        private string DatabaseFileFullyPathed => _FileSystem.Combine(_WorkingFolder.Folder, _DatabaseFileName);
 
         /// <summary>
         /// The temporary filename of the standing data database.
         /// </summary>
-        private const string DatabaseTempFileName = $"{DatabaseFileName}.tmp";
+        private const string _DatabaseTempFileName = $"{_DatabaseFileName}.tmp";
 
         /// <summary>
         /// The full path to the temporary database file name.
         /// </summary>
-        private string DatabaseTempFileFullyPathed => _FileSystem.Combine(_WorkingFolder.Folder, DatabaseTempFileName);
+        private string DatabaseTempFileFullyPathed => _FileSystem.Combine(_WorkingFolder.Folder, _DatabaseTempFileName);
 
         /// <summary>
         /// The name of the file that describes the dates and state of the other files.
@@ -181,6 +181,7 @@ namespace VirtualRadar.StandingData
         {
             _FileSystem.CreateDirectoryIfNotExists(
                 _FileSystem.GetDirectory(databaseTempName)
+                    ?? throw new InvalidOperationException($"Cannot determine the folder that \"{databaseTempName}\" is in")
             );
 
             var httpClient = _HttpClientService.Shared;

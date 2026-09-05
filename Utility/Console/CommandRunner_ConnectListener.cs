@@ -16,9 +16,11 @@ using VirtualRadar.Connection;
 namespace VirtualRadar.Utility.CLIConsole
 {
     class CommandRunner_ConnectListener(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         IServiceProvider _ServiceProvider,
         Options _Options,
         HeaderService _Header
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
     ) : CommandRunner
     {
         public override async Task<bool> Run()
@@ -45,15 +47,18 @@ namespace VirtualRadar.Utility.CLIConsole
                 Port =      _Options.Port
             };
             var connector = connectorFactory.Create(connectorSettingsDto);
+            if(connector == null) {
+                OptionsParser.Usage($"Failed to create connector for {connectorSettingsDto}");
+            }
 
             var hexDump = _Options.Show
                 ? new HexDump() { EmitHeader = false, }
                 : null;
 
-            FileStream fileStream = null;
+            FileStream? fileStream = null;
             if(!String.IsNullOrEmpty(_Options.SaveFileName)) {
                 var folder = Path.GetDirectoryName(_Options.SaveFileName);
-                if(folder != "" && !Directory.Exists(folder)) {
+                if(!String.IsNullOrEmpty(folder) && !Directory.Exists(folder)) {
                     await Console.Out.WriteLineAsync("Creating directory {folder}");
                     Directory.CreateDirectory(folder);
                 }

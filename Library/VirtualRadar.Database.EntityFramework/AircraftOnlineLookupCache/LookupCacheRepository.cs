@@ -24,7 +24,7 @@ namespace VirtualRadar.Database.EntityFramework.AircraftOnlineLookupCache
     ) : IAircraftOnlineLookupCache
     {
         private static bool _CreatedInThisSession;
-        private static DatabaseVersion _DatabaseVersion;
+        private static DatabaseVersion? _DatabaseVersion;
         private readonly object _EFSingleThreadLock = new();
 
         /// <inheritdoc/>

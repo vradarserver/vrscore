@@ -46,7 +46,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the 24-bit Mode-S identifier of the aircraft.
         /// </summary>
         [DataMember(Name="Icao", IsRequired=false, EmitDefaultValue=false)]
-        public string Icao24 { get; set; }
+        public string? Icao24 { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that the <see cref="Icao24"/> code is wrong - either it is an unallocated code
@@ -59,7 +59,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the aircraft's registration.
         /// </summary>
         [DataMember(Name="Reg", IsRequired=false, EmitDefaultValue=false)]
-        public string Registration { get; set; }
+        public string? Registration { get; set; }
 
         /// <summary>
         /// Gets or sets the date and time (UTC) that a transmission from the aircraft was first received by the server.
@@ -113,7 +113,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the aircraft's callsign.
         /// </summary>
         [DataMember(Name="Call", IsRequired=false, EmitDefaultValue=false)]
-        public string Callsign { get; set; }
+        public string? Callsign { get; set; }
 
         /// <summary>
         /// Gets or sets the latitude of the aircraft.
@@ -187,43 +187,43 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the ICAO8643 type code of the aircraft.
         /// </summary>
         [DataMember(IsRequired=false, EmitDefaultValue=false)]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the English description of the aircraft model. Usually includes the manufacturer.
         /// </summary>
         [DataMember(Name="Mdl", IsRequired=false, EmitDefaultValue=false)]
-        public string Model { get; set; }
+        public string? Model { get; set; }
 
         /// <summary>
         /// Gets or sets the manufacturer's name.
         /// </summary>
         [DataMember(Name="Man", IsRequired=false, EmitDefaultValue=false)]
-        public string Manufacturer { get; set; }
+        public string? Manufacturer { get; set; }
 
         /// <summary>
         /// Gets or sets the construction / serial number of the aircraft.
         /// </summary>
         [DataMember(Name="CNum", IsRequired=false, EmitDefaultValue=false)]
-        public string ConstructionNumber { get; set; }
+        public string? ConstructionNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the airport that the aircraft set out from.
         /// </summary>
         [DataMember(Name="From", IsRequired=false, EmitDefaultValue=false)]
-        public string Origin { get; set; }
+        public string? Origin { get; set; }
 
         /// <summary>
         /// Gets or sets the airport that the aircraft is travelling to.
         /// </summary>
         [DataMember(Name="To", IsRequired=false, EmitDefaultValue=false)]
-        public string Destination { get; set; }
+        public string? Destination { get; set; }
 
         /// <summary>
         /// Gets or sets a list of airports that the aircraft will be stopping at on its way to <see cref="Destination"/>.
         /// </summary>
         [DataMember(Name="Stops", IsRequired=false, EmitDefaultValue=false)]
-        public List<string> Stopovers { get; set; }
+        public List<string>? Stopovers { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that this is probably a positioning / ferry flight.
@@ -241,19 +241,19 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the operator's name.
         /// </summary>
         [DataMember(Name="Op", IsRequired=false, EmitDefaultValue=false)]
-        public string Operator { get; set; }
+        public string? Operator { get; set; }
 
         /// <summary>
         /// Gets or sets the operator's ICAO code.
         /// </summary>
         [DataMember(Name="OpIcao", IsRequired=false, EmitDefaultValue=false)]
-        public string OperatorIcao { get; set; }
+        public string? OperatorIcao { get; set; }
 
         /// <summary>
         /// Gets or sets the squawk currently transmitted by the aircraft.
         /// </summary>
         [DataMember(Name="Sqk", IsRequired=false, EmitDefaultValue=false)]
-        public string Squawk { get; set; }
+        public string? Squawk { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether ident is active.
@@ -308,7 +308,7 @@ namespace VirtualRadar.WebSite.Models
         /// always a number.
         /// </summary>
         [DataMember(Name="Engines", IsRequired=false, EmitDefaultValue=false)]
-        public string NumberOfEngines { get; set; }
+        public string? NumberOfEngines { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the type of engines that the aircraft uses (see <see cref="EngineType"/>).
@@ -332,7 +332,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the country that the aircraft's <see cref="Icao24"/> was allocated to.
         /// </summary>
         [DataMember(Name="Cou", IsRequired=false, EmitDefaultValue=false)]
-        public string Icao24Country { get; set; }
+        public string? Icao24Country { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that the server can supply a picture of the aircraft.
@@ -386,13 +386,13 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the user tag from the aircraft's database record.
         /// </summary>
         [DataMember(Name="Tag", IsRequired=false, EmitDefaultValue=false)]
-        public string UserTag { get; set; }
+        public string? UserTag { get; set; }
 
         /// <summary>
         /// Gets or sets the user notes from the aircraft's database record.
         /// </summary>
         [DataMember(Name="Notes", IsRequired=false, EmitDefaultValue=false)]
-        public string UserNotes { get; set; }
+        public string? UserNotes { get; set; }
 
 
         /// <summary>
@@ -406,7 +406,7 @@ namespace VirtualRadar.WebSite.Models
         /// attached and 's' for trails with speeds attached.
         /// </summary>
         [DataMember(Name="TT", IsRequired=false, EmitDefaultValue=false)]
-        public string TrailType { get; set; }
+        public string? TrailType { get; set; }
 
         /// <summary>
         /// Gets or sets the transponder type.
@@ -418,7 +418,7 @@ namespace VirtualRadar.WebSite.Models
         /// Gets or sets the year the aircraft was manufactured.
         /// </summary>
         [DataMember(Name="Year", EmitDefaultValue=false)]
-        public string YearBuilt { get; set; }
+        public string? YearBuilt { get; set; }
 
         /// <summary>
         /// [DEFUNCT] Gets or sets a value indicating that the aircraft was seen on a SatCom feed.
@@ -435,7 +435,7 @@ namespace VirtualRadar.WebSite.Models
         /// then it's a set of 4-tuples, with altitude or speed being added to the end of the tuple.
         /// </remarks>
         [DataMember(Name="Cot", IsRequired=false, EmitDefaultValue=false)]
-        public List<double?> FullCoordinates { get; set; }
+        public List<double?>? FullCoordinates { get; set; }
 
         /// <summary>
         /// Gets or sets a list of coordinates representing the short trail for the aircraft. If <see cref="ResetTrail"/>
@@ -446,6 +446,6 @@ namespace VirtualRadar.WebSite.Models
         /// is 'a' or 's' then it's a set of 4-tuples, where altitude or speed are added to the end of the tuple.
         /// </remarks>
         [DataMember(Name="Cos", IsRequired=false, EmitDefaultValue=false)]
-        public List<double?> ShortCoordinates { get; set; }
+        public List<double?>? ShortCoordinates { get; set; }
     }
 }
