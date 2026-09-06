@@ -8,30 +8,41 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Collections;
+using VirtualRadar.CommandLine;
 
 namespace VirtualRadar.Server
 {
-    public class Program
+    class Program : CommonProgram
     {
         static async Task Main(string[] args)
         {
-            int exitCode;
+            var exitCode = 0;
 
             try {
-                var options = OptionsParser.Parse(args);
-
-                CommandRunner commandRunner;
-                switch(options.Command) {
-                    case Command.StartServer:   commandRunner = new CommandRunner_StartServer(); break;
-                    default:                    throw new NotImplementedException();
+                var argList = new List<string>(args);
+                if(argList.Count == 0) {
+                    argList.Add("start");
                 }
-                commandRunner.Options = options;
+                var parseResult = Commands.Root.Parse(argList);
 
-                exitCode = await commandRunner.Run()
-                    ? 0
-                    : 1;
+                exitCode = await InvokeCommandLineParserAsync(parseResult);
             } catch(Exception ex) {
-                Console.WriteLine($"Caught exception during processing: {ex}");
+                ShowException(ex, ref exitCode);
+                Console.WriteLine("Caught exception");
+                Ansi.WriteLine(Ansi.RedBold, ex.ToString());
+                if(ex.Data.Count > 0) {
+                    Console.WriteLine();
+                    Console.WriteLine($"Exception.Data dictionary content:");
+                    foreach(DictionaryEntry kvp in ex.Data) {
+                        Ansi.WriteLine(
+                            Ansi.WhiteBold,
+                            $"[{kvp.Key?.ToString() ?? "null"}]",
+                            Ansi.Regular,
+                            $" = {kvp.Value?.ToString() ?? "null"}"
+                        );
+                    }
+                }
                 exitCode = 2;
             }
 

@@ -29,5 +29,25 @@ namespace VirtualRadar.CommandLine
                 }
             }, cancellationTokenSource.Token);
         }
+
+        public static async Task IfKeyPressed(CancellationTokenSource cancellationTokenSource, ConsoleKey waitForKey)
+        {
+            await Task.Run(() => {
+                var finished = false;
+                while(!finished && !cancellationTokenSource.IsCancellationRequested) {
+                    while(Console.KeyAvailable && !cancellationTokenSource.IsCancellationRequested) {
+                        if(Console.ReadKey(intercept: true).Key == waitForKey) {
+                            if(!cancellationTokenSource.IsCancellationRequested) {
+                                cancellationTokenSource.Cancel();
+                            }
+                            finished = true;
+                        }
+                    }
+                    if(!finished) {
+                        Thread.Sleep(1);
+                    }
+                }
+            }, cancellationTokenSource.Token);
+        }
     }
 }

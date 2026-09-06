@@ -18,24 +18,41 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using VirtualRadar.CommandLine;
 using VirtualRadar.Configuration;
 using VirtualRadar.Server.Middleware;
 
 namespace VirtualRadar.Server
 {
-    class CommandRunner_StartServer : CommandRunner
+    public class Command_Start : CommonCommand
     {
-        public override async Task<bool> Run()
+        public bool Dev { get; set; }
+
+        public string WorkingFolder { get; set; } = Defaults.DefaultWorkingFolder;
+
+        public int HttpPort { get; set; }
+
+        public int HttpsPort { get; set; }
+
+        public bool NoBrowser { get; set; }
+
+        public bool NoHttp { get; set; }
+
+        public bool NoHttps { get; set; }
+
+        public bool ShowLog { get; set; }
+
+        public async Task<bool> RunAsync()
         {
+            if(Dev) {
+                Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+            }
+
             var version = InformationalVersion.VirtualRadarVersion;
 
             var title = $"Virtual Radar Server Core {version}";
-            await WriteLine(title);
-            await WriteLine(new String('=', title.Length));
-
-            if(Safe_Options.NoHttp && Safe_Options.NoHttps) {
-                OptionsParser.Usage("The server needs to listen to accept at least one of either HTTP or HTTPS");
-            }
+            await WriteLineAsync(title);
+            await WriteLineAsync(new String('=', title.Length));
 
             // Trying to get the .NET 8 web application to path from the application folder
             // instead of CWD is a pain in the backside... so I'm just going with the flow
@@ -47,8 +64,8 @@ namespace VirtualRadar.Server
                 var builder = WebApplication.CreateBuilder();
 
                 builder.Services.AddVirtualRadarServer();
-                var vrsWorkingFolder = Safe_Options.WorkingFolder;
-                await WriteLine($"Working folder is {vrsWorkingFolder}");
+                var vrsWorkingFolder = WorkingFolder;
+                await WriteLineAsync($"Working folder is {vrsWorkingFolder}");
 
                 builder.Services.AddMvc(options => {
                     options.EnableEndpointRouting = false;          // <-- need this for web API
@@ -68,7 +85,7 @@ namespace VirtualRadar.Server
 
                 builder.Services.AddBlazorStrap();
 
-                if(!Safe_Options.ShowLog) {
+                if(!ShowLog) {
                     builder.Logging.ClearProviders();
                 }
 
@@ -76,7 +93,7 @@ namespace VirtualRadar.Server
                 ConfigureKestrel(builder);
 
                 var app = builder.Build();
-                await WriteLine($"Environment is {app.Environment.EnvironmentName}");
+                await WriteLineAsync($"Environment is {app.Environment.EnvironmentName}");
 
                 if(!app.Environment.IsDevelopment()) {
                     app.UseExceptionHandler("/Error");
@@ -97,7 +114,7 @@ namespace VirtualRadar.Server
 
                 var serverCancel = new CancellationTokenSource();
 
-                await WriteLine("Booting VRS");
+                await WriteLineAsync("Booting VRS");
                 app.StartVirtualRadarServer(config => {
                     config.WorkingFolder = vrsWorkingFolder;
                 });
@@ -106,24 +123,24 @@ namespace VirtualRadar.Server
                     Console.WriteLine($"Starting server");
                     var serverTask = app.StartAsync(serverCancel.Token);
 
-                    if(!Safe_Options.SuppressBrowser) {
-                        var url = $"http://localhost:{Safe_Options.HttpPort}/admin";
+                    if(!NoBrowser) {
+                        var url = $"http://localhost:{HttpPort}/admin";
                         try {
-                            await WriteLine($"Opening {url} in default browser");
+                            await WriteLineAsync($"Opening {url} in default browser");
                             ProcessStarter.OpenUrlInDefaultBrowser(url);
                         } catch(Exception ex) {
-                            await WriteLine($"Could not open {url}: {ex.Message}");
+                            await WriteLineAsync($"Could not open {url}: {ex.Message}");
                         }
                     }
 
                     Console.TreatControlCAsInput = true;
-                    await WriteLine("Press Q to shut down cleanly");
-                    var waitForKeyTask = CancelIfKeyPressed(serverCancel, ConsoleKey.Q);
+                    await WriteLineAsync("Press Q to shut down cleanly");
+                    var waitForKeyTask = CancelOnKeyPress.IfKeyPressed(serverCancel, ConsoleKey.Q);
 
                     await serverTask;
 
                     if(serverCancel.IsCancellationRequested) {
-                        await WriteLine($"Shutting down");
+                        await WriteLineAsync($"Shutting down");
                     }
 
                     await waitForKeyTask;
@@ -165,14 +182,14 @@ namespace VirtualRadar.Server
         private void ConfigureKestrel(WebApplicationBuilder builder)
         {
             builder.WebHost.ConfigureKestrel((context, options) => {
-                if(!Safe_Options.NoHttp) {
-                    Console.WriteLine($"Listening on http://localhost:{Safe_Options.HttpPort}");
-                    options.ListenLocalhost(Safe_Options.HttpPort);
+                if(!NoHttp) {
+                    Console.WriteLine($"Listening on http://localhost:{HttpPort}");
+                    options.ListenLocalhost(HttpPort);
                 }
 
-                if(!Safe_Options.NoHttps) {
-                    Console.WriteLine($"Listening on https://localhost:{Safe_Options.HttpsPort}");
-                    options.ListenLocalhost(Safe_Options.HttpsPort, listenOptions => {
+                if(!NoHttps) {
+                    Console.WriteLine($"Listening on https://localhost:{HttpsPort}");
+                    options.ListenLocalhost(HttpsPort, listenOptions => {
                         listenOptions.UseHttps();               // TODO: Need a *bunch* more stuff here
                     });
                 }

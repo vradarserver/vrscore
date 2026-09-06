@@ -29,9 +29,11 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Web.LibraryManager.Build" />
+        <PackageReference Include="System.CommandLine" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Library\VirtualRadar.CommandLine\VirtualRadar.CommandLine.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Database.EntityFramework\VirtualRadar.Database.EntityFramework.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Drawing.ImageSharp\VirtualRadar.Drawing.ImageSharp.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
