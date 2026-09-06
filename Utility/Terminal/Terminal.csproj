@@ -9,9 +9,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="System.CommandLine" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Library\VirtualRadar.CommandLine\VirtualRadar.CommandLine.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Database.EntityFramework\VirtualRadar.Database.EntityFramework.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.BaseStation\VirtualRadar.Feed.BaseStation.csproj" />
         <ProjectReference Include="..\..\Library\VirtualRadar.Feed.Recording\VirtualRadar.Feed.Recording.csproj" />

@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+// Copyright © 2024 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,62 +8,67 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Collections;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using VirtualRadar.CommandLine;
 
 namespace VirtualRadar.Utility.Terminal
 {
-    class Program
+    class Program : CommonProgram
     {
         static async Task Main(string[] args)
         {
             var exitCode = 0;
-            Options? options = null;
 
             Console.OutputEncoding = Encoding.UTF8;
 
             try {
-                options = OptionsParser.Parse(args);
+                var argList = new List<string>(args);
+                if(argList.Count == 0) {
+                    argList.Add("terminal");
+                }
+                var parseResult = Commands.Root.Parse(argList);
 
                 var builder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder();
-
                 builder.ConfigureServices((context, services) => {
                     services
                         .AddVirtualRadarServer()
-
-                        .AddSingleton<Options>(options)
                         .AddScoped<AircraftListWindow, AircraftListWindow>()
-
-                        // This will do for now, I just want to see it working (or not)...
-                        .AddScoped<TempRunner, TempRunner>()
                     ;
+                    AddAllCommonCommandsFromAssembly(services, Assembly.GetExecutingAssembly());
                 });
 
                 using(var host = builder.Build()) {
                     using(var scope = host.Services.CreateScope()) {
                         host.StartVirtualRadarServer();
                         try {
-                            var tempRunner = scope.ServiceProvider.GetRequiredService<TempRunner>();
-                            await tempRunner.Run();
+                            exitCode = await InvokeScopedCommandLineParserAsync(
+                                scope.ServiceProvider,
+                                parseResult
+                            );
                         } finally {
                             host.StopVirtualRadarServer();
                         }
                     }
                 }
             } catch(Exception ex) {
-                exitCode = 2;
-                Console.WriteLine($"Caught exception during processing: {ex}");
+                ShowException(ex, ref exitCode);
+                Console.WriteLine("Caught exception");
+                Ansi.WriteLine(Ansi.RedBold, ex.ToString());
                 if(ex.Data.Count > 0) {
-                    Console.WriteLine("Exception Data:");
-                    foreach(var key in ex.Data.Keys) {
-                        try {
-                            var keyText = key.ToString();
-                            var value = ex.Data[key]?.ToString();
-                            Console.WriteLine($"{keyText}: {value}");
-                        } catch {
-                            ;
-                        }
+                    Console.WriteLine();
+                    Console.WriteLine($"Exception.Data dictionary content:");
+                    foreach(DictionaryEntry kvp in ex.Data) {
+                        Ansi.WriteLine(
+                            Ansi.WhiteBold,
+                            $"[{kvp.Key?.ToString() ?? "null"}]",
+                            Ansi.Regular,
+                            $" = {kvp.Value?.ToString() ?? "null"}"
+                        );
                     }
                 }
+                exitCode = 2;
             }
 
             Environment.Exit(exitCode);

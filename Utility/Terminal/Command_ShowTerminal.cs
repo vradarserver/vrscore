@@ -8,8 +8,10 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.IO;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using VirtualRadar.CommandLine;
 using VirtualRadar.Connection;
 using VirtualRadar.Feed;
 using VirtualRadar.Feed.BaseStation;
@@ -22,16 +24,25 @@ namespace VirtualRadar.Utility.Terminal
     /// <summary>
     /// Just a quickie object to plug together a basic feed pipeline and show the results.
     /// </summary>
-    class TempRunner(
+    public class Command_ShowTerminal(
         #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
-        Options                         _Options,
         IServiceProvider                _ServiceProvider,
         IAircraftOnlineLookupService    _AircraftLookupService,
         IReceiverFactory                _ReceiverFactory
         #pragma warning restore IDE1006
-    )
+    ) : CommonCommand
     {
-        public async Task Run()
+        public IPAddress Address { get; set; } = IPAddress.None;
+
+        public int Port { get; set; }
+
+        public FileInfo? RecordingFileInfo { get; set; }
+
+        public double PlaybackSpeed { get; set; }
+
+        public string? ReceiverName { get; set; }
+
+        public async Task<bool> RunAsync()
         {
             using(var scope = _ServiceProvider.CreateScope()) {
                 var receiver = OpenReceiver(scope.ServiceProvider);
@@ -87,6 +98,8 @@ namespace VirtualRadar.Utility.Terminal
                     Console.Clear();
                 }
             }
+
+            return true;
         }
 
         private IFeedDecoder? CreateFeedDecoder(IServiceProvider serviceProvider)
@@ -102,13 +115,13 @@ namespace VirtualRadar.Utility.Terminal
         {
             IReceiver? result = null;
 
-            if(_Options.ReceiverName != null) {
-                Console.WriteLine($"Loading receiver {_Options.ReceiverName}");
-                var receiverSettingsDto = _ReceiverFactory.FindSettingsDtoFor(_Options.ReceiverName.Trim());
+            if(ReceiverName != null) {
+                Console.WriteLine($"Loading receiver {ReceiverName}");
+                var receiverSettingsDto = _ReceiverFactory.FindSettingsDtoFor(ReceiverName.Trim());
                 if(receiverSettingsDto == null) {
-                    OptionsParser.Usage($"Could not find receiver options for the \"{_Options.ReceiverName}\" receiver");
+                    throw new BadParameterException(Commands.ShowTerminal, $"Could not find receiver options for the \"{ReceiverName}\" receiver");
                 } else if(receiverSettingsDto.Connector == null || receiverSettingsDto.FeedDecoder == null || receiverSettingsDto.Enabled == false) {
-                    Console.WriteLine($"Receiver {_Options.ReceiverName} cannot be used.");
+                    Console.WriteLine($"Receiver {ReceiverName} cannot be used.");
                     if(receiverSettingsDto.Connector == null) {
                         Console.WriteLine($"* The {nameof(receiverSettingsDto.Connector)} settings cannot be parsed");
                     }
@@ -118,11 +131,11 @@ namespace VirtualRadar.Utility.Terminal
                     if(!receiverSettingsDto.Enabled) {
                         Console.WriteLine($"* The receiver is not enabled");
                     }
-                    OptionsParser.Usage($"A receiver cannot be built from the options for {_Options.ReceiverName}");
+                    throw new BadParameterException(Commands.ShowTerminal, $"A receiver cannot be built from the options for {ReceiverName}");
                 } else {
                     result = _ReceiverFactory.Build(serviceProvider, receiverSettingsDto);
                     if(result == null) {
-                        OptionsParser.Usage($"\"{_Options.ReceiverName}\" receiver has good options but a receiver could not be built from them");
+                        throw new BadParameterException(Commands.ShowTerminal, $"\"{ReceiverName}\" receiver has good options but a receiver could not be built from them");
                     }
                 }
             }
@@ -132,21 +145,18 @@ namespace VirtualRadar.Utility.Terminal
 
         private IReceiveConnector OpenConnector(IServiceProvider serviceProvider)
         {
-            return String.IsNullOrEmpty(_Options.FileName)
+            return RecordingFileInfo == null
                 ? OpenNetworkConnector(serviceProvider)
                 : OpenRecordingConnector(serviceProvider);
         }
 
         private IReceiveConnector OpenNetworkConnector(IServiceProvider serviceProvider)
         {
-            Console.WriteLine($"Connecting to BaseStation feed on {_Options.Address}:{_Options.Port}");
-            if(!IPAddress.TryParse(_Options.Address, out var address)) {
-                OptionsParser.Usage($"{_Options.Address} is not a valid IP address");
-            }
+            Console.WriteLine($"Connecting to BaseStation feed on {Address}:{Port}");
 
             var connectorSettingsDto = new TcpPullConnectorSettingsDto() {
-                Address =   address.ToString(),
-                Port =      _Options.Port,
+                Address =   Address.ToString(),
+                Port =      Port,
             };
             var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
             var connector = connectorFactory.Create(connectorSettingsDto)
@@ -157,11 +167,11 @@ namespace VirtualRadar.Utility.Terminal
 
         private IReceiveConnector OpenRecordingConnector(IServiceProvider serviceProvider)
         {
-            Console.WriteLine($"Replaying feed recording from {_Options.FileName}");
+            Console.WriteLine($"Replaying feed recording from {RecordingFileInfo}");
 
             var connectorSettingsDto = new RecordingPlaybackConnectorSettingsDto() {
-                RecordingFileName = _Options.FileName,
-                PlaybackSpeed =     _Options.PlaybackSpeed,
+                RecordingFileName = RecordingFileInfo!.FullName,
+                PlaybackSpeed =     PlaybackSpeed,
             };
             var connectorFactory = serviceProvider.GetRequiredService<ReceiveConnectorFactory>();
             var connector = connectorFactory.Create(connectorSettingsDto)
