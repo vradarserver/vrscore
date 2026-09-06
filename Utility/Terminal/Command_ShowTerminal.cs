@@ -48,7 +48,7 @@ namespace VirtualRadar.Utility.Terminal
                 var receiver = OpenReceiver(scope.ServiceProvider);
                 var connector = receiver != null ? null : OpenConnector(scope.ServiceProvider);
                 var feedDecoder = receiver != null ? null : CreateFeedDecoder(scope.ServiceProvider);
-                var aircraftList = receiver != null ? null : scope.ServiceProvider.GetRequiredService<IAircraftList>();
+                var aircraftList = receiver?.AircraftList;
                 var cancelSource = new CancellationTokenSource();
 
                 try {
