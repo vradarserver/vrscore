@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -10,72 +10,76 @@
 
 using System.IO;
 using Microsoft.Extensions.Hosting;
+using VirtualRadar.CommandLine;
 using VirtualRadar.Feed;
 using VirtualRadar.Feed.Recording;
 using VirtualRadar.IO;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_DumpFeed(
+    public class Command_DumpFeed(
         #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
-        Options _Options,
+        IHost _Host,
         HeaderService _Header,
         IRecordingReader _Reader,
-        IFeedFormatFactoryService _FeedFactory,
-        IHost _Host
+        IFeedFormatFactoryService _FeedFactory
         #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
-    ) : CommandRunner
+    ) : CommonCommand
     {
         private readonly HexDump _HexDump = new() {
             EmitPartialRows = true,
         };
 
-        public override async Task<bool> Run()
-        {
-            await _Header.OutputCopyright();
-            await _Header.OutputTitle("Dump Feed");
-            await _Header.OutputOptions(
-                ("Filename",        _Options.LoadFileName),
-                ("Show",            _Options.Show.ToString()),
-                ("Parse messages",  _Options.ParseMessage.ToString()),
-                ("Feed format",     _Options.FeedFormat)
-            );
-            await WriteLine();
+        public FileInfo LoadFileInfo { get; set; } = null!;
 
-            if(!File.Exists(_Options.LoadFileName)) {
-                OptionsParser.Usage($"{_Options.LoadFileName} does not exist");
-            }
+        public bool Show { get; set; }
+
+        public bool ParseMessage { get; set; }
+
+        public string FeedFormat { get; set; } = "";
+
+        public async Task<bool> RunAsync()
+        {
+            await _Header.OutputCopyrightAsync();
+            await _Header.OutputTitleAsync("Dump Feed");
+            await _Header.OutputOptionsAsync(
+                ("Filename",        LoadFileInfo.ToString()),
+                ("Show",            Show.ToString()),
+                ("Parse messages",  ParseMessage.ToString()),
+                ("Feed format",     FeedFormat)
+            );
+            await WriteLineAsync();
 
             _Host.StartVirtualRadarServer();
             try {
-                var feedConfig = _Options.ParseMessage
-                    ? _FeedFactory.GetConfig(_Options.FeedFormat)
+                var feedConfig = ParseMessage
+                    ? _FeedFactory.GetConfig(FeedFormat)
                     : null;
                 var chunker = feedConfig?.CreateChunker();
                 IStreamChunkerState? chunkerState = null;
 
                 var countParcels = 0L;
 
-                await WriteLine($"Opening {_Options.LoadFileName}");
-                using (var stream = new FileStream(_Options.LoadFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
-                    await WriteLine($"Initialising feed reader with stream");
+                await WriteLineAsync($"Opening {LoadFileInfo}");
+                await using(var stream = new FileStream(LoadFileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                    await WriteLineAsync($"Initialising feed reader with stream");
                     await _Reader.InitialiseStreamAsync(stream, leaveOpen: true);
-                    await WriteLine();
+                    await WriteLineAsync();
 
                     Parcel? parcel;
                     do {
                         parcel = await _Reader.GetNextAsync(CancellationToken.None);
                         if(parcel != null && _Reader.Header != null) {
                             if(countParcels++ == 0) {
-                                await DumpHeader(_Reader.Header);
+                                await DumpHeaderAsync(_Reader.Header);
                             }
-                            await DumpParcel(_Reader.Header, parcel, countParcels);
+                            await DumpParcelAsync(_Reader.Header, parcel, countParcels);
 
                             if(chunker != null) {
                                 chunkerState = DumpMessages(chunker, parcel.Packet, chunkerState);
                             }
 
-                            await WriteLine();
+                            await WriteLineAsync();
                         }
                     } while(parcel != null);
                 }
@@ -86,37 +90,37 @@ namespace VirtualRadar.Utility.CLIConsole
             return true;
         }
 
-        private async Task DumpHeader(Header header)
+        private async Task DumpHeaderAsync(Header header)
         {
-            await WriteLine($"HEADER");
-            await WriteLine($"------");
-            await WriteLine($"Version: {header.Version} ({(header.IsVersionValid ? "valid" : "invalid")})");
-            await WriteLine($"Started: {header.RecordingStartedUtc} {(header.RecordingStartedUtc.Kind == DateTimeKind.Utc ? "UTC" : "NOT UTC!")}");
-            await WriteLine();
+            await WriteLineAsync($"HEADER");
+            await WriteLineAsync($"------");
+            await WriteLineAsync($"Version: {header.Version} ({(header.IsVersionValid ? "valid" : "invalid")})");
+            await WriteLineAsync($"Started: {header.RecordingStartedUtc} {(header.RecordingStartedUtc.Kind == DateTimeKind.Utc ? "UTC" : "NOT UTC!")}");
+            await WriteLineAsync();
 
-            if(!_Options.Show) {
-                await WriteLine($"PARCELS");
-                await WriteLine($"-------");
+            if(!Show) {
+                await WriteLineAsync($"PARCELS");
+                await WriteLineAsync($"-------");
             }
         }
 
-        private async Task DumpParcel(Header header, Parcel parcel, long parcelNumber)
+        private async Task DumpParcelAsync(Header header, Parcel parcel, long parcelNumber)
         {
             var time = header.RecordingStartedUtc.AddMilliseconds(parcel.MillisecondReceived);
 
-            if(!_Options.Show) {
-                await WriteLine($"Parcel {parcelNumber,6} packet length {parcel.Packet.Length,6} at offset {parcel.MillisecondReceived} ms {time} UTC");
+            if(!Show) {
+                await WriteLineAsync($"Parcel {parcelNumber,6} packet length {parcel.Packet.Length,6} at offset {parcel.MillisecondReceived} ms {time} UTC");
             } else {
                 var heading = $"PARCEL {parcelNumber}";
-                await WriteLine(heading);
-                await WriteLine(new string('-', heading.Length));
-                await WriteLine($"Received:       Offset {parcel.MillisecondReceived} ms ({time} UTC)");
-                await WriteLine($"Packet length:  {parcel.Packet.Length} bytes");
+                await WriteLineAsync(heading);
+                await WriteLineAsync(new String('-', heading.Length));
+                await WriteLineAsync($"Received:       Offset {parcel.MillisecondReceived} ms ({time} UTC)");
+                await WriteLineAsync($"Packet length:  {parcel.Packet.Length} bytes");
                 foreach(var line in _HexDump.DumpBuffer(parcel.Packet)) {
                     if(line.StartsWith("        ")) {
-                        await WriteLine($"Packet:{line[1..]}");
+                        await WriteLineAsync($"Packet:{line[1..]}");
                     } else {
-                        await WriteLine($"      {line}");
+                        await WriteLineAsync($"      {line}");
                     }
                 }
             }
@@ -128,7 +132,7 @@ namespace VirtualRadar.Utility.CLIConsole
             {
                 Console.WriteLine();
                 Console.WriteLine($"Message {chunker.CountChunksExtracted}");
-                foreach (var line in _HexDump.DumpBuffer(chunk)) {
+                foreach(var line in _HexDump.DumpBuffer(chunk)) {
                     Console.WriteLine($"      {line}");
                 }
             }

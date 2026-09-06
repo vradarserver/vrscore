@@ -12,20 +12,20 @@ set RUN=NO
 set BADARG=""
 set RUNARGS=
 :NEXTARG
-    if "%1"=="" goto :ENDARGS
+    if "%~1"=="" goto :ENDARGS
     if "%RUN%"=="YES" goto :ADDRUN
 
     set BADARG=BAD
-    if "%1"=="solution"      set BADARG=OK & set TARGET=SLN
-    if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
-    if "%1"=="server"        set BADARG=OK & set TARGET=SERVER
-    if "%1"=="terminal"      set BADARG=OK & set TARGET=TERMINAL
-    if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
+    if "%~1"=="solution"      set BADARG=OK & set TARGET=SLN
+    if "%~1"=="console"       set BADARG=OK & set TARGET=CONSOLE
+    if "%~1"=="server"        set BADARG=OK & set TARGET=SERVER
+    if "%~1"=="terminal"      set BADARG=OK & set TARGET=TERMINAL
+    if "%~1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
-    if "%1"=="-debug"        set BADARG=OK & set CONFIG=Debug
-    if "%1"=="-nobuild"      set BADARG=OK & set BUILD=NO
-    if "%1"=="-release"      set BADARG=OK & set CONFIG=Release
-    if "%1"=="-run"          set BADARG=OK & set RUN=YES
+    if "%~1"=="-debug"        set BADARG=OK & set CONFIG=Debug
+    if "%~1"=="-nobuild"      set BADARG=OK & set BUILD=NO
+    if "%~1"=="-release"      set BADARG=OK & set CONFIG=Release
+    if "%~1"=="-run"          set BADARG=OK & set RUN=YES
 
     if %BADARG%==BAD goto :USAGE
     shift
@@ -64,7 +64,7 @@ echo Build machine RuntimeIdentifier is '%RID%'
 
 if %BADARG%==OK goto :EOF
 echo.
-echo Unknown parameter "%1"
+echo Unknown parameter "%~1"
 goto :EOF
 
 rem ##################################################

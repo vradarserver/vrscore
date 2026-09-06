@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36811.4 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Console", "Utility\Console\Console.csproj", "{A39F9349-E8CF-47DC-A7CB-67E8C000460D}"
 EndProject
@@ -72,6 +72,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualRadar.Resources", "L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.Drawing.ImageSharp", "Library\VirtualRadar.Drawing.ImageSharp\VirtualRadar.Drawing.ImageSharp.csproj", "{72708E06-FB17-45F4-9C8A-E91A930BA881}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualRadar.CommandLine", "Library\VirtualRadar.CommandLine\VirtualRadar.CommandLine.csproj", "{B10503AB-81A3-4922-81DC-AAA2A6E82C6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,10 @@ Global
 		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72708E06-FB17-45F4-9C8A-E91A930BA881}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B10503AB-81A3-4922-81DC-AAA2A6E82C6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B10503AB-81A3-4922-81DC-AAA2A6E82C6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B10503AB-81A3-4922-81DC-AAA2A6E82C6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B10503AB-81A3-4922-81DC-AAA2A6E82C6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,6 +154,7 @@ Global
 		{DA3322EB-3702-4AFB-8469-8446FCFA2CE2} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
 		{B7837A1E-9D9E-4055-87B4-AA56537D6ED1} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
 		{72708E06-FB17-45F4-9C8A-E91A930BA881} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
+		{B10503AB-81A3-4922-81DC-AAA2A6E82C6E} = {1EEBE7DE-CF82-4D01-982F-55D3881A0387}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D195B5EE-B00F-47BE-9FA3-F8175F6563DD}

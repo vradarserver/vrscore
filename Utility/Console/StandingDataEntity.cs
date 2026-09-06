@@ -10,7 +10,7 @@
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    enum StandingDataEntity
+    public enum StandingDataEntity
     {
         AircraftType,
 

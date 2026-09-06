@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,36 +8,22 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace VirtualRadar.Utility.CLIConsole
+using System.CommandLine;
+
+namespace VirtualRadar.CommandLine
 {
-    abstract class CommandRunner
+    [Serializable]
+    public class BadParameterException : Exception
     {
-        public abstract Task<bool> Run();
+        public Command? Command { get; }
 
-        protected string Timestamp => $"[{DateTime.Now:HH:mm:ss.fff}]";
+        public BadParameterException() { }
 
-        protected string Timindent => "              ";
+        public BadParameterException(Command command, string message) : this(command, message, null) { }
 
-        protected async Task WriteLine() => await Console.Out.WriteLineAsync();
-
-        protected async Task WriteLine(string message) => await Console.Out.WriteLineAsync(message);
-
-        protected async Task CancelIfAnyKeyPressed(CancellationTokenSource cancellationTokenSource)
+        public BadParameterException(Command command, string message, Exception? inner) : base(message, inner)
         {
-            await Task.Run(() => {
-                while(!Console.KeyAvailable) {
-                    if(cancellationTokenSource.IsCancellationRequested) {
-                        break;
-                    }
-                    Thread.Sleep(1);
-                }
-                if(Console.KeyAvailable) {
-                    Console.ReadKey(intercept: true);
-                    if(!cancellationTokenSource.IsCancellationRequested) {
-                        cancellationTokenSource.Cancel();
-                    }
-                }
-            }, cancellationTokenSource.Token);
+            Command = command;
         }
     }
 }

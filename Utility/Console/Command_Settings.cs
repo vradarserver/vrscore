@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -9,25 +9,27 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.IO;
+using VirtualRadar.CommandLine;
 using VirtualRadar.Configuration;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_Settings(
-        #pragma warning disable IDE1006 // .editorconfig does not support naming rules for primary ctors
+    public class Command_Settings(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
         ISettingsStorage _SettingsStorage,
         ISettingsConfiguration _SettingsConfig,
-        Options _Options,
         HeaderService _Header
-        #pragma warning restore IDE1006
-    ) : CommandRunner
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
+    ) : CommonCommand
     {
-        public override async Task<bool> Run()
+        public bool Update { get; set; }
+
+        public async Task<bool> RunAsync()
         {
-            await _Header.OutputCopyright();
-            await _Header.OutputTitle("Settings");
-            await _Header.OutputOptions(
-                ("Update", _Options.Update.ToString())
+            await _Header.OutputCopyrightAsync();
+            await _Header.OutputTitleAsync("Settings");
+            await _Header.OutputOptionsAsync(
+                ("Update", Update.ToString())
             );
 
             var configExists = File.Exists(_SettingsStorage.SettingsLocation());
@@ -43,7 +45,7 @@ namespace VirtualRadar.Utility.CLIConsole
                 ")"
             );
 
-            if(_Options.Update) {
+            if(Update) {
                 UpdateSettings();
             } else {
                 DumpSettings();

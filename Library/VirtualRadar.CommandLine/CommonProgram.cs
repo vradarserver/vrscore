@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -9,40 +9,74 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.Collections;
+using System.CommandLine;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using VirtualRadar.CommandLine;
 
-namespace VirtualRadar.Utility.CLIConsole
+namespace VirtualRadar.CommandLine
 {
-    class Program : CommonProgram
+    public class CommonProgram
     {
-        static async Task Main(string[] args)
+        public static IServiceProvider Scope { get; set; } = null!;
+
+        public static bool Worked { get; set; }
+
+        public static void InvokeCommandLineParser(ParseResult parseResult, ref int errorCode)
         {
-            var exitCode = 0;
+            parseResult.InvocationConfiguration.EnableDefaultExceptionHandler = false;
+            Worked = true;
+            errorCode = parseResult.Invoke();
+            if(!Worked) {
+                errorCode = 1;
+            }
+        }
 
-            try {
-                var parseResult = Commands.Root.Parse(args);
-
-                var builder = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder();
-                builder.ConfigureServices((context, services) => {
-                    services
-                        .AddVirtualRadarServer()
-                        .AddSingleton<HeaderService, HeaderService>()
-                    ;
-                    AddAllCommonCommandsFromAssembly(services, Assembly.GetExecutingAssembly());
-                });
-
-                using(var host = builder.Build()) {
-                    using(var scope = host.Services.CreateScope()) {
-                        exitCode = await InvokeScopedCommandLineParserAsync(
-                            scope.ServiceProvider,
-                            parseResult
-                        );
-                    }
+        public static void AddAllCommonCommandsFromAssembly(IServiceCollection services, Assembly assembly)
+        {
+            foreach(var type in assembly.GetTypes()) {
+                if(typeof(CommonCommand).IsAssignableFrom(type)) {
+                    services.AddScoped(type);
                 }
-            } catch(Exception ex) {
-                ShowException(ex, ref exitCode);
+            }
+        }
+
+        public static void InvokeScopedCommandLineParser(
+            IServiceProvider serviceProvider,
+            ParseResult parseResult,
+            ref int errorCode
+        )
+        {
+            Scope = serviceProvider;
+            InvokeCommandLineParser(parseResult, ref errorCode);
+        }
+
+        public static async Task<int> InvokeCommandLineParserAsync(ParseResult parseResult)
+        {
+            parseResult.InvocationConfiguration.EnableDefaultExceptionHandler = false;
+            Worked = true;
+            var errorCode = await parseResult.InvokeAsync();
+            if(!Worked) {
+                errorCode = 1;
+            }
+
+            return errorCode;
+        }
+
+        public static async Task<int> InvokeScopedCommandLineParserAsync(
+            IServiceProvider serviceProvider,
+            ParseResult parseResult
+        )
+        {
+            Scope = serviceProvider;
+            return await InvokeCommandLineParserAsync(parseResult);
+        }
+
+        public static void ShowException(Exception ex, ref int errorCode)
+        {
+            if(ex is BadParameterException badParameter) {
+                Console.WriteLine(badParameter.Message ?? "");
+                errorCode = 1;
+            } else {
                 Console.WriteLine("Caught exception");
                 Ansi.WriteLine(Ansi.RedBold, ex.ToString());
                 if(ex.Data.Count > 0) {
@@ -57,10 +91,8 @@ namespace VirtualRadar.Utility.CLIConsole
                         );
                     }
                 }
-                exitCode = 2;
+                errorCode = 2;
             }
-
-            Environment.Exit(exitCode);
         }
     }
 }

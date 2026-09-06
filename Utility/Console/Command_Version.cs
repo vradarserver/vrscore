@@ -1,4 +1,4 @@
-// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,10 +8,35 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Microsoft.Extensions.Options;
+using VirtualRadar.CommandLine;
+using VirtualRadar.Configuration;
+
 namespace VirtualRadar.Utility.CLIConsole
 {
-    public enum ListEntity
+    public class Command_Version(
+        #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
+        HeaderService _Header,
+        IOptions<ApplicationSetup> _ApplicationSettings,
+        IWorkingFolder _WorkingFolder
+        #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
+    ): CommonCommand
     {
-        FeedFormats,
+        public async Task<bool> RunAsync()
+        {
+            var application = _ApplicationSettings.Value;
+
+            await _Header.OutputTitleAsync("Show Version");
+            await _Header.OutputOptionsAsync(
+                ("Application Name",    application.ApplicationName),
+                ("Version",             application.InformationalVersion.ToString()),
+                ("Build Date",          application.BuildDate.LocalDateTime.ToString("dd-MMM-yyyy HH:mm:ss")),
+                ("Built From Commit",   application.InformationalVersion.CommitHash),
+                ("Culture Info",        application.CultureInfo.Name),
+                ("Working Folder",      _WorkingFolder.Folder)
+            );
+
+            return true;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,46 +8,30 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.CommandLine.Parsing;
+using System.Net;
 
-namespace VirtualRadar.Utility.CLIConsole
+namespace VirtualRadar.CommandLine.Parsers
 {
-    class CommandRunner_Open(Options _Options, IWorkingFolder _WorkingFolder) : CommandRunner
+    public class PortParser
     {
-        public override async Task<bool> Run()
+        public static int ParsePort(ArgumentResult argResult)
         {
-            bool result = false;
+            var result = 0;
 
-            switch(_Options.OpenEntity) {
-                case OpenEntity.WorkingFolder:  result = await OpenWorkingFolder(); break;
-                default:                        throw new NotImplementedException();
+            if(argResult.Tokens.Count == 1) {
+                var originalToken = argResult.Tokens[0].Value.ToString();
+                var token = originalToken;
+
+                var parsed = int.TryParse(token, out var parsedValue);
+                if(parsed && parsedValue >= 0 && parsedValue <= 0xffff) {
+                    result = parsedValue;
+                } else {
+                    argResult.AddError($"{originalToken} is not a valid port number");
+                }
             }
 
             return result;
-        }
-
-        private async Task<bool> OpenWorkingFolder()
-        {
-            await WriteLine($"Opening {_WorkingFolder.Folder}");
-
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                Process.Start(new ProcessStartInfo() {
-                    FileName = "explorer.exe",
-                    ArgumentList = { _WorkingFolder.Folder, },
-                    UseShellExecute = true,
-                });
-            } else if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
-                Process.Start(new ProcessStartInfo() {
-                    FileName = "open",
-                    ArgumentList = { _WorkingFolder.Folder, },
-                    UseShellExecute = true,
-                });
-            } else {
-                Process.Start("xdg-open", _WorkingFolder.Folder);
-            }
-
-            return true;
         }
     }
 }

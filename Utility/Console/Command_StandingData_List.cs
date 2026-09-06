@@ -1,4 +1,4 @@
-﻿// Copyright © 2024 onwards, Andrew Whewell
+// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,112 +8,101 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using VirtualRadar.CommandLine;
 using VirtualRadar.Extensions;
 using VirtualRadar.StandingData;
 using WindowProcessor;
 
 namespace VirtualRadar.Utility.CLIConsole
 {
-    class CommandRunner_StandingData(
+    public class Command_StandingData_List(
         #pragma warning disable IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
-        Options                             _Options,
         HeaderService                       _Header,
-        IStandingDataUpdater                _StandingDataUpdater,
-        IWorkingFolder                      _WorkingFolder,
         IStandingDataRepository             _StandingDataRepository,
         IStandingDataOverridesRepository    _StandingDataOverridesRepository
         #pragma warning restore IDE1006 // VS2022/26 .editorconfig bugged for primary ctors
-    ) : CommandRunner
+    ) : CommonCommand
     {
-        public async override Task<bool> Run()
+        public StandingDataEntity Entity { get; set; }
+
+        public string Code { get; set; } = "";
+
+        public async Task<bool> RunAsync()
         {
-            if((_Options.List && _Options.Update) || (!_Options.List && !_Options.Update)) {
-                OptionsParser.Usage("Specify one of -list or -update");
-            }
-            await _Header.OutputCopyright();
-            await _Header.OutputTitle("Standing Data");
-
-            if(_Options.List) {
-                await List();
-            } else {
-                await Update();
-            }
-
-            return true;
-        }
-
-        private async Task List()
-        {
-            await _Header.OutputOptions(
-                ("Entity", _Options.StandingDataEntity.ToString()),
-                ("Code",   _Options.Code)
+            await _Header.OutputCopyrightAsync();
+            await _Header.OutputTitleAsync("Standing Data");
+            await _Header.OutputOptionsAsync(
+                ("Entity", Entity.ToString()),
+                ("Code",   Code)
             );
-            await WriteLine();
+            await WriteLineAsync();
 
-            if(String.IsNullOrWhiteSpace(_Options.Code)) {
-                OptionsParser.Usage("Missing code");
+            if(String.IsNullOrWhiteSpace(Code)) {
+                throw new BadParameterException(Commands.StandingDataListCommand, "Missing code");
             }
 
-            switch(_Options.StandingDataEntity) {
+            switch(Entity) {
                 case StandingDataEntity.AircraftType:
-                    await DumpAircraftType(_StandingDataRepository
-                        .AircraftType_GetByCode(_Options.Code)
+                    await DumpAircraftTypeAsync(_StandingDataRepository
+                        .AircraftType_GetByCode(Code)
                     );
                     break;
                 case StandingDataEntity.Airline:
-                    await DumpAirlines(_StandingDataRepository
-                        .Airlines_GetByCode(_Options.Code)
+                    await DumpAirlinesAsync(_StandingDataRepository
+                        .Airlines_GetByCode(Code)
                         .OrderBy(r => r.Name)
                     );
                     break;
                 case StandingDataEntity.Airport:
-                    await DumpAirport(_StandingDataRepository
-                        .Airport_GetByCode(_Options.Code)
+                    await DumpAirportAsync(_StandingDataRepository
+                        .Airport_GetByCode(Code)
                     );
                     break;
                 case StandingDataEntity.CodeBlock:
-                    if(!Icao24.TryParse(_Options.Code, out var icao24)) {
-                        OptionsParser.Usage($"{_Options.Code} is not a valid ICAO24");
+                    if(!Icao24.TryParse(Code, out var icao24)) {
+                        throw new BadParameterException(Commands.StandingDataListCommand, $"{Code} is not a valid ICAO24");
                     }
 
                     _StandingDataOverridesRepository.Load();
 
-                    await DumpCodeBlockAndOverride(
+                    await DumpCodeBlockAndOverrideAsync(
                         _StandingDataRepository.CodeBlock_GetForIcao24(icao24),
                         _StandingDataOverridesRepository.CodeBlockOverrideFor(icao24)
                     );
                     break;
                 case StandingDataEntity.Route:
-                    await DumpRoute(_StandingDataRepository
-                        .Route_GetForCallsign(_Options.Code)
+                    await DumpRouteAsync(_StandingDataRepository
+                        .Route_GetForCallsign(Code)
                     );
                     break;
                 default:
                     throw new NotImplementedException();
             }
+
+            return true;
         }
 
-        private async Task DumpAircraftType(AircraftType? aircraftType)
+        private async Task DumpAircraftTypeAsync(AircraftType? aircraftType)
         {
             if(aircraftType == null) {
-                await WriteLine("None");
+                await WriteLineAsync("None");
             } else {
-                await WriteLine(
+                await WriteLineAsync(
                     $"Type [{aircraftType.Type}] Species [{aircraftType.Species}] WTC [{aircraftType.WakeTurbulenceCategory}] " +
                     $"Engines [{aircraftType.Engines} × {aircraftType.EngineType}] Placement [{aircraftType.EnginePlacement}]"
                 );
-                await WriteLine();
-                await WriteLine($"{"Manufacturer",-40} {"Model",-40}");
-                await WriteLine($"{new String('-',40)} {new String('-',40)}");
+                await WriteLineAsync();
+                await WriteLineAsync($"{"Manufacturer",-40} {"Model",-40}");
+                await WriteLineAsync($"{new String('-',40)} {new String('-',40)}");
                 for(var idx = 0;idx < aircraftType.Manufacturers.Count;++idx) {
                     var manufacturer = aircraftType.Manufacturers[idx];
                     var model = idx < aircraftType.Models.Count ? aircraftType.Models[idx] : "";
-                    await WriteLine($"{manufacturer.TruncateAt(40),-40} {model.TruncateAt(40),-40}");
+                    await WriteLineAsync($"{manufacturer.TruncateAt(40),-40} {model.TruncateAt(40),-40}");
                 }
             }
         }
 
-        private async Task DumpAirlines(IEnumerable<Airline> airlines)
+        private async Task DumpAirlinesAsync(IEnumerable<Airline> airlines)
         {
             var table = new ConsoleTable<Airline>([
                 (new("ICAO", 4),        row => row.IcaoCode),
@@ -125,16 +114,16 @@ namespace VirtualRadar.Utility.CLIConsole
             await table.Dump(airlines);
         }
 
-        private async Task DumpAirport(Airport? airport)
+        private async Task DumpAirportAsync(Airport? airport)
         {
             if(airport == null) {
-                await WriteLine("None");
+                await WriteLineAsync("None");
             } else {
-                await DumpAirports([ airport ]);
+                await DumpAirportsAsync([ airport ]);
             }
         }
 
-        private async Task DumpAirports(IEnumerable<Airport> airports)
+        private async Task DumpAirportsAsync(IEnumerable<Airport> airports)
         {
             var table = new ConsoleTable<Airport>([
                 (new("ICAO", 4),                        row => row.IcaoCode),
@@ -148,7 +137,7 @@ namespace VirtualRadar.Utility.CLIConsole
             await table.Dump(airports);
         }
 
-        private async Task DumpCodeBlockAndOverride(CodeBlock? codeBlock, CodeBlock? overrideCodeBlock)
+        private async Task DumpCodeBlockAndOverrideAsync(CodeBlock? codeBlock, CodeBlock? overrideCodeBlock)
         {
             var table = new ConsoleTable<CodeBlock>([
                 (new("Country", 30),                    row => row.Country),
@@ -156,40 +145,28 @@ namespace VirtualRadar.Utility.CLIConsole
             ]);
 
             if(codeBlock == null) {
-                await WriteLine("None");
+                await WriteLineAsync("None");
             } else {
                 await table.Dump([ codeBlock ]);
             }
 
             if(overrideCodeBlock != null) {
-                await WriteLine();
-                await WriteLine("Overridden by local code block:");
-                await WriteLine();
+                await WriteLineAsync();
+                await WriteLineAsync("Overridden by local code block:");
+                await WriteLineAsync();
                 await table.Dump([ overrideCodeBlock ]);
             }
         }
 
-        private async Task DumpRoute(Route? route)
+        private async Task DumpRouteAsync(Route? route)
         {
             if(route == null) {
-                await WriteLine("None");
+                await WriteLineAsync("None");
             } else {
-                await DumpAirports(new Airport[] { route.From }
+                await DumpAirportsAsync(new Airport[] { route.From }
                     .Concat(route.Stopovers)
                     .Concat([ route.To ])
                 );
-            }
-        }
-
-        private async Task Update()
-        {
-            await WriteLine();
-            if(await _StandingDataUpdater.DataIsOld(CancellationToken.None) == false) {
-                await WriteLine($"Already up-to-date, nothing downloaded");
-            } else {
-                await WriteLine($"SDM file is out of date or missing, downloading");
-                await _StandingDataUpdater.Update(CancellationToken.None);
-                await WriteLine($"Downloaded into {_WorkingFolder.Folder}");
             }
         }
     }
