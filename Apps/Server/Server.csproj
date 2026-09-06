@@ -14,21 +14,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Remove="wwwroot\v3\typings\translations.tt" />
+        <Content Remove="wwwroot\v3\typings\translations.tt" />
     </ItemGroup>
     <ItemGroup>
-      <None Include="wwwroot\v3\typings\translations.tt" />
+        <None Include="wwwroot\v3\typings\translations.tt" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BlazorStrap" Version="5.1.102.51923" />
-        <PackageReference Include="BlazorStrap.V5" Version="5.1.102.51723" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.3.3">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        <PackageReference Include="BlazorStrap" />
+        <PackageReference Include="BlazorStrap.V5" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
+        <PackageReference Include="Microsoft.Web.LibraryManager.Build" />
     </ItemGroup>
 
     <ItemGroup>

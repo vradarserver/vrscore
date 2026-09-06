@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-        <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="System.IO.Pipelines" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VirtualRadar\VirtualRadar.csproj" />
+        <ProjectReference Include="..\VirtualRadar\VirtualRadar.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,31 @@
+<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="BlazorStrap" Version="5.1.102.51923" />
+        <PackageVersion Include="BlazorStrap.V5" Version="5.1.102.51723" />
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+        <PackageVersion Include="Microsoft.TypeScript.MSBuild" Version="2.3.3" />
+        <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
+        <PackageVersion Include="Moq" Version="4.20.70" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="3.4.3" />
+        <PackageVersion Include="MSTest.TestFramework" Version="3.4.3" />
+        <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.11" />
+        <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
+        <PackageVersion Include="System.CommandLine" Version="2.0.11" />
+        <PackageVersion Include="System.IO.Pipelines" Version="8.0.0" />
+    </ItemGroup>
+
+</Project>

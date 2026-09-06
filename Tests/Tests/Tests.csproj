@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="Moq" Version="4.20.70" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.4.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.4.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
-  </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Moq" />
+        <PackageReference Include="MSTest.TestAdapter" />
+        <PackageReference Include="MSTest.TestFramework" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Library\VirtualRadar\VirtualRadar.csproj" />
+    </ItemGroup>
 </Project>
