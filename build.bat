@@ -1,5 +1,6 @@
 @echo off
 set "BATDIR=%~dp0"
+set "TFM=net10.0"
 
 rem ##################################################
 rem ## Parse arguments
@@ -38,7 +39,7 @@ set RUNARGS=
     
 :ENDARGS
     for /f "tokens=2 delims=: " %%i in ('dotnet --info ^| findstr /i "RID"') do set RID=%%i
-    set "COMBIN=%BATDIR%bin\%CONFIG%\net8.0\%RID%"
+    set "COMBIN=%BATDIR%bin\%CONFIG%\%TFM%\%RID%"
 
     if "%TARGET%"=="CONSOLE"    goto :CONSOLE
     if "%TARGET%"=="SERVER"     goto :SERVER

@@ -14,9 +14,9 @@ namespace VirtualRadar.Receivers
     /// Describes the configurable settings for an individual receiver.
     /// </summary>
     /// <remarks>
-    /// This is a class because .NET 8 records equality comparisons don't work with arrays
-    /// and objects. If the situation changes in later versions of .NET then we can cut a
-    /// lot of code out of this.
+    /// This is a class because .NET Core records equality comparisons don't work with
+    /// arrays and objects. If the situation changes in later versions of .NET then we can
+    /// cut a lot of code out of this.
     /// </remarks>
     public class ReceiverSettingsDto
     {

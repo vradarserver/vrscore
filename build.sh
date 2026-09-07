@@ -1,6 +1,7 @@
 #!/bin/bash
 SHDIR="$(cd "$(dirname "$0")" && pwd)"
 RID=$(dotnet --info | grep -i "RID" | awk '{print $2}')
+TFM=net10.0
 
 SHOW_USAGE() {
     echo "Usage: build.sh command options"
@@ -76,7 +77,7 @@ do
     fi
 done
 
-COMBIN="$SHDIR/bin/$CONFIG/net8.0/$RID"
+COMBIN="$SHDIR/bin/$CONFIG/$TFM/$RID"
 
 case $TARGET in
     console)
