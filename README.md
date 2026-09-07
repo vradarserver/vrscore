@@ -13,11 +13,11 @@ https://github.com/vradarserver/vrs
 
 ## Compilation
 
-You will need the .NET 8 SDK, available here:
+You will need the .NET 10 SDK, available here:
 
-https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 
-Confirm that you have a .NET Core 8 SDK installed:
+Confirm that you have a .NET Core 10 SDK installed:
 
 | Operating System | Command |
 | ---              | --- |

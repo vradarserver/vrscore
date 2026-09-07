@@ -10,7 +10,6 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="System.CommandLine" />
-        <PackageReference Include="System.IO.Pipelines" />
     </ItemGroup>
 
     <ItemGroup>
